@@ -1,0 +1,121 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function NewPostPage() {
+  const router = useRouter();
+  const [type, setType] = useState<"TEXT" | "VIDEO">("TEXT");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const tagNames = (formData.get("tags") as string)
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    const payload = {
+      title: formData.get("title"),
+      type,
+      content: type === "TEXT" ? formData.get("content") : undefined,
+      videoUrl: type === "VIDEO" ? formData.get("videoUrl") : undefined,
+      tagNames,
+    };
+
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    setLoading(false);
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      setError(data?.error ?? "Não foi possível criar o post.");
+      return;
+    }
+
+    const { post } = await res.json();
+    router.push(`/posts/${post.id}`);
+  }
+
+  return (
+    <div className="mx-auto max-w-xl">
+      <h1 className="text-xl font-bold mb-4">Novo post</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <input
+          name="title"
+          placeholder="Título"
+          required
+          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        />
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setType("TEXT")}
+            className={`rounded-md px-3 py-1.5 text-sm border ${
+              type === "TEXT"
+                ? "bg-black text-white dark:bg-white dark:text-black"
+                : "border-black/15 dark:border-white/20"
+            }`}
+          >
+            📝 Texto
+          </button>
+          <button
+            type="button"
+            onClick={() => setType("VIDEO")}
+            className={`rounded-md px-3 py-1.5 text-sm border ${
+              type === "VIDEO"
+                ? "bg-black text-white dark:bg-white dark:text-black"
+                : "border-black/15 dark:border-white/20"
+            }`}
+          >
+            🎥 Vídeo
+          </button>
+        </div>
+
+        {type === "TEXT" ? (
+          <textarea
+            name="content"
+            placeholder="Escreve o teu post..."
+            rows={6}
+            required
+            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+          />
+        ) : (
+          <input
+            name="videoUrl"
+            type="url"
+            placeholder="URL do vídeo (YouTube, Vimeo, etc.)"
+            required
+            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+          />
+        )}
+
+        <input
+          name="tags"
+          placeholder="Tags separadas por vírgula (ex: piano, jazz, iniciante)"
+          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        />
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+        >
+          {loading ? "A publicar..." : "Publicar"}
+        </button>
+      </form>
+    </div>
+  );
+}

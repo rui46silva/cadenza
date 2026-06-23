@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PROFESSOR
+  ALUNO
+}
+
+enum PostType {
+  TEXT
+  VIDEO
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(ALUNO)
+  bio           String?
+  avatarUrl     String?
+  instruments   Instrument[] @relation("UserInstruments")
+  createdAt     DateTime  @default(now())
+
+  posts         Post[]
+  comments      Comment[]
+  postVotes     PostVote[]
+  commentVotes  CommentVote[]
+}
+
+model Instrument {
+  id    String @id @default(cuid())
+  name  String @unique
+  users User[] @relation("UserInstruments")
+  tags  Tag[]
+}
+
+enum TagCategory {
+  INSTRUMENT
+  GENRE
+  LEVEL
+  OTHER
+}
+
+model Tag {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  category   TagCategory @default(OTHER)
+  instrument Instrument? @relation(fields: [instrumentId], references: [id])
+  instrumentId String?
+  posts      PostTag[]
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  title       String
+  type        PostType   @default(TEXT)
+  content     String?
+  videoUrl    String?
+  author      User       @relation(fields: [authorId], references: [id])
+  authorId    String
+  tags        PostTag[]
+  comments    Comment[]
+  votes       PostVote[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model PostTag {
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  String
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id         String        @id @default(cuid())
+  content    String
+  post       Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId     String
+  author     User          @relation(fields: [authorId], references: [id])
+  authorId   String
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId   String?
+  replies    Comment[]     @relation("CommentReplies")
+  votes      CommentVote[]
+  createdAt  DateTime      @default(now())
+}
+
+enum VoteValue {
+  UP
+  DOWN
+}
+
+model PostVote {
+  id      String    @id @default(cuid())
+  value   VoteValue
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId  String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+
+  @@unique([postId, userId])
+}
+
+model CommentVote {
+  id        String    @id @default(cuid())
+  value     VoteValue
+  comment   Comment   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([commentId, userId])
+}
