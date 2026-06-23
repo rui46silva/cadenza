@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [role, setRole] = useState<"ALUNO" | "PROFESSOR">("ALUNO");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,6 +22,7 @@ export default function RegisterPage() {
       email: formData.get("email"),
       password: formData.get("password"),
       role: formData.get("role"),
+      instrument: formData.get("instrument") || undefined,
     };
 
     const res = await fetch("/api/register", {
@@ -74,12 +76,24 @@ export default function RegisterPage() {
         />
         <select
           name="role"
-          defaultValue="ALUNO"
+          value={role}
+          onChange={(e) => setRole(e.target.value as "ALUNO" | "PROFESSOR")}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         >
           <option value="ALUNO">Sou aluno</option>
           <option value="PROFESSOR">Sou professor</option>
         </select>
+        <input
+          name="instrument"
+          placeholder="Que instrumento tocas? (ex: piano, saxofone)"
+          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        />
+        {role === "PROFESSOR" && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Contas de professor ficam pendentes de verificação por um admin
+            antes de aparecerem como verificadas.
+          </p>
+        )}
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button
           type="submit"

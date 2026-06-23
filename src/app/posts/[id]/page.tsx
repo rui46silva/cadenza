@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
+import CommentItem, { CommentNode } from "@/components/CommentItem";
 import VoteButtons from "@/components/VoteButtons";
+import RoleBadge from "@/components/RoleBadge";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -20,6 +22,38 @@ function getVideoEmbedUrl(url: string): string {
   }
 }
 
+function buildCommentTree(
+  comments: {
+    id: string;
+    content: string;
+    isDeleted: boolean;
+    parentId: string | null;
+    authorId: string;
+    author: {
+      name: string;
+      role: string;
+      instrument: string | null;
+      verificationStatus: string | null;
+    };
+  }[]
+): CommentNode[] {
+  const byId = new Map<string, CommentNode>();
+  for (const c of comments) {
+    byId.set(c.id, { ...c, children: [] });
+  }
+
+  const roots: CommentNode[] = [];
+  for (const c of comments) {
+    const node = byId.get(c.id)!;
+    if (c.parentId && byId.has(c.parentId)) {
+      byId.get(c.parentId)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
 export default async function PostPage({
   params,
 }: {
@@ -31,16 +65,15 @@ export default async function PostPage({
   const post = await prisma.post.findUnique({
     where: { id },
     include: {
-      author: { select: { name: true, role: true } },
+      author: {
+        select: { name: true, role: true, instrument: true, verificationStatus: true },
+      },
       tags: { include: { tag: true } },
       votes: true,
       comments: {
-        where: { parentId: null },
         include: {
-          author: { select: { name: true, role: true } },
-          replies: {
-            include: { author: { select: { name: true, role: true } } },
-            orderBy: { createdAt: "asc" },
+          author: {
+            select: { name: true, role: true, instrument: true, verificationStatus: true },
           },
         },
         orderBy: { createdAt: "asc" },
@@ -55,15 +88,20 @@ export default async function PostPage({
     0
   );
 
+  const commentTree = buildCommentTree(post.comments);
+
   return (
     <article className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">
           {post.type === "VIDEO" ? "🎥" : "📝"} {post.title}
         </h1>
-        <p className="text-sm text-black/50 dark:text-white/50">
-          por {post.author.name} ({post.author.role})
-        </p>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-black/50 dark:text-white/50">
+            por {post.author.name}
+          </span>
+          <RoleBadge user={post.author} />
+        </div>
         {post.tags.length > 0 && (
           <div className="flex gap-1 flex-wrap">
             {post.tags.map(({ tag }) => (
@@ -94,7 +132,7 @@ export default async function PostPage({
 
       <section className="flex flex-col gap-4 mt-2">
         <h2 className="font-semibold">
-          Comentários ({post.comments.length})
+          Comentários ({post.comments.filter((c) => !c.isDeleted).length})
         </h2>
 
         {session?.user ? (
@@ -106,37 +144,14 @@ export default async function PostPage({
         )}
 
         <ul className="flex flex-col gap-3">
-          {post.comments.map((comment) => (
-            <li
+          {commentTree.map((comment) => (
+            <CommentItem
               key={comment.id}
-              className="rounded-lg border border-black/10 dark:border-white/10 p-3"
-            >
-              <p className="text-sm font-medium">
-                {comment.author.name}{" "}
-                <span className="text-black/40 dark:text-white/40">
-                  ({comment.author.role})
-                </span>
-              </p>
-              <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
-
-              {comment.replies.length > 0 && (
-                <ul className="mt-3 flex flex-col gap-2 border-l border-black/10 dark:border-white/10 pl-3">
-                  {comment.replies.map((reply) => (
-                    <li key={reply.id}>
-                      <p className="text-sm font-medium">
-                        {reply.author.name}{" "}
-                        <span className="text-black/40 dark:text-white/40">
-                          ({reply.author.role})
-                        </span>
-                      </p>
-                      <p className="mt-1 whitespace-pre-wrap">
-                        {reply.content}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </li>
+              postId={post.id}
+              comment={comment}
+              currentUserId={session?.user?.id}
+              currentUserRole={session?.user?.role}
+            />
           ))}
         </ul>
       </section>
