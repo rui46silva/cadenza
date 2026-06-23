@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
+import { ConsentProvider } from "@/components/ConsentProvider";
+import CookieConsent from "@/components/CookieConsent";
+import AdSenseScript from "@/components/AdSenseScript";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,10 +35,14 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>
-          <Navbar />
-          <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
-            {children}
-          </main>
+          <ConsentProvider>
+            <Navbar />
+            <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+              {children}
+            </main>
+            <CookieConsent />
+            <AdSenseScript />
+          </ConsentProvider>
         </Providers>
       </body>
     </html>

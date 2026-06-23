@@ -5,6 +5,7 @@ import CommentForm from "@/components/CommentForm";
 import CommentItem, { CommentNode } from "@/components/CommentItem";
 import VoteButtons from "@/components/VoteButtons";
 import RoleBadge from "@/components/RoleBadge";
+import AdSlot from "@/components/AdSlot";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -155,6 +156,8 @@ export default async function PostPage({
           ))}
         </ul>
       </section>
+
+      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
     </article>
   );
 }
