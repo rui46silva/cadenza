@@ -27,7 +27,7 @@ export default function LoginPage() {
       setError("Email ou password incorretos.");
       return;
     }
-    router.push("/");
+    router.push("/forum");
     router.refresh();
   }
 

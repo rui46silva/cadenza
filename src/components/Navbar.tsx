@@ -25,6 +25,9 @@ export default async function Navbar() {
           🎵 Cadenza
         </Link>
         <div className="flex items-center gap-4 text-sm">
+          <Link href="/forum" className="hover:underline">
+            Fórum
+          </Link>
           {session?.user && user ? (
             <>
               <Link href="/dashboard" className="flex items-center gap-2">

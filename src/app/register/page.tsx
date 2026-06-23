@@ -45,7 +45,7 @@ export default function RegisterPage() {
     });
 
     setLoading(false);
-    router.push("/");
+    router.push("/forum");
     router.refresh();
   }
 
