@@ -1,14 +1,22 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
-
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Admin",
-  PROFESSOR: "Professor",
-  ALUNO: "Aluno",
-};
+import { prisma } from "@/lib/prisma";
+import RoleBadge from "@/components/RoleBadge";
 
 export default async function Navbar() {
   const session = await auth();
+  const user = session?.user
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          name: true,
+          role: true,
+          instrument: true,
+          verificationStatus: true,
+          avatarUrl: true,
+        },
+      })
+    : null;
 
   return (
     <header className="border-b border-black/10 dark:border-white/10">
@@ -17,12 +25,31 @@ export default async function Navbar() {
           🎵 Cadenza
         </Link>
         <div className="flex items-center gap-4 text-sm">
-          {session?.user ? (
+          {session?.user && user ? (
             <>
-              <span className="text-black/60 dark:text-white/60">
-                {session.user.name} ·{" "}
-                {ROLE_LABEL[session.user.role] ?? session.user.role}
-              </span>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-6 w-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/10 dark:bg-white/10 text-xs">
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span className="text-black/60 dark:text-white/60">
+                  {user.name}
+                </span>
+              </Link>
+              <RoleBadge user={user} />
+              {user.role === "ADMIN" && (
+                <Link href="/admin" className="hover:underline">
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/posts/new"
                 className="rounded-md bg-black px-3 py-1.5 text-white dark:bg-white dark:text-black"
