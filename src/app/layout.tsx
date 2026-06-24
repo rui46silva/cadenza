@@ -34,6 +34,25 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Google Consent Mode v2 (avançado) — tem de correr antes do gtag.js carregar. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  var storedConsent = null;
+  try { storedConsent = window.localStorage.getItem('cadenza-cookie-consent'); } catch (e) {}
+  var status = storedConsent === 'granted' ? 'granted' : 'denied';
+  gtag('consent', 'default', {
+    'ad_storage': status,
+    'ad_user_data': status,
+    'ad_personalization': status,
+    'analytics_storage': status,
+    'functionality_storage': 'granted',
+    'security_storage': 'granted',
+    'wait_for_update': 500
+  });`,
+          }}
+        />
         {/* Google tag (gtag.js) */}
         <script
           async
@@ -41,9 +60,7 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+            __html: `gtag('js', new Date());
 
   gtag('config', 'G-CT664N9STS');`,
           }}

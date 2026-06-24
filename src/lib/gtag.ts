@@ -23,3 +23,19 @@ export function event(action: string, params: GtagParams = {}) {
   if (typeof window === "undefined" || !window.gtag) return;
   window.gtag("event", action, params);
 }
+
+/**
+ * Atualiza os sinais do Google Consent Mode v2 depois da decisão do
+ * utilizador no banner de cookies (ver gtag('consent', 'default', ...)
+ * no <head>, que arranca tudo como "denied").
+ */
+export function updateConsent(granted: boolean) {
+  if (typeof window === "undefined" || !window.gtag) return;
+  const status = granted ? "granted" : "denied";
+  window.gtag("consent", "update", {
+    ad_storage: status,
+    ad_user_data: status,
+    ad_personalization: status,
+    analytics_storage: status,
+  });
+}
