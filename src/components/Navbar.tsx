@@ -3,6 +3,7 @@ import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
 import SearchBar from "@/components/SearchBar";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function Navbar() {
   const session = await auth();
@@ -30,6 +31,7 @@ export default async function Navbar() {
           <Link href="/forum" className="hover:underline">
             Fórum
           </Link>
+          <ThemeToggle />
           {session?.user && user ? (
             <>
               <Link href="/dashboard" className="flex items-center gap-2">

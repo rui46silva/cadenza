@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
 import AdSenseScript from "@/components/AdSenseScript";
+import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,10 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Aplica o tema guardado antes da hidratação, para evitar flash. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }}
+        />
         {/* Google Consent Mode v2 (avançado) — tem de correr antes do gtag.js carregar. */}
         <script
           dangerouslySetInnerHTML={{
@@ -67,14 +73,16 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <Providers>
-          <ConsentProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <CookieConsent />
-            <AdSenseScript />
-          </ConsentProvider>
-        </Providers>
+        <ThemeProvider>
+          <Providers>
+            <ConsentProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <CookieConsent />
+              <AdSenseScript />
+            </ConsentProvider>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );
