@@ -1,7 +1,7 @@
 // Utilitários para o Google Analytics 4 (gtag.js).
-// O id vem da env var pública; sem ele, nada é carregado nem registado.
+// O gtag é carregado globalmente no layout; estes helpers registam eventos.
 
-export const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+export const GA_ID = "G-CT664N9STS";
 
 type GtagParams = Record<string, unknown>;
 
@@ -14,12 +14,12 @@ declare global {
 
 /** Regista uma visualização de página (útil em navegação SPA do App Router). */
 export function pageview(url: string) {
-  if (!GA_ID || typeof window === "undefined" || !window.gtag) return;
+  if (typeof window === "undefined" || !window.gtag) return;
   window.gtag("config", GA_ID, { page_path: url });
 }
 
 /** Regista um evento personalizado (ex: criação de post, voto, registo). */
 export function event(action: string, params: GtagParams = {}) {
-  if (!GA_ID || typeof window === "undefined" || !window.gtag) return;
+  if (typeof window === "undefined" || !window.gtag) return;
   window.gtag("event", action, params);
 }

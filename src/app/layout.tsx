@@ -5,7 +5,6 @@ import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import CookieConsent from "@/components/CookieConsent";
 import AdSenseScript from "@/components/AdSenseScript";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +33,22 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-CT664N9STS"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-CT664N9STS');`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>
           <ConsentProvider>
@@ -41,7 +56,6 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <CookieConsent />
             <AdSenseScript />
-            <GoogleAnalytics />
           </ConsentProvider>
         </Providers>
       </body>
