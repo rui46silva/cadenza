@@ -37,9 +37,7 @@ export default function RootLayout({
         <Providers>
           <ConsentProvider>
             <Navbar />
-            <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
-              {children}
-            </main>
+            <main className="flex-1">{children}</main>
             <CookieConsent />
             <AdSenseScript />
           </ConsentProvider>

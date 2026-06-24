@@ -29,7 +29,7 @@ const SECTIONS = [
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col gap-12">
+    <div className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 flex flex-col gap-12">
       <section className="flex flex-col items-center gap-4 py-10 text-center">
         <span className="text-5xl">🎵</span>
         <h1 className="text-3xl sm:text-4xl font-bold">Cadenza</h1>

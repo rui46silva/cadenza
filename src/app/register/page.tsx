@@ -50,7 +50,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
+    <div className="mx-auto w-full max-w-sm px-4 py-10">
       <h1 className="text-xl font-bold mb-4">Criar conta</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input

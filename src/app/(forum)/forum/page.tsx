@@ -11,13 +11,23 @@ const FEED_AD_AFTER = 4;
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string }>;
+  searchParams: Promise<{ tag?: string; q?: string }>;
 }) {
-  const { tag } = await searchParams;
+  const { tag, q } = await searchParams;
 
   const [posts, topTags] = await Promise.all([
     prisma.post.findMany({
-      where: tag ? { tags: { some: { tag: { name: tag } } } } : undefined,
+      where: {
+        ...(tag ? { tags: { some: { tag: { name: tag } } } } : {}),
+        ...(q
+          ? {
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { content: { contains: q, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       include: {
         author: { select: { name: true, role: true } },
         tags: { include: { tag: true } },
@@ -38,13 +48,15 @@ export default async function HomePage({
       <section>
         <h1 className="text-2xl font-bold">Fórum Cadenza</h1>
         <p className="text-black/60 dark:text-white/60">
-          Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer.
+          {q
+            ? `Resultados para "${q}"`
+            : "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer."}
         </p>
       </section>
 
       <div className="flex flex-wrap gap-2">
         <Link
-          href="/forum"
+          href={q ? `/forum?q=${encodeURIComponent(q)}` : "/forum"}
           className={`rounded-full px-3 py-1 text-xs border ${
             !tag ? "bg-black text-white dark:bg-white dark:text-black" : "border-black/15 dark:border-white/20"
           }`}
@@ -54,7 +66,7 @@ export default async function HomePage({
         {topTags.map((t) => (
           <Link
             key={t.id}
-            href={`/forum?tag=${encodeURIComponent(t.name)}`}
+            href={`/forum?tag=${encodeURIComponent(t.name)}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
             className={`rounded-full px-3 py-1 text-xs border ${
               tag === t.name
                 ? "bg-black text-white dark:bg-white dark:text-black"

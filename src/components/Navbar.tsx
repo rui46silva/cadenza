@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
+import SearchBar from "@/components/SearchBar";
 
 export default async function Navbar() {
   const session = await auth();
@@ -19,11 +20,12 @@ export default async function Navbar() {
     : null;
 
   return (
-    <header className="border-b border-black/10 dark:border-white/10">
-      <nav className="mx-auto max-w-4xl flex items-center justify-between px-4 py-3">
-        <Link href="/" className="font-semibold text-lg">
+    <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+        <Link href="/" className="shrink-0 font-semibold text-lg">
           🎵 Cadenza
         </Link>
+        <SearchBar />
         <div className="flex items-center gap-4 text-sm">
           <Link href="/forum" className="hover:underline">
             Fórum
