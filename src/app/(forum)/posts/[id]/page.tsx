@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -94,8 +95,13 @@ export default async function PostPage({
   return (
     <article className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">
-          {post.type === "VIDEO" ? "🎥" : "📝"} {post.title}
+        <h1 className="flex items-center gap-2 text-2xl font-bold">
+          {post.type === "VIDEO" ? (
+            <Video className="h-5 w-5 text-accent shrink-0" />
+          ) : (
+            <FileText className="h-5 w-5 text-accent shrink-0" />
+          )}
+          {post.title}
         </h1>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-black/50 dark:text-white/50">

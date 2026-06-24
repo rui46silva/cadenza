@@ -24,13 +24,13 @@ export default function CookieConsent() {
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => handleDecision(false)}
-            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-1.5"
+            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-1.5 transition-colors hover:border-accent hover:text-accent"
           >
             Recusar
           </button>
           <button
             onClick={() => handleDecision(true)}
-            className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-1.5"
+            className="rounded-md bg-accent text-accent-foreground px-3 py-1.5 shadow-sm transition-all hover:shadow-md hover:brightness-110"
           >
             Aceitar
           </button>

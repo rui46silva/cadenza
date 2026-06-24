@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileText, Video } from "lucide-react";
 import { event } from "@/lib/gtag";
+import { buttonPrimary } from "@/lib/ui";
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -63,24 +65,26 @@ export default function NewPostPage() {
           <button
             type="button"
             onClick={() => setType("TEXT")}
-            className={`rounded-md px-3 py-1.5 text-sm border ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm border transition-colors ${
               type === "TEXT"
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "border-black/15 dark:border-white/20"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-black/15 dark:border-white/20 hover:border-accent"
             }`}
           >
-            📝 Texto
+            <FileText className="h-4 w-4" />
+            Texto
           </button>
           <button
             type="button"
             onClick={() => setType("VIDEO")}
-            className={`rounded-md px-3 py-1.5 text-sm border ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm border transition-colors ${
               type === "VIDEO"
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "border-black/15 dark:border-white/20"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-black/15 dark:border-white/20 hover:border-accent"
             }`}
           >
-            🎥 Vídeo
+            <Video className="h-4 w-4" />
+            Vídeo
           </button>
         </div>
 
@@ -113,7 +117,7 @@ export default function NewPostPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+          className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A publicar..." : "Publicar"}
         </button>

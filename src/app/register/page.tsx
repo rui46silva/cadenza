@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { event } from "@/lib/gtag";
+import { buttonPrimary } from "@/lib/ui";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -101,7 +102,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+          className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A criar..." : "Criar conta"}
         </button>

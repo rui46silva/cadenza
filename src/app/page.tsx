@@ -1,9 +1,18 @@
 import Link from "next/link";
+import {
+  MessagesSquare,
+  GraduationCap,
+  Trophy,
+  UserPlus,
+  Share2,
+  Users,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { buttonPrimary, card } from "@/lib/ui";
 
 const SECTIONS = [
   {
-    emoji: "💬",
+    icon: MessagesSquare,
     title: "Fórum",
     description:
       "Partilha o teu trabalho em texto ou vídeo, recebe feedback e ajuda outros músicos.",
@@ -11,7 +20,7 @@ const SECTIONS = [
     available: true,
   },
   {
-    emoji: "🎓",
+    icon: GraduationCap,
     title: "E-learning",
     description:
       "Módulos e aulas dadas por professores, com provas em vídeo para avançar de nível.",
@@ -19,7 +28,7 @@ const SECTIONS = [
     available: false,
   },
   {
-    emoji: "🏆",
+    icon: Trophy,
     title: "Gamification",
     description:
       "XP, badges e leaderboard para tornar a aprendizagem mais motivante.",
@@ -30,17 +39,17 @@ const SECTIONS = [
 
 const STEPS = [
   {
-    emoji: "📝",
+    icon: UserPlus,
     title: "Cria a tua conta",
     description: "Regista-te gratuitamente e diz-nos o teu instrumento.",
   },
   {
-    emoji: "🎬",
+    icon: Share2,
     title: "Partilha o teu trabalho",
     description: "Publica em texto ou vídeo no fórum, em qualquer estilo.",
   },
   {
-    emoji: "🤝",
+    icon: Users,
     title: "Recebe feedback",
     description: "Outros músicos comentam, votam e ajudam-te a evoluir.",
   },
@@ -92,45 +101,51 @@ export default async function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="flex flex-col items-center gap-4 py-10 text-center">
-        <span className="text-5xl">🎵</span>
-        <h1 className="text-3xl sm:text-4xl font-bold">Cadenza</h1>
-        <p className="max-w-xl text-black/60 dark:text-white/60">
-          A plataforma para músicos de clássica, jazz e pop partilharem o seu
-          trabalho, aprenderem com outros e crescerem juntos.
-        </p>
-        <Link
-          href="/forum"
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 font-medium"
-        >
-          Entrar no Fórum
-        </Link>
-      </section>
-
-      <section className="grid grid-cols-3 gap-4 text-center">
-        <div>
-          <p className="text-2xl font-bold">{stats.userCount}</p>
-          <p className="text-sm text-black/60 dark:text-white/60">músicos</p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold">{stats.postCount}</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            publicações
+      <section className="grid items-center gap-8 py-10 sm:grid-cols-[1.2fr_1fr]">
+        <div className="flex flex-col gap-4">
+          <span className="inline-flex w-fit items-center rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+            Comunidade de músicos
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
+            Partilha a tua música. Cresce com a comunidade.
+          </h1>
+          <p className="max-w-md text-black/60 dark:text-white/60">
+            O Cadenza junta músicos de clássica, jazz e pop num só sítio para
+            partilharem o seu trabalho, aprenderem uns com os outros e
+            evoluírem juntos.
           </p>
+          <Link href="/forum" className={`${buttonPrimary} w-fit`}>
+            Entrar no Fórum
+          </Link>
         </div>
-        <div>
-          <p className="text-2xl font-bold">{stats.commentCount}</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            comentários
-          </p>
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 rounded-xl border border-black/10 dark:border-white/10 p-5">
+          <div className="text-center">
+            <p className="text-2xl font-bold">{stats.userCount}</p>
+            <p className="text-xs text-black/60 dark:text-white/60">
+              músicos
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold">{stats.postCount}</p>
+            <p className="text-xs text-black/60 dark:text-white/60">
+              publicações
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold">{stats.commentCount}</p>
+            <p className="text-xs text-black/60 dark:text-white/60">
+              comentários
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
         {SECTIONS.map((section) => {
+          const Icon = section.icon;
           const content = (
             <>
-              <span className="text-3xl">{section.emoji}</span>
+              <Icon className="h-6 w-6 text-accent" />
               <h2 className="font-semibold mt-2">{section.title}</h2>
               <p className="text-sm text-black/60 dark:text-white/60 mt-1">
                 {section.description}
@@ -143,11 +158,7 @@ export default async function LandingPage() {
             </>
           );
 
-          const className =
-            "rounded-lg border border-black/10 dark:border-white/10 p-5 transition-colors" +
-            (section.available
-              ? " hover:border-black/30 dark:hover:border-white/30"
-              : " opacity-70");
+          const className = card + (section.available ? "" : " opacity-70");
 
           return section.href ? (
             <Link key={section.title} href={section.href} className={className}>
@@ -164,21 +175,24 @@ export default async function LandingPage() {
       <section className="flex flex-col gap-6">
         <h2 className="text-center text-2xl font-bold">Como funciona</h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <div
-              key={step.title}
-              className="rounded-lg border border-black/10 dark:border-white/10 p-5"
-            >
-              <span className="text-xs font-medium text-black/40 dark:text-white/40">
-                Passo {index + 1}
-              </span>
-              <div className="text-3xl mt-2">{step.emoji}</div>
-              <h3 className="font-semibold mt-2">{step.title}</h3>
-              <p className="text-sm text-black/60 dark:text-white/60 mt-1">
-                {step.description}
-              </p>
-            </div>
-          ))}
+          {STEPS.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.title}
+                className="rounded-lg border border-black/10 dark:border-white/10 p-5"
+              >
+                <span className="text-xs font-medium text-black/40 dark:text-white/40">
+                  Passo {index + 1}
+                </span>
+                <Icon className="h-6 w-6 text-accent mt-2" />
+                <h3 className="font-semibold mt-2">{step.title}</h3>
+                <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+                  {step.description}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -208,10 +222,7 @@ export default async function LandingPage() {
         <p className="max-w-md text-black/60 dark:text-white/60">
           Cria a tua conta gratuita e começa a partilhar o teu trabalho hoje.
         </p>
-        <Link
-          href="/register"
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 font-medium"
-        >
+        <Link href="/register" className={buttonPrimary}>
           Criar conta
         </Link>
       </section>

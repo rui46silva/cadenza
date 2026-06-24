@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { event } from "@/lib/gtag";
+import { buttonPrimary } from "@/lib/ui";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+          className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A entrar..." : "Entrar"}
         </button>

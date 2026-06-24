@@ -60,7 +60,7 @@ export default function CommentForm({
       <button
         type="submit"
         disabled={loading}
-        className="self-start rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-1.5 text-sm disabled:opacity-50"
+        className="self-start rounded-md bg-accent text-accent-foreground px-3 py-1.5 text-sm shadow-sm transition-all hover:shadow-md hover:brightness-110 disabled:opacity-50"
       >
         {loading ? "A enviar..." : parentId ? "Responder" : "Comentar"}
       </button>

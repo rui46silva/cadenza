@@ -42,10 +42,24 @@ async function main() {
     },
   });
 
-  const tagNames = ["piano", "saxofone", "jazz", "clássica", "pop", "iniciante"];
+const tagDefs: { name: string; category: "INSTRUMENT" | "GENRE" | "LEVEL" | "OTHER" }[] = [
+    { name: "piano", category: "INSTRUMENT" },
+    { name: "saxofone", category: "INSTRUMENT" },
+    { name: "trompete", category: "INSTRUMENT" },
+    { name: "violino", category: "INSTRUMENT" },
+    { name: "guitarra", category: "INSTRUMENT" },
+    { name: "jazz", category: "GENRE" },
+    { name: "clássica", category: "GENRE" },
+    { name: "pop", category: "GENRE" },
+    { name: "iniciante", category: "LEVEL" },
+  ];
   const tags = await Promise.all(
-    tagNames.map((name) =>
-      prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
+    tagDefs.map(({ name, category }) =>
+      prisma.tag.upsert({
+        where: { name },
+        update: { category },
+        create: { name, category },
+      })
     )
   );
 

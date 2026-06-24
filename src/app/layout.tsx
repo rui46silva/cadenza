@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, JetBrains_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
@@ -9,13 +9,14 @@ import AdSenseScript from "@/components/AdSenseScript";
 import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const sans = Poppins({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -67,7 +68,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <head>
         {/* Aplica o tema guardado antes da hidratação, para evitar flash. */}

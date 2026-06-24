@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { Flame, FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
-const TYPE_ICON: Record<string, string> = { TEXT: "📝", VIDEO: "🎥" };
+const TYPE_ICON: Record<string, typeof FileText> = {
+  TEXT: FileText,
+  VIDEO: Video,
+};
 
 export default async function PopularPage() {
   const posts = await prisma.post.findMany({
@@ -28,7 +32,10 @@ export default async function PopularPage() {
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h1 className="text-2xl font-bold">🔥 Popular</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-bold">
+          <Flame className="h-6 w-6 text-accent" />
+          Popular
+        </h1>
         <p className="text-black/60 dark:text-white/60">
           Os posts com mais votos no fórum.
         </p>
@@ -40,14 +47,17 @@ export default async function PopularPage() {
             Ainda não há posts suficientes para gerar um ranking.
           </p>
         )}
-        {ranked.map((post) => (
+        {ranked.map((post) => {
+          const Icon = TYPE_ICON[post.type];
+          return (
           <li
             key={post.id}
-            className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-black/30 dark:hover:border-white/30 transition-colors"
+            className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors"
           >
             <Link href={`/posts/${post.id}`} className="flex flex-col gap-1">
-              <span className="font-medium">
-                {TYPE_ICON[post.type]} {post.title}
+              <span className="flex items-center gap-2 font-medium">
+                <Icon className="h-4 w-4 text-accent shrink-0" />
+                {post.title}
               </span>
               <span className="text-xs text-black/50 dark:text-white/50">
                 por {post.author.name} · {post.score} votos ·{" "}
@@ -67,7 +77,8 @@ export default async function PopularPage() {
               )}
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
