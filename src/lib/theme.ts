@@ -12,10 +12,9 @@ export function resolveTheme(theme: Theme): "light" | "dark" {
 }
 
 export function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle(
-    "dark",
-    resolveTheme(theme) === "dark"
-  );
+  const isDark = resolveTheme(theme) === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.classList.toggle("light", !isDark);
 }
 
 /** Script inline (sem flash) injetado no <head>, antes da hidratação. */
@@ -24,6 +23,6 @@ export const NO_FLASH_THEME_SCRIPT = `(function() {
     var stored = window.localStorage.getItem('${THEME_STORAGE_KEY}');
     var theme = stored === 'light' || stored === 'dark' ? stored : 'system';
     var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (isDark) document.documentElement.classList.add('dark');
+    document.documentElement.classList.add(isDark ? 'dark' : 'light');
   } catch (e) {}
 })();`;
