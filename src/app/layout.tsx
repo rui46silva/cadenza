@@ -5,6 +5,7 @@ import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import CookieConsent from "@/components/CookieConsent";
 import AdSenseScript from "@/components/AdSenseScript";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <CookieConsent />
             <AdSenseScript />
+            <GoogleAnalytics />
           </ConsentProvider>
         </Providers>
       </body>

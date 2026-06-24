@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { event } from "@/lib/gtag";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function LoginPage() {
       setError("Email ou password incorretos.");
       return;
     }
+    event("login", { method: "credentials" });
     router.push("/forum");
     router.refresh();
   }

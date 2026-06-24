@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { event } from "@/lib/gtag";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,6 +38,8 @@ export default function RegisterPage() {
       setLoading(false);
       return;
     }
+
+    event("sign_up", { method: "credentials", role: payload.role });
 
     await signIn("credentials", {
       email: payload.email,

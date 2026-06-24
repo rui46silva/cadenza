@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { event } from "@/lib/gtag";
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function NewPostPage() {
     }
 
     const { post } = await res.json();
+    event("create_post", { post_type: type });
     router.push(`/posts/${post.id}`);
   }
 
