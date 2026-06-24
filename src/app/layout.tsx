@@ -19,10 +19,44 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const description =
+  "Plataforma para músicos de clássica, jazz e pop partilharem o seu trabalho, aprenderem com outros e crescerem juntos.";
+
 export const metadata: Metadata = {
-  title: "Cadenza",
-  description:
-    "Plataforma para músicos de clássica, jazz e pop partilharem, aprenderem e crescerem juntos.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Cadenza — comunidade de músicos",
+    template: "%s | Cadenza",
+  },
+  description,
+  keywords: [
+    "música",
+    "músicos",
+    "fórum de música",
+    "clássica",
+    "jazz",
+    "pop",
+    "comunidade musical",
+    "aprender música",
+  ],
+  openGraph: {
+    title: "Cadenza — comunidade de músicos",
+    description,
+    url: siteUrl,
+    siteName: "Cadenza",
+    locale: "pt_PT",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Cadenza — comunidade de músicos",
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
