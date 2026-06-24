@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import AdSlot from "@/components/AdSlot";
 
 const SITEMAP_LINKS = [
   { href: "/forum", label: "Fórum" },
@@ -44,6 +45,8 @@ export default async function RightSidebar() {
           ))}
         </ul>
       </section>
+
+      <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR} />
 
       <section className="mt-auto border-t border-black/10 dark:border-white/10 pt-4">
         <h2 className="mb-2 font-semibold text-black/70 dark:text-white/70">
