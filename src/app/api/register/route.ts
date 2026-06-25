@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requiresVerification } from "@/lib/moderation";
+import { createAndSendVerificationEmail } from "@/lib/emailVerification";
 
 const registerSchema = z
   .object({
@@ -59,6 +60,8 @@ export async function POST(req: Request) {
     },
     select: { id: true, name: true, email: true, role: true },
   });
+
+  await createAndSendVerificationEmail(user);
 
   return NextResponse.json({ user }, { status: 201 });
 }

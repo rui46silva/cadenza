@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { awardPoints, POINTS } from "@/lib/points";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -80,6 +81,8 @@ export async function POST(req: Request) {
     },
     include: { tags: { include: { tag: true } } },
   });
+
+  await awardPoints(session.user.id, POINTS.POST_CREATED);
 
   return NextResponse.json({ post }, { status: 201 });
 }

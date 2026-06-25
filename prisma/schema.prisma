@@ -40,6 +40,7 @@ model User {
   id            String    @id @default(cuid())
   name          String
   email         String    @unique
+  emailVerified DateTime?
   passwordHash  String
   role          Role      @default(ALUNO)
   verificationStatus VerificationStatus @default(APPROVED)
@@ -52,6 +53,7 @@ model User {
   instrument    String?
   avatarUrl     String?
   instagramHandle String?
+  points        Int       @default(0)
   instruments   Instrument[] @relation("UserInstruments")
   createdAt     DateTime  @default(now())
 
@@ -64,6 +66,16 @@ model User {
   bans          Ban[]     @relation("BansReceived")
   bansIssued    Ban[]     @relation("BansIssued")
   verifiedUsers User[]    @relation("VerifiedBy")
+  emailVerificationTokens EmailVerificationToken[]
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Ban {

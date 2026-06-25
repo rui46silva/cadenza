@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import InstagramIcon from "@/components/InstagramIcon";
+import LevelBadge from "@/components/LevelBadge";
 import { getUserBadges } from "@/lib/badges";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
@@ -31,6 +32,7 @@ export default async function ProfilePage({
       bio: true,
       instagramHandle: true,
       createdAt: true,
+      points: true,
       _count: { select: { posts: true, comments: true } },
     },
   });
@@ -57,7 +59,10 @@ export default async function ProfilePage({
         <Avatar name={user.name} avatarUrl={user.avatarUrl} size={56} />
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-bold">{user.name}</h1>
-          <RoleBadge user={user} />
+          <div className="flex items-center gap-2">
+            <RoleBadge user={user} />
+            <LevelBadge points={user.points} />
+          </div>
         </div>
         {user.instagramHandle && (
           <a

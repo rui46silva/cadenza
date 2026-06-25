@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Trophy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
 
@@ -18,8 +19,44 @@ export default async function RightSidebar() {
     take: 8,
   });
 
+  const topUsers = await prisma.user.findMany({
+    where: { points: { gt: 0 } },
+    orderBy: { points: "desc" },
+    take: 5,
+    select: { id: true, name: true, points: true },
+  });
+
   return (
     <div className="flex flex-col gap-6 text-sm">
+      {topUsers.length > 0 && (
+        <section>
+          <h2 className="mb-2 flex items-center gap-1.5 font-semibold text-black/70 dark:text-white/70">
+            <Trophy className="h-4 w-4 text-accent" />
+            Top da comunidade
+          </h2>
+          <ul className="flex flex-col gap-1">
+            {topUsers.map((u, i) => (
+              <li key={u.id}>
+                <Link
+                  href={`/perfil/${u.id}`}
+                  className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <span className="text-black/40 dark:text-white/40 w-4 shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="truncate">{u.name}</span>
+                  </span>
+                  <span className="text-black/40 dark:text-white/40 text-xs shrink-0">
+                    {u.points} pts
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-2 font-semibold text-black/70 dark:text-white/70">
           Comunidades populares
