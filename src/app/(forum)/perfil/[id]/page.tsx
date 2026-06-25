@@ -4,6 +4,7 @@ import { FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
+import InstagramIcon from "@/components/InstagramIcon";
 import { getUserBadges } from "@/lib/badges";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
@@ -28,6 +29,7 @@ export default async function ProfilePage({
       verificationStatus: true,
       avatarUrl: true,
       bio: true,
+      instagramHandle: true,
       createdAt: true,
       _count: { select: { posts: true, comments: true } },
     },
@@ -57,6 +59,17 @@ export default async function ProfilePage({
           <h1 className="text-xl font-bold">{user.name}</h1>
           <RoleBadge user={user} />
         </div>
+        {user.instagramHandle && (
+          <a
+            href={`https://instagram.com/${user.instagramHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent"
+          >
+            <InstagramIcon className="h-4 w-4" />
+            @{user.instagramHandle}
+          </a>
+        )}
       </section>
 
       {user.bio && (

@@ -8,6 +8,7 @@ type Profile = {
   bio: string | null;
   instrument: string | null;
   avatarUrl: string | null;
+  instagramHandle: string | null;
 };
 
 export default function ProfileForm({ profile }: { profile: Profile }) {
@@ -28,6 +29,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       bio: formData.get("bio"),
       instrument: formData.get("instrument"),
       avatarUrl: formData.get("avatarUrl"),
+      instagramHandle: formData.get("instagramHandle"),
     };
 
     const res = await fetch("/api/users/me", {
@@ -78,6 +80,21 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
           rows={3}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         />
+      </label>
+
+      <label className="text-sm flex flex-col gap-1">
+        Instagram
+        <div className="flex items-center rounded-md border border-black/15 dark:border-white/20 bg-transparent overflow-hidden">
+          <span className="px-3 text-black/40 dark:text-white/40">@</span>
+          <input
+            name="instagramHandle"
+            defaultValue={profile.instagramHandle ?? ""}
+            placeholder="o.teu.utilizador"
+            maxLength={30}
+            pattern="[a-zA-Z0-9._]*"
+            className="flex-1 py-2 pr-3 bg-transparent outline-none"
+          />
+        </div>
       </label>
 
       <label className="text-sm flex flex-col gap-1">

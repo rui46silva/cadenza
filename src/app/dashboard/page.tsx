@@ -17,6 +17,7 @@ export default async function DashboardPage() {
       instrument: true,
       bio: true,
       avatarUrl: true,
+      instagramHandle: true,
       verificationStatus: true,
     },
   });

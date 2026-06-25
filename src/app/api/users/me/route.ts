@@ -8,6 +8,13 @@ const updateSchema = z.object({
   bio: z.string().max(500).optional().or(z.literal("")),
   instrument: z.string().max(60).optional().or(z.literal("")),
   avatarUrl: z.string().url().optional().or(z.literal("")),
+  instagramHandle: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/^@/, ""))
+    .pipe(z.string().max(30).regex(/^[a-zA-Z0-9._]*$/, "Utilizador do Instagram inválido"))
+    .optional()
+    .or(z.literal("")),
 });
 
 export async function PATCH(req: Request) {
@@ -25,7 +32,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const { name, bio, instrument, avatarUrl } = parsed.data;
+  const { name, bio, instrument, avatarUrl, instagramHandle } = parsed.data;
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
@@ -34,6 +41,7 @@ export async function PATCH(req: Request) {
       bio: bio || null,
       instrument: instrument || null,
       avatarUrl: avatarUrl || null,
+      instagramHandle: instagramHandle || null,
     },
     select: {
       id: true,
@@ -41,6 +49,7 @@ export async function PATCH(req: Request) {
       bio: true,
       instrument: true,
       avatarUrl: true,
+      instagramHandle: true,
     },
   });
 

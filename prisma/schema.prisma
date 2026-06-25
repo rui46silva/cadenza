@@ -51,6 +51,7 @@ model User {
   bio           String?
   instrument    String?
   avatarUrl     String?
+  instagramHandle String?
   instruments   Instrument[] @relation("UserInstruments")
   createdAt     DateTime  @default(now())
 

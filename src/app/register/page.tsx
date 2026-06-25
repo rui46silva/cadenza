@@ -79,8 +79,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-sm px-4 py-10">
-      <h1 className="text-xl font-bold mb-4">Criar conta</h1>
+    <div className="flex w-full justify-center px-4 py-10 sm:py-16">
+      <div className="w-full max-w-lg rounded-xl border border-black/10 dark:border-white/10 p-8 sm:p-10">
+        <h1 className="text-2xl font-bold mb-1">Criar conta</h1>
+        <p className="text-sm text-black/50 dark:text-white/50 mb-6">
+          Junta-te à comunidade Cadenza.
+        </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           name="name"
@@ -211,12 +215,13 @@ export default function RegisterPage() {
           {loading ? "A criar..." : "Criar conta"}
         </button>
       </form>
-      <p className="text-sm mt-3 text-black/60 dark:text-white/60">
+      <p className="text-sm mt-4 text-black/60 dark:text-white/60">
         Já tens conta?{" "}
         <Link href="/login" className="underline">
           Entra
         </Link>
       </p>
+      </div>
     </div>
   );
 }
