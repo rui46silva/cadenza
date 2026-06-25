@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { FileText, Video } from "lucide-react";
+import { FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
@@ -42,11 +42,11 @@ export default async function HomePage({
         ],
       },
       include: {
-        author: { select: { name: true, role: true, avatarUrl: true } },
+        author: { select: { id: true, name: true, role: true, avatarUrl: true } },
         tags: { include: { tag: true } },
         _count: { select: { comments: true, votes: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
       take: 30,
     }),
     prisma.tag.findMany({
@@ -106,30 +106,36 @@ export default async function HomePage({
           const Icon = TYPE_ICON[post.type];
           return (
           <Fragment key={post.id}>
-            <li className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors">
-              <Link href={`/posts/${post.id}`} className="flex flex-col gap-1">
-                <span className="flex items-center gap-2 font-medium">
-                  <Icon className="h-4 w-4 text-accent shrink-0" />
-                  {post.title}
-                </span>
-                <span className="flex items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
-                  <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />
-                  por {post.author.name} ·{" "}
-                  {post._count.comments} comentários · {post._count.votes} votos
-                </span>
-                {post.tags.length > 0 && (
-                  <span className="flex gap-1 flex-wrap mt-1">
-                    {post.tags.map(({ tag }) => (
-                      <span
-                        key={tag.id}
-                        className="rounded-full bg-black/5 dark:bg-white/10 px-2 py-0.5 text-xs"
-                      >
-                        #{tag.name}
-                      </span>
-                    ))}
-                  </span>
-                )}
+            <li className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors flex flex-col gap-1">
+              <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
+                <Icon className="h-4 w-4 text-accent shrink-0" />
+                {post.title}
+                {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}
               </Link>
+              <span className="flex items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
+                <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />
+                por{" "}
+                <Link
+                  href={`/perfil/${post.author.id}`}
+                  className="hover:text-accent hover:underline"
+                >
+                  {post.author.name}
+                </Link>{" "}
+                · {post._count.comments} comentários · {post._count.votes} votos
+              </span>
+              {post.tags.length > 0 && (
+                <span className="flex gap-1 flex-wrap mt-1">
+                  {post.tags.map(({ tag }) => (
+                    <Link
+                      key={tag.id}
+                      href={`/forum?tag=${encodeURIComponent(tag.name)}`}
+                      className="rounded-full bg-black/5 dark:bg-white/10 px-2 py-0.5 text-xs hover:bg-accent/15 hover:text-accent"
+                    >
+                      #{tag.name}
+                    </Link>
+                  ))}
+                </span>
+              )}
             </li>
             {index === FEED_AD_AFTER - 1 && (
               <li>

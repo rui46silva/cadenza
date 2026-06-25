@@ -41,6 +41,8 @@ model User {
   comments      Comment[]
   postVotes     PostVote[]
   commentVotes  CommentVote[]
+  notificationsReceived Notification[] @relation("NotificationsReceived")
+  notificationsSent     Notification[] @relation("NotificationsSent")
 }
 
 model Instrument {
@@ -72,11 +74,13 @@ model Post {
   type        PostType   @default(TEXT)
   content     String?
   videoUrl    String?
+  pinned      Boolean    @default(false)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
   tags        PostTag[]
   comments    Comment[]
   votes       PostVote[]
+  notifications Notification[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -102,7 +106,28 @@ model Comment {
   parentId   String?
   replies    Comment[]     @relation("CommentReplies")
   votes      CommentVote[]
+  notifications Notification[]
   createdAt  DateTime      @default(now())
+}
+
+enum NotificationType {
+  COMMENT
+  REPLY
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  read      Boolean          @default(false)
+  user      User             @relation("NotificationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  fromUser  User             @relation("NotificationsSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  fromUserId String
+  post      Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String?
+  comment   Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String?
+  createdAt DateTime         @default(now())
 }
 
 enum VoteValue {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
+import NotificationBell from "@/components/NotificationBell";
 import { buttonPrimarySm } from "@/lib/ui";
 
 export default async function Navbar() {
@@ -40,6 +41,7 @@ export default async function Navbar() {
           <ThemeToggle />
           {session?.user && user ? (
             <>
+              <NotificationBell />
               <Link href="/dashboard" className="flex items-center gap-2 group">
                 {user.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

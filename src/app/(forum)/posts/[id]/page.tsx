@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { FileText, Video } from "lucide-react";
+import Link from "next/link";
+import { FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -8,6 +9,7 @@ import VoteButtons from "@/components/VoteButtons";
 import RoleBadge from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
+import PinToggle from "@/components/PinToggle";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -70,6 +72,7 @@ export default async function PostPage({
     include: {
       author: {
         select: {
+          id: true,
           name: true,
           role: true,
           instrument: true,
@@ -109,13 +112,19 @@ export default async function PostPage({
             <FileText className="h-5 w-5 text-accent shrink-0" />
           )}
           {post.title}
+          {post.pinned && <Pin className="h-4 w-4 text-accent shrink-0" />}
         </h1>
         <div className="flex items-center gap-2 text-sm">
-          <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} />
-          <span className="text-black/50 dark:text-white/50">
-            por {post.author.name}
-          </span>
+          <Link href={`/perfil/${post.author.id}`} className="flex items-center gap-2 hover:underline">
+            <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} />
+            <span className="text-black/50 dark:text-white/50">
+              por {post.author.name}
+            </span>
+          </Link>
           <RoleBadge user={post.author} />
+          {session?.user?.role === "ADMIN" && (
+            <PinToggle postId={post.id} pinned={post.pinned} />
+          )}
         </div>
         {post.tags.length > 0 && (
           <div className="flex gap-1 flex-wrap">

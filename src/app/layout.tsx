@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -113,6 +114,7 @@ export default function RootLayout({
             <ConsentProvider>
               <Navbar />
               <main className="flex-1">{children}</main>
+              <Footer />
               <CookieConsent />
               <AdSenseScript />
             </ConsentProvider>
