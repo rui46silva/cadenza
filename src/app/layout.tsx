@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
@@ -66,6 +68,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const comingSoon = process.env.COMING_SOON === "true";
+
   return (
     <html
       lang="pt"
@@ -112,14 +116,16 @@ export default function RootLayout({
         <ThemeProvider>
           <Providers>
             <ConsentProvider>
-              <Navbar />
+              {!comingSoon && <Navbar />}
               <main className="flex-1">{children}</main>
-              <Footer />
+              {!comingSoon && <Footer />}
               <CookieConsent />
               <AdSenseScript />
             </ConsentProvider>
           </Providers>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
