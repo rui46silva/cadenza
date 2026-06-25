@@ -22,6 +22,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [instrument, setInstrument] = useState("");
+  const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,7 @@ export default function RegisterPage() {
       password,
       role,
       instrument: instrument || undefined,
+      verificationNote: role === "PROFESSOR" ? verificationNote : undefined,
     };
 
     const res = await fetch("/api/register", {
@@ -56,7 +58,8 @@ export default function RegisterPage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Não foi possível criar a conta.");
+      const fieldError = data?.details?.fieldErrors?.verificationNote?.[0];
+      setError(fieldError ?? data?.error ?? "Não foi possível criar a conta.");
       setLoading(false);
       return;
     }
@@ -160,15 +163,32 @@ export default function RegisterPage() {
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
 
         {role === "PROFESSOR" && (
-          <p className="text-xs text-amber-600 dark:text-amber-400">
-            Contas de professor ficam pendentes de verificação por um admin
-            antes de aparecerem como verificadas.
-          </p>
+          <div>
+            <textarea
+              name="verificationNote"
+              required
+              minLength={30}
+              maxLength={1000}
+              rows={3}
+              value={verificationNote}
+              onChange={(e) => setVerificationNote(e.target.value)}
+              placeholder="Conta-nos a tua experiência como professor: escola/conservatório, certificações, anos de ensino, redes sociais ou portefólio com aulas/atuações..."
+              className="w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent text-sm"
+            />
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Contas de professor ficam pendentes de verificação por um admin.
+              Esta informação ajuda a confirmar que és mesmo professor.
+            </p>
+          </div>
         )}
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button
           type="submit"
-          disabled={loading || passwordsMismatch}
+          disabled={
+            loading ||
+            passwordsMismatch ||
+            (role === "PROFESSOR" && verificationNote.trim().length < 30)
+          }
           className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A criar..." : "Criar conta"}

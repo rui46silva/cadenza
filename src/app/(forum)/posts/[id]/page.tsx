@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileText, Video, Pin } from "lucide-react";
+import { FileText, Video, Pin, Eye } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -97,6 +97,8 @@ export default async function PostPage({
 
   if (!post) notFound();
 
+  await prisma.post.update({ where: { id }, data: { views: { increment: 1 } } });
+
   const score = post.votes.reduce(
     (acc, v) => acc + (v.value === "UP" ? 1 : -1),
     0
@@ -124,6 +126,10 @@ export default async function PostPage({
             </span>
           </Link>
           <RoleBadge user={post.author} />
+          <span className="flex items-center gap-1 text-black/40 dark:text-white/40">
+            <Eye className="h-3.5 w-3.5" />
+            {post.views + 1}
+          </span>
           {isStaff(session?.user?.role) && (
             <>
               <PinToggle postId={post.id} pinned={post.pinned} />

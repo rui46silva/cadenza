@@ -42,6 +42,11 @@ model User {
   passwordHash  String
   role          Role      @default(ALUNO)
   verificationStatus VerificationStatus @default(APPROVED)
+  verificationNote   String?
+  rejectionReason    String?
+  verifiedAt         DateTime?
+  verifiedById       String?
+  verifiedBy         User?     @relation("VerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
   bio           String?
   instrument    String?
   avatarUrl     String?
@@ -56,6 +61,7 @@ model User {
   notificationsSent     Notification[] @relation("NotificationsSent")
   bans          Ban[]     @relation("BansReceived")
   bansIssued    Ban[]     @relation("BansIssued")
+  verifiedUsers User[]    @relation("VerifiedBy")
 }
 
 model Ban {
@@ -101,6 +107,7 @@ model Post {
   content     String?
   videoUrl    String?
   pinned      Boolean    @default(false)
+  views       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
   tags        PostTag[]
