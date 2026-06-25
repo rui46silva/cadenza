@@ -151,7 +151,7 @@ export default async function PostPage({
         )}
       </header>
 
-      {post.type === "VIDEO" && post.videoUrl ? (
+      {post.type === "VIDEO" && post.videoUrl && (
         <div className="aspect-video w-full overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
           <iframe
             src={getVideoEmbedUrl(post.videoUrl)}
@@ -159,7 +159,8 @@ export default async function PostPage({
             allowFullScreen
           />
         </div>
-      ) : (
+      )}
+      {post.content && (
         <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>
       )}
 

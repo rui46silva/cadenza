@@ -22,11 +22,14 @@ export default function NewPostPage() {
     const formData = new FormData(e.currentTarget);
     const tagNames = tags;
 
+    const content = formData.get("content");
+    const videoUrl = formData.get("videoUrl");
+
     const payload = {
       title: formData.get("title"),
       type,
-      content: type === "TEXT" ? formData.get("content") : undefined,
-      videoUrl: type === "VIDEO" ? formData.get("videoUrl") : undefined,
+      content: content || undefined,
+      videoUrl: type === "VIDEO" ? videoUrl || undefined : undefined,
       tagNames,
     };
 
@@ -50,7 +53,7 @@ export default function NewPostPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="w-full">
       <h1 className="text-xl font-bold mb-4">Novo post</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
@@ -87,15 +90,7 @@ export default function NewPostPage() {
           </button>
         </div>
 
-        {type === "TEXT" ? (
-          <textarea
-            name="content"
-            placeholder="Escreve o teu post..."
-            rows={6}
-            required
-            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
-          />
-        ) : (
+        {type === "VIDEO" && (
           <input
             name="videoUrl"
             type="url"
@@ -104,6 +99,18 @@ export default function NewPostPage() {
             className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
           />
         )}
+
+        <textarea
+          name="content"
+          placeholder={
+            type === "VIDEO"
+              ? "Acrescenta uma descrição ou contexto (opcional)..."
+              : "Escreve o teu post..."
+          }
+          rows={type === "VIDEO" ? 4 : 10}
+          required={type === "TEXT"}
+          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        />
 
         <TagPicker name="tags" selected={tags} onChange={setTags} />
 
