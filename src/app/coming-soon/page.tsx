@@ -17,7 +17,7 @@ export default function ComingSoonPage() {
         <Music2 className="h-7 w-7 text-accent" />
         Cadenza
       </span>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-2">
         <h1 className="text-3xl font-bold">Estamos a afinar os últimos detalhes.</h1>
         <p className="max-w-md text-black/60 dark:text-white/60">
           A comunidade de músicos Cadenza está quase pronta. Volta brevemente
