@@ -4,6 +4,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { event } from "@/lib/gtag";
+import { buttonPrimary } from "@/lib/ui";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -38,6 +40,8 @@ export default function RegisterPage() {
       return;
     }
 
+    event("sign_up", { method: "credentials", role: payload.role });
+
     await signIn("credentials", {
       email: payload.email,
       password: payload.password,
@@ -45,12 +49,12 @@ export default function RegisterPage() {
     });
 
     setLoading(false);
-    router.push("/");
+    router.push("/forum");
     router.refresh();
   }
 
   return (
-    <div className="mx-auto max-w-sm">
+    <div className="mx-auto w-full max-w-sm px-4 py-10">
       <h1 className="text-xl font-bold mb-4">Criar conta</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
@@ -98,7 +102,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+          className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A criar..." : "Criar conta"}
         </button>

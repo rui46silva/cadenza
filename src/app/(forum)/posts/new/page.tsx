@@ -2,10 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileText, Video } from "lucide-react";
+import { event } from "@/lib/gtag";
+import { buttonPrimary } from "@/lib/ui";
+import TagPicker from "@/components/TagPicker";
 
 export default function NewPostPage() {
   const router = useRouter();
   const [type, setType] = useState<"TEXT" | "VIDEO">("TEXT");
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,10 +20,7 @@ export default function NewPostPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const tagNames = (formData.get("tags") as string)
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const tagNames = tags;
 
     const payload = {
       title: formData.get("title"),
@@ -43,6 +45,7 @@ export default function NewPostPage() {
     }
 
     const { post } = await res.json();
+    event("create_post", { post_type: type });
     router.push(`/posts/${post.id}`);
   }
 
@@ -61,24 +64,26 @@ export default function NewPostPage() {
           <button
             type="button"
             onClick={() => setType("TEXT")}
-            className={`rounded-md px-3 py-1.5 text-sm border ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm border transition-colors ${
               type === "TEXT"
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "border-black/15 dark:border-white/20"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-black/15 dark:border-white/20 hover:border-accent"
             }`}
           >
-            📝 Texto
+            <FileText className="h-4 w-4" />
+            Texto
           </button>
           <button
             type="button"
             onClick={() => setType("VIDEO")}
-            className={`rounded-md px-3 py-1.5 text-sm border ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm border transition-colors ${
               type === "VIDEO"
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "border-black/15 dark:border-white/20"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-black/15 dark:border-white/20 hover:border-accent"
             }`}
           >
-            🎥 Vídeo
+            <Video className="h-4 w-4" />
+            Vídeo
           </button>
         </div>
 
@@ -100,18 +105,14 @@ export default function NewPostPage() {
           />
         )}
 
-        <input
-          name="tags"
-          placeholder="Tags separadas por vírgula (ex: piano, jazz, iniciante)"
-          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
-        />
+        <TagPicker name="tags" selected={tags} onChange={setTags} />
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+          className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A publicar..." : "Publicar"}
         </button>

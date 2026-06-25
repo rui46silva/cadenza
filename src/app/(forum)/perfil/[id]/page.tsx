@@ -1,0 +1,116 @@
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { FileText, Video } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import Avatar from "@/components/Avatar";
+import RoleBadge from "@/components/RoleBadge";
+import { getUserBadges } from "@/lib/badges";
+
+const TYPE_ICON: Record<string, typeof FileText> = {
+  TEXT: FileText,
+  VIDEO: Video,
+};
+
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      instrument: true,
+      verificationStatus: true,
+      avatarUrl: true,
+      bio: true,
+      createdAt: true,
+      _count: { select: { posts: true, comments: true } },
+    },
+  });
+
+  if (!user) notFound();
+
+  const posts = await prisma.post.findMany({
+    where: { authorId: user.id },
+    include: { _count: { select: { comments: true, votes: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+  });
+
+  const badges = getUserBadges({
+    postCount: user._count.posts,
+    commentCount: user._count.comments,
+    verificationStatus: user.verificationStatus,
+    createdAt: user.createdAt,
+  });
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section className="flex items-center gap-4">
+        <Avatar name={user.name} avatarUrl={user.avatarUrl} size={56} />
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-bold">{user.name}</h1>
+          <RoleBadge user={user} />
+        </div>
+      </section>
+
+      {user.bio && (
+        <p className="text-black/70 dark:text-white/70">{user.bio}</p>
+      )}
+
+      {badges.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {badges.map((b) => (
+            <span
+              key={b.id}
+              className="flex items-center gap-1.5 rounded-full bg-accent/10 text-accent px-3 py-1 text-xs font-medium"
+            >
+              <b.icon className="h-3.5 w-3.5" />
+              {b.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-4 text-sm text-black/60 dark:text-white/60">
+        <span>{user._count.posts} posts</span>
+        <span>{user._count.comments} comentários</span>
+      </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-semibold">Posts recentes</h2>
+        <ul className="flex flex-col gap-3">
+          {posts.length === 0 && (
+            <p className="text-black/50 dark:text-white/50">
+              Ainda não publicou nenhum post.
+            </p>
+          )}
+          {posts.map((post) => {
+            const Icon = TYPE_ICON[post.type];
+            return (
+              <li
+                key={post.id}
+                className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors"
+              >
+                <Link href={`/posts/${post.id}`} className="flex flex-col gap-1">
+                  <span className="flex items-center gap-2 font-medium">
+                    <Icon className="h-4 w-4 text-accent shrink-0" />
+                    {post.title}
+                  </span>
+                  <span className="text-xs text-black/50 dark:text-white/50">
+                    {post._count.comments} comentários · {post._count.votes} votos
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  );
+}

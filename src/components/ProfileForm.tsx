@@ -101,7 +101,7 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       <button
         type="submit"
         disabled={loading}
-        className="self-start rounded-md bg-black text-white dark:bg-white dark:text-black px-3 py-2 disabled:opacity-50"
+        className="self-start rounded-md bg-accent text-accent-foreground px-3 py-2 shadow-sm transition-all hover:shadow-md hover:brightness-110 disabled:opacity-50"
       >
         {loading ? "A guardar..." : "Guardar alterações"}
       </button>

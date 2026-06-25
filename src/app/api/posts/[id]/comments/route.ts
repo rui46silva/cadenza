@@ -32,6 +32,10 @@ export async function POST(
     return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
   }
 
+  const parentComment = parsed.data.parentId
+    ? await prisma.comment.findUnique({ where: { id: parsed.data.parentId } })
+    : null;
+
   const comment = await prisma.comment.create({
     data: {
       content: parsed.data.content,
@@ -41,6 +45,19 @@ export async function POST(
     },
     include: { author: { select: { id: true, name: true, role: true } } },
   });
+
+  const notifyUserId = parentComment ? parentComment.authorId : post.authorId;
+  if (notifyUserId !== session.user.id) {
+    await prisma.notification.create({
+      data: {
+        type: parentComment ? "REPLY" : "COMMENT",
+        userId: notifyUserId,
+        fromUserId: session.user.id,
+        postId,
+        commentId: comment.id,
+      },
+    });
+  }
 
   return NextResponse.json({ comment }, { status: 201 });
 }

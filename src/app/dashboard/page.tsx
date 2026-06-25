@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="flex flex-col gap-6 max-w-md">
+    <div className="mx-auto w-full max-w-md flex flex-col gap-6 px-4 py-6">
       <div>
         <h1 className="text-2xl font-bold">O meu perfil</h1>
         <p className="text-sm text-black/50 dark:text-white/50">{user.email}</p>
