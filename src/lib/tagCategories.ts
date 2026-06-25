@@ -14,6 +14,17 @@ export const CATEGORY_ORDER: TagCategory[] = [
   "OTHER",
 ];
 
+export const CATEGORY_DESCRIPTIONS: Record<TagCategory, string> = {
+  INSTRUMENT: "Temas sobre instrumentos específicos, como piano, violino ou guitarra.",
+  GENRE: "Temas sobre géneros musicais, como jazz, clássica ou pop.",
+  LEVEL: "Temas sobre o nível de experiência, do iniciante ao avançado.",
+  OTHER: "Outros temas que não se encaixam nas categorias anteriores.",
+};
+
+export function isTagCategory(value: string): value is TagCategory {
+  return (CATEGORY_ORDER as string[]).includes(value);
+}
+
 export function groupTagsByCategory<T extends { category: TagCategory }>(
   tags: T[]
 ): { category: TagCategory; label: string; tags: T[] }[] {

@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { FileText, Video } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
+import TagPicker from "@/components/TagPicker";
 
 export default function NewPostPage() {
   const router = useRouter();
   const [type, setType] = useState<"TEXT" | "VIDEO">("TEXT");
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +20,7 @@ export default function NewPostPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const tagNames = (formData.get("tags") as string)
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const tagNames = tags;
 
     const payload = {
       title: formData.get("title"),
@@ -106,11 +105,7 @@ export default function NewPostPage() {
           />
         )}
 
-        <input
-          name="tags"
-          placeholder="Tags separadas por vírgula (ex: piano, jazz, iniciante)"
-          className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
-        />
+        <TagPicker name="tags" selected={tags} onChange={setTags} />
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 

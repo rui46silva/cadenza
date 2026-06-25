@@ -3,7 +3,8 @@ import Link from "next/link";
 import { FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
-import { groupTagsByCategory } from "@/lib/tagCategories";
+import Avatar from "@/components/Avatar";
+import { groupTagsByCategory, isTagCategory } from "@/lib/tagCategories";
 import { pill, pillActive } from "@/lib/ui";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
@@ -17,25 +18,31 @@ const FEED_AD_AFTER = 4;
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string; q?: string }>;
+  searchParams: Promise<{ tag?: string; q?: string; category?: string }>;
 }) {
-  const { tag, q } = await searchParams;
+  const { tag, q, category } = await searchParams;
+  const categoryFilter = category && isTagCategory(category) ? category : undefined;
 
   const [posts, topTags] = await Promise.all([
     prisma.post.findMany({
       where: {
-        ...(tag ? { tags: { some: { tag: { name: tag } } } } : {}),
-        ...(q
-          ? {
-              OR: [
-                { title: { contains: q, mode: "insensitive" } },
-                { content: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {}),
+        AND: [
+          tag ? { tags: { some: { tag: { name: tag } } } } : {},
+          categoryFilter
+            ? { tags: { some: { tag: { category: categoryFilter } } } }
+            : {},
+          q
+            ? {
+                OR: [
+                  { title: { contains: q, mode: "insensitive" } },
+                  { content: { contains: q, mode: "insensitive" } },
+                ],
+              }
+            : {},
+        ],
       },
       include: {
-        author: { select: { name: true, role: true } },
+        author: { select: { name: true, role: true, avatarUrl: true } },
         tags: { include: { tag: true } },
         _count: { select: { comments: true, votes: true } },
       },
@@ -105,7 +112,8 @@ export default async function HomePage({
                   <Icon className="h-4 w-4 text-accent shrink-0" />
                   {post.title}
                 </span>
-                <span className="text-xs text-black/50 dark:text-white/50">
+                <span className="flex items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
+                  <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />
                   por {post.author.name} ·{" "}
                   {post._count.comments} comentários · {post._count.votes} votos
                 </span>

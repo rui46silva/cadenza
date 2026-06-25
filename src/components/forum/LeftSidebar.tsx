@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Flame, Newspaper, Compass } from "lucide-react";
+import { Flame, Newspaper, Compass, LayoutGrid } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 
 const LINKS = [
   { href: "/popular", label: "Popular", icon: Flame },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/explorar", label: "Explorar", icon: Compass },
+  { href: "/categorias", label: "Categorias", icon: LayoutGrid },
 ];
 
 export default function LeftSidebar() {

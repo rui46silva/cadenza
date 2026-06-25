@@ -40,16 +40,16 @@ export default async function Navbar() {
           <ThemeToggle />
           {session?.user && user ? (
             <>
-              <Link href="/dashboard" className="flex items-center gap-2">
+              <Link href="/dashboard" className="flex items-center gap-2 group">
                 {user.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.avatarUrl}
                     alt={user.name}
-                    className="h-6 w-6 rounded-full object-cover"
+                    className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-accent transition-all"
                   />
                 ) : (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/10 dark:bg-white/10 text-xs">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-accent text-sm font-semibold ring-2 ring-transparent group-hover:ring-accent transition-all">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 )}

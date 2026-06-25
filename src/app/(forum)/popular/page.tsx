@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Flame, FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import Avatar from "@/components/Avatar";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -10,7 +11,7 @@ const TYPE_ICON: Record<string, typeof FileText> = {
 export default async function PopularPage() {
   const posts = await prisma.post.findMany({
     include: {
-      author: { select: { name: true, role: true } },
+      author: { select: { name: true, role: true, avatarUrl: true } },
       tags: { include: { tag: true } },
       votes: true,
       _count: { select: { comments: true, votes: true } },
@@ -59,7 +60,8 @@ export default async function PopularPage() {
                 <Icon className="h-4 w-4 text-accent shrink-0" />
                 {post.title}
               </span>
-              <span className="text-xs text-black/50 dark:text-white/50">
+              <span className="flex items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
+                <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />
                 por {post.author.name} · {post.score} votos ·{" "}
                 {post._count.comments} comentários
               </span>
