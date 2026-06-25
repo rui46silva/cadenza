@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+const ADMIN_EMAIL = "admin@cadenza.app";
+const ADMIN_PASSWORD = "password123";
 
 const CONTENT = `Bem-vindos à Cadenza! 🎵
 
@@ -31,28 +35,37 @@ Temos uma equipa de administradores e moderadores que vela pelo cumprimento dest
 Agora é a tua vez — apresenta-te nos comentários: que instrumento tocas e o que esperas encontrar aqui. Bem-vindo(a) à Cadenza!`;
 
 async function main() {
-  const admin = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
-    orderBy: { createdAt: "asc" },
-  });
-  if (!admin) {
-    throw new Error("Nenhum utilizador ADMIN encontrado — cria uma conta de admin antes de correr este script.");
-  }
+  console.log("A apagar todos os dados existentes (posts, comentários, contas)...");
 
+  await prisma.notification.deleteMany();
+  await prisma.ban.deleteMany();
+  await prisma.postVote.deleteMany();
+  await prisma.commentVote.deleteMany();
+  await prisma.comment.deleteMany();
+  await prisma.postTag.deleteMany();
+  await prisma.post.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("A criar conta admin...");
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  const admin = await prisma.user.create({
+    data: {
+      name: "Admin Cadenza",
+      email: ADMIN_EMAIL,
+      passwordHash,
+      role: "ADMIN",
+    },
+  });
+
+  console.log("A criar post de arranque...");
   const tag = await prisma.tag.upsert({
     where: { name: "comunidade" },
     update: {},
     create: { name: "comunidade", category: "OTHER" },
   });
 
-  const post = await prisma.post.upsert({
-    where: { id: "launch-post" },
-    update: {
-      title: "Bem-vindos à Cadenza — começa por aqui",
-      content: CONTENT,
-      pinned: true,
-    },
-    create: {
+  const post = await prisma.post.create({
+    data: {
       id: "launch-post",
       title: "Bem-vindos à Cadenza — começa por aqui",
       type: "TEXT",
@@ -63,7 +76,7 @@ async function main() {
     },
   });
 
-  console.log("Post de arranque criado/atualizado:", post.id);
+  console.log("Concluído:", { admin: admin.email, post: post.id });
 }
 
 main()
