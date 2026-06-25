@@ -6,6 +6,7 @@ type RoleBadgeUser = {
 
 const ROLE_STYLE: Record<string, string> = {
   ADMIN: "border-rose-500 text-rose-600 dark:text-rose-400",
+  MODERATOR: "border-violet-500 text-violet-600 dark:text-violet-400",
   PROFESSOR: "border-blue-500 text-blue-600 dark:text-blue-400",
   ALUNO: "border-emerald-500 text-emerald-600 dark:text-emerald-400",
 };
@@ -14,6 +15,7 @@ export function roleLabel(user: RoleBadgeUser): string {
   const instrument = user.instrument?.trim();
   if (user.role === "ALUNO") return instrument ? `Aluno de ${instrument}` : "Aluno";
   if (user.role === "PROFESSOR") return instrument ? `Professor de ${instrument}` : "Professor";
+  if (user.role === "MODERATOR") return "Moderador";
   return "Admin";
 }
 

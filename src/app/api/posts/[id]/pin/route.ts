@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { isStaff } from "@/lib/moderation";
 
 const pinSchema = z.object({ pinned: z.boolean() });
 
@@ -10,7 +11,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  if (!isStaff(session?.user.role)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 

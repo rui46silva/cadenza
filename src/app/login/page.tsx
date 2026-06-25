@@ -26,7 +26,13 @@ export default function LoginPage() {
 
     setLoading(false);
     if (res?.error) {
-      setError("Email ou password incorretos.");
+      if (res.code === "banned") {
+        setError(
+          "A tua conta foi suspensa por violação das regras do fórum. Consulta a página de regras para mais detalhes."
+        );
+      } else {
+        setError("Email ou password incorretos.");
+      }
       return;
     }
     event("login", { method: "credentials" });

@@ -36,7 +36,9 @@ export default function CommentItem({
 
   const canDelete =
     !comment.isDeleted &&
-    (comment.authorId === currentUserId || currentUserRole === "ADMIN");
+    (comment.authorId === currentUserId ||
+      currentUserRole === "ADMIN" ||
+      currentUserRole === "MODERATOR");
 
   async function handleDelete() {
     if (!confirm("Eliminar este comentário?")) return;

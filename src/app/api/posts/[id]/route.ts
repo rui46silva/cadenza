@@ -13,19 +13,16 @@ export async function DELETE(
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
 
-  const comment = await prisma.comment.findUnique({ where: { id } });
-  if (!comment) {
-    return NextResponse.json({ error: "Comentário não encontrado" }, { status: 404 });
+  const post = await prisma.post.findUnique({ where: { id } });
+  if (!post) {
+    return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
   }
 
-  if (comment.authorId !== session.user.id && !isStaff(session.user.role)) {
+  if (post.authorId !== session.user.id && !isStaff(session.user.role)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
-  await prisma.comment.update({
-    where: { id },
-    data: { content: "", isDeleted: true },
-  });
+  await prisma.post.delete({ where: { id } });
 
   return NextResponse.json({ ok: true });
 }

@@ -10,8 +10,18 @@ datasource db {
 
 enum Role {
   ADMIN
+  MODERATOR
   PROFESSOR
   ALUNO
+}
+
+enum InfractionType {
+  SPAM
+  DISCURSO_ODIO
+  ASSEDIO
+  DIREITOS_AUTOR
+  CONTEUDO_INAPROPRIADO
+  OUTRO
 }
 
 enum VerificationStatus {
@@ -44,6 +54,21 @@ model User {
   commentVotes  CommentVote[]
   notificationsReceived Notification[] @relation("NotificationsReceived")
   notificationsSent     Notification[] @relation("NotificationsSent")
+  bans          Ban[]     @relation("BansReceived")
+  bansIssued    Ban[]     @relation("BansIssued")
+}
+
+model Ban {
+  id          String         @id @default(cuid())
+  user        User           @relation("BansReceived", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  infraction  InfractionType
+  reason      String?
+  bannedBy    User           @relation("BansIssued", fields: [bannedById], references: [id])
+  bannedById  String
+  expiresAt   DateTime?
+  liftedAt    DateTime?
+  createdAt   DateTime       @default(now())
 }
 
 model Instrument {

@@ -7,6 +7,7 @@ import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { buttonPrimarySm } from "@/lib/ui";
+import { isStaff } from "@/lib/moderation";
 
 export default async function Navbar() {
   const session = await auth();
@@ -60,9 +61,9 @@ export default async function Navbar() {
                 </span>
               </Link>
               <RoleBadge user={user} />
-              {user.role === "ADMIN" && (
+              {isStaff(user.role) && (
                 <Link href="/admin" className="hover:underline">
-                  Admin
+                  {user.role === "ADMIN" ? "Admin" : "Moderação"}
                 </Link>
               )}
               <Link href="/posts/new" className={buttonPrimarySm}>

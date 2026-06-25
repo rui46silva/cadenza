@@ -10,6 +10,8 @@ import RoleBadge from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
+import DeletePostButton from "@/components/DeletePostButton";
+import { isStaff } from "@/lib/moderation";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -122,8 +124,11 @@ export default async function PostPage({
             </span>
           </Link>
           <RoleBadge user={post.author} />
-          {session?.user?.role === "ADMIN" && (
-            <PinToggle postId={post.id} pinned={post.pinned} />
+          {isStaff(session?.user?.role) && (
+            <>
+              <PinToggle postId={post.id} pinned={post.pinned} />
+              <DeletePostButton postId={post.id} />
+            </>
           )}
         </div>
         {post.tags.length > 0 && (
