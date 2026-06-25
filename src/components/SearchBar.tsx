@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tagCategories";
+import CategoryDropdown from "@/components/CategoryDropdown";
 
 export default function SearchBar() {
   const router = useRouter();
@@ -31,18 +31,7 @@ export default function SearchBar() {
         placeholder="Pesquisar no fórum..."
         className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-1.5 text-sm"
       />
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="rounded-full border border-black/15 dark:border-white/20 bg-transparent px-2 py-1.5 text-xs"
-      >
-        <option value="">Todas categorias</option>
-        {CATEGORY_ORDER.map((c) => (
-          <option key={c} value={c}>
-            {CATEGORY_LABELS[c]}
-          </option>
-        ))}
-      </select>
+      <CategoryDropdown value={category} onChange={setCategory} />
     </form>
   );
 }
