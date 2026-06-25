@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Music2 } from "lucide-react";
+import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
@@ -27,12 +27,8 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-1.5 font-semibold text-lg"
-        >
-          <Music2 className="h-5 w-5 text-accent" />
-          Cadenza
+        <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
+          <Logo className="h-7 w-auto" />
         </Link>
         <SearchBar />
         <div className="flex items-center gap-4 text-sm">

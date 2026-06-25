@@ -1,4 +1,5 @@
-import { Music2, MessagesSquare, GraduationCap, Trophy } from "lucide-react";
+import { MessagesSquare, GraduationCap, Trophy } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "Brevemente",
@@ -13,9 +14,8 @@ const FEATURES = [
 export default function ComingSoonPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 text-center">
-      <span className="flex items-center gap-2 text-2xl font-bold">
-        <Music2 className="h-7 w-7 text-accent" />
-        Cadenza
+      <span className="flex items-center text-black dark:text-white">
+        <Logo className="h-10 w-auto" />
       </span>
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-3xl font-bold">Estamos a afinar os últimos detalhes.</h1>
