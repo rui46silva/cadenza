@@ -27,7 +27,9 @@ export async function getDashboardStats() {
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
     prisma.post.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    prisma.user.count({ where: { role: "PROFESSOR", verificationStatus: "PENDING" } }),
+    prisma.user.count({
+      where: { role: { in: ["PROFESSOR", "MUSICO_PROFISSIONAL"] }, verificationStatus: "PENDING" },
+    }),
     prisma.ban.count({
       where: { liftedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
     }),

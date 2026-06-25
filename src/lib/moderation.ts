@@ -33,6 +33,13 @@ export function isStaff(role?: string | null): boolean {
   return role === "ADMIN" || role === "MODERATOR";
 }
 
+// Papéis cuja conta exige verificação manual por um admin antes de ficar aprovada.
+export const VERIFIABLE_ROLES = ["PROFESSOR", "MUSICO_PROFISSIONAL"] as const;
+
+export function requiresVerification(role?: string | null): boolean {
+  return (VERIFIABLE_ROLES as readonly string[]).includes(role ?? "");
+}
+
 export async function getActiveBan(userId: string) {
   return prisma.ban.findFirst({
     where: {

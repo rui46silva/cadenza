@@ -4,6 +4,7 @@ import { FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
+import TagCategoryRow from "@/components/TagCategoryRow";
 import { groupTagsByCategory, isTagCategory } from "@/lib/tagCategories";
 import { pill, pillActive } from "@/lib/ui";
 
@@ -79,20 +80,13 @@ export default async function HomePage({
           </Link>
         </div>
         {tagGroups.map((group) => (
-          <div key={group.category} className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-black/40 dark:text-white/40 shrink-0">
-              {group.label}:
-            </span>
-            {group.tags.map((t) => (
-              <Link
-                key={t.id}
-                href={`/forum?tag=${encodeURIComponent(t.name)}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-                className={tag === t.name ? pillActive : pill}
-              >
-                #{t.name} ({t._count.posts})
-              </Link>
-            ))}
-          </div>
+          <TagCategoryRow
+            key={group.category}
+            label={group.label}
+            tags={group.tags}
+            activeTag={tag}
+            q={q}
+          />
         ))}
       </div>
 

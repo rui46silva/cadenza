@@ -16,7 +16,12 @@ export async function PATCH(
 
   const { id } = await params;
   const target = await prisma.user.findUnique({ where: { id } });
-  if (!target || target.role === "ADMIN" || target.role === "PROFESSOR") {
+  if (
+    !target ||
+    target.role === "ADMIN" ||
+    target.role === "PROFESSOR" ||
+    target.role === "MUSICO_PROFISSIONAL"
+  ) {
     return NextResponse.json({ error: "Não é possível alterar este utilizador" }, { status: 400 });
   }
 

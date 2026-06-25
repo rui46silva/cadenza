@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Music2 } from "lucide-react";
+import { GraduationCap, Music2, Award } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
@@ -18,7 +18,7 @@ const STRENGTH_STYLES = {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"ALUNO" | "PROFESSOR">("ALUNO");
+  const [role, setRole] = useState<"ALUNO" | "PROFESSOR" | "MUSICO_PROFISSIONAL">("ALUNO");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [instrument, setInstrument] = useState("");
@@ -28,6 +28,7 @@ export default function RegisterPage() {
 
   const strength = getPasswordStrength(password);
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+  const needsVerification = role === "PROFESSOR" || role === "MUSICO_PROFISSIONAL";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,7 +48,7 @@ export default function RegisterPage() {
       password,
       role,
       instrument: instrument || undefined,
-      verificationNote: role === "PROFESSOR" ? verificationNote : undefined,
+      verificationNote: needsVerification ? verificationNote : undefined,
     };
 
     const res = await fetch("/api/register", {
@@ -133,11 +134,11 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={() => setRole("ALUNO")}
-            className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm transition-colors ${
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
               role === "ALUNO"
                 ? "border-accent text-accent bg-accent/10"
                 : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
@@ -149,7 +150,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => setRole("PROFESSOR")}
-            className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm transition-colors ${
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
               role === "PROFESSOR"
                 ? "border-accent text-accent bg-accent/10"
                 : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
@@ -158,11 +159,23 @@ export default function RegisterPage() {
             <Music2 className="h-5 w-5" />
             Sou professor
           </button>
+          <button
+            type="button"
+            onClick={() => setRole("MUSICO_PROFISSIONAL")}
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
+              role === "MUSICO_PROFISSIONAL"
+                ? "border-accent text-accent bg-accent/10"
+                : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
+            }`}
+          >
+            <Award className="h-5 w-5" />
+            Músico profissional
+          </button>
         </div>
 
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
 
-        {role === "PROFESSOR" && (
+        {needsVerification && (
           <div>
             <textarea
               name="verificationNote"
@@ -172,12 +185,16 @@ export default function RegisterPage() {
               rows={3}
               value={verificationNote}
               onChange={(e) => setVerificationNote(e.target.value)}
-              placeholder="Conta-nos a tua experiência como professor: escola/conservatório, certificações, anos de ensino, redes sociais ou portefólio com aulas/atuações..."
+              placeholder={
+                role === "PROFESSOR"
+                  ? "Conta-nos a tua experiência como professor: escola/conservatório, certificações, anos de ensino, redes sociais ou portefólio com aulas/atuações..."
+                  : "Conta-nos a tua experiência como músico profissional: orquestra/banda, agência, certificações, redes sociais ou portefólio com atuações/gravações..."
+              }
               className="w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent text-sm"
             />
             <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-              Contas de professor ficam pendentes de verificação por um admin.
-              Esta informação ajuda a confirmar que és mesmo professor.
+              Contas de professor e músico profissional ficam pendentes de verificação por um admin.
+              Esta informação ajuda a confirmar que é mesmo verídico.
             </p>
           </div>
         )}
@@ -187,7 +204,7 @@ export default function RegisterPage() {
           disabled={
             loading ||
             passwordsMismatch ||
-            (role === "PROFESSOR" && verificationNote.trim().length < 30)
+            (needsVerification && verificationNote.trim().length < 30)
           }
           className={`${buttonPrimary} disabled:opacity-50`}
         >

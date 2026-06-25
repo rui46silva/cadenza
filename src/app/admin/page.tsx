@@ -17,9 +17,9 @@ export default async function AdminPage() {
 
   const stats = await getDashboardStats();
 
-  const professors = isAdmin
+  const professionals = isAdmin
     ? await prisma.user.findMany({
-        where: { role: "PROFESSOR" },
+        where: { role: { in: ["PROFESSOR", "MUSICO_PROFISSIONAL"] } },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -124,14 +124,17 @@ export default async function AdminPage() {
 
       {isAdmin && (
         <section>
-          <h2 className="font-semibold mb-3">Verificação de professores</h2>
+          <h2 className="font-semibold mb-3">Verificação de profissionais</h2>
+          <p className="text-sm text-black/50 dark:text-white/50 -mt-2 mb-1">
+            Professores e músicos profissionais registados, com a credencial submetida no registo.
+          </p>
           <ul className="flex flex-col gap-3">
-            {professors.length === 0 && (
+            {professionals.length === 0 && (
               <p className="text-black/50 dark:text-white/50">
-                Ainda não há professores registados.
+                Ainda não há professores ou músicos profissionais registados.
               </p>
             )}
-            {professors.map((p) => (
+            {professionals.map((p) => (
               <li
                 key={p.id}
                 className="rounded-lg border border-black/10 dark:border-white/10 p-4 flex flex-col gap-3"
