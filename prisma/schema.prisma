@@ -230,3 +230,10 @@ model CommentVote {
 
   @@unique([commentId, userId])
 }
+
+model WaitlistSignup {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  instrument String?
+  createdAt  DateTime @default(now())
+}

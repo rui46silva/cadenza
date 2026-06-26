@@ -46,6 +46,20 @@ export async function POST(req: Request) {
     );
   }
 
+  const waitlistSignup = await prisma.waitlistSignup.findUnique({ where: { email } });
+
+  const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE;
+  const isBeforeLaunch = launchDate && Date.now() < new Date(launchDate).getTime();
+  if (isBeforeLaunch && !waitlistSignup) {
+    return NextResponse.json(
+      {
+        error:
+          "Ainda não chegou a tua vez. Entra na lista de espera para garantires acesso antecipado.",
+      },
+      { status: 403 }
+    );
+  }
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
@@ -54,7 +68,7 @@ export async function POST(req: Request) {
       email,
       passwordHash,
       role,
-      instrument,
+      instrument: instrument || waitlistSignup?.instrument || undefined,
       verificationStatus: requiresVerification(role) ? "PENDING" : "APPROVED",
       verificationNote: requiresVerification(role) ? verificationNote : undefined,
     },

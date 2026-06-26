@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [instrument, setInstrument] = useState("");
   const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notOnWaitlist, setNotOnWaitlist] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const strength = getPasswordStrength(password);
@@ -33,6 +34,7 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setNotOnWaitlist(false);
 
     if (password !== confirmPassword) {
       setError("As passwords não coincidem.");
@@ -61,6 +63,7 @@ export default function RegisterPage() {
       const data = await res.json().catch(() => null);
       const fieldError = data?.details?.fieldErrors?.verificationNote?.[0];
       setError(fieldError ?? data?.error ?? "Não foi possível criar a conta.");
+      setNotOnWaitlist(res.status === 403);
       setLoading(false);
       return;
     }
@@ -202,7 +205,20 @@ export default function RegisterPage() {
             </p>
           </div>
         )}
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-500">
+            {error}
+            {notOnWaitlist && (
+              <>
+                {" "}
+                <Link href="/coming-soon" className="underline">
+                  Entra na lista de espera
+                </Link>
+                .
+              </>
+            )}
+          </p>
+        )}
         <button
           type="submit"
           disabled={
