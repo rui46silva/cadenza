@@ -48,13 +48,15 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
+  const waitlistSignup = await prisma.waitlistSignup.findUnique({ where: { email } });
+
   const user = await prisma.user.create({
     data: {
       name,
       email,
       passwordHash,
       role,
-      instrument,
+      instrument: instrument || waitlistSignup?.instrument || undefined,
       verificationStatus: requiresVerification(role) ? "PENDING" : "APPROVED",
       verificationNote: requiresVerification(role) ? verificationNote : undefined,
     },

@@ -1,16 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const INSTRUMENTS = [
-  "Guitarra",
-  "Piano/Teclado",
-  "Voz",
-  "Baixo",
-  "Bateria",
-  "Violino",
-  "Outro",
-];
+import { COMMON_INSTRUMENTS } from "@/lib/instruments";
 
 export default function WaitlistForm({ initialCount }: { initialCount: number }) {
   const [email, setEmail] = useState("");
@@ -72,14 +63,15 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
         <select
           value={instrument}
           onChange={(e) => setInstrument(e.target.value)}
-          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm text-black/70 dark:text-white/70"
+          className="w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-2 py-1.5 text-sm"
         >
           <option value="">O teu instrumento (opcional)</option>
-          {INSTRUMENTS.map((i) => (
+          {COMMON_INSTRUMENTS.map((i) => (
             <option key={i} value={i}>
               {i}
             </option>
           ))}
+          <option value="Outro">Outro</option>
         </select>
       </form>
       {status === "error" && (
