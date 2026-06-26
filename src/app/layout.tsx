@@ -69,6 +69,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const comingSoon = process.env.COMING_SOON === "true";
+  const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+  const adsensePublisherId = adsenseClient?.replace(/^ca-/, "");
 
   return (
     <html
@@ -76,6 +78,26 @@ export default function RootLayout({
       className={`${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <head>
+        {/*
+          Google Privacy & Messaging (CMP certificada no IAB TCF), exigida pelo
+          AdSense para visitantes no EEE/Reino Unido. Tem de carregar o mais
+          cedo possível, antes de qualquer outro script. Sem efeito fora
+          dessas regiões e sem efeito se o AdSense não estiver configurado.
+          https://support.google.com/adsense/answer/13554116
+        */}
+        {adsensePublisherId && (
+          <>
+            <script
+              async
+              src={`https://fundingchoicesmessages.google.com/i/${adsensePublisherId}?ers=1`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();`,
+              }}
+            />
+          </>
+        )}
         {/* Aplica o tema guardado antes da hidratação, para evitar flash. */}
         <script
           dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }}
