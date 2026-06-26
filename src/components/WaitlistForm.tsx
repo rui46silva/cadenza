@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { COMMON_INSTRUMENTS } from "@/lib/instruments";
+import InstrumentInput from "@/components/InstrumentInput";
 
 export default function WaitlistForm({ initialCount }: { initialCount: number }) {
   const [email, setEmail] = useState("");
@@ -60,19 +60,7 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
             {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
           </button>
         </div>
-        <select
-          value={instrument}
-          onChange={(e) => setInstrument(e.target.value)}
-          className="w-full rounded-md border border-black/15 dark:border-white/20 bg-transparent px-2 py-1.5 text-sm"
-        >
-          <option value="">O teu instrumento (opcional)</option>
-          {COMMON_INSTRUMENTS.map((i) => (
-            <option key={i} value={i}>
-              {i}
-            </option>
-          ))}
-          <option value="Outro">Outro</option>
-        </select>
+        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
       </form>
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>
