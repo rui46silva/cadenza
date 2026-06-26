@@ -69,7 +69,7 @@ export default function BanControls({
         Banir
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-1 w-64 rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-3 shadow-md flex flex-col gap-2">
+        <div className="absolute right-0 z-10 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-3 shadow-md flex flex-col gap-2">
           <select
             value={infraction}
             onChange={(e) => setInfraction(e.target.value as InfractionType)}

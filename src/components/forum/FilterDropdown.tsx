@@ -48,7 +48,7 @@ export default function FilterDropdown<T extends string>({
         />
       </button>
       {open && (
-        <ul className="absolute left-0 z-10 mt-1 w-44 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <ul className="absolute left-0 z-10 mt-1 w-44 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
           {allowClear && (
             <li>
               <button

@@ -31,7 +31,7 @@ export default async function Navbar() {
           <Logo className="h-7 w-auto" />
         </Link>
         <SearchBar />
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 text-sm sm:gap-3 md:gap-4">
           <Link href="/forum" className="hover:underline">
             Fórum
           </Link>
@@ -45,18 +45,20 @@ export default async function Navbar() {
                   <img
                     src={user.avatarUrl}
                     alt={user.name}
-                    className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-accent transition-all"
+                    className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-transparent group-hover:ring-accent transition-all"
                   />
                 ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-accent text-sm font-semibold ring-2 ring-transparent group-hover:ring-accent transition-all">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent text-sm font-semibold ring-2 ring-transparent group-hover:ring-accent transition-all">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 )}
-                <span className="text-black/60 dark:text-white/60">
+                <span className="hidden text-black/60 dark:text-white/60 md:inline">
                   {user.name}
                 </span>
               </Link>
-              <RoleBadge user={user} />
+              <span className="hidden lg:inline">
+                <RoleBadge user={user} />
+              </span>
               {isStaff(user.role) && (
                 <Link href="/admin" className="hover:underline">
                   {user.role === "ADMIN" ? "Admin" : "Moderação"}

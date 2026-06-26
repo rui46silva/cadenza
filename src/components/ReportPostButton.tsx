@@ -45,7 +45,7 @@ export default function ReportPostButton({ postId }: { postId: string }) {
         <Flag className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-1 w-64 rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-3 shadow-md flex flex-col gap-2 text-left">
+        <div className="absolute right-0 z-10 mt-1 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-3 shadow-md flex flex-col gap-2 text-left">
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value as InfractionType)}
