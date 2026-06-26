@@ -4,9 +4,10 @@ import { useRouter, usePathname } from "next/navigation";
 import type { TagCategory } from "@prisma/client";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tagCategories";
 import { SORT_OPTIONS, SORT_LABELS, type SortOption } from "@/lib/forumSort";
+import FilterDropdown from "@/components/forum/FilterDropdown";
 
-const selectClass =
-  "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-1.5 text-sm";
+const categoryOptions = CATEGORY_ORDER.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }));
+const sortOptions = SORT_OPTIONS.map((s) => ({ value: s, label: SORT_LABELS[s] }));
 
 export default function ForumFilters({
   category,
@@ -20,11 +21,11 @@ export default function ForumFilters({
   const router = useRouter();
   const pathname = usePathname();
 
-  function navigate(next: { category?: string; sort?: string }) {
+  function navigate(next: { category?: TagCategory; sort?: SortOption }) {
+    const nextCategory = "category" in next ? next.category : category;
+    const nextSort = "sort" in next ? next.sort : sort;
     const params = new URLSearchParams();
     if (q) params.set("q", q);
-    const nextCategory = next.category ?? category;
-    const nextSort = next.sort ?? sort;
     if (nextCategory) params.set("category", nextCategory);
     if (nextSort && nextSort !== "recentes") params.set("sort", nextSort);
     const query = params.toString();
@@ -33,29 +34,19 @@ export default function ForumFilters({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <select
-        value={category ?? ""}
-        onChange={(e) => navigate({ category: e.target.value || undefined })}
-        className={selectClass}
-      >
-        <option value="">Todos os grupos</option>
-        {CATEGORY_ORDER.map((c) => (
-          <option key={c} value={c}>
-            {CATEGORY_LABELS[c]}
-          </option>
-        ))}
-      </select>
-      <select
+      <FilterDropdown
+        label="Todos os grupos"
+        value={category}
+        options={categoryOptions}
+        onChange={(c) => navigate({ category: c })}
+      />
+      <FilterDropdown
+        label="Ordenar por"
         value={sort}
-        onChange={(e) => navigate({ sort: e.target.value })}
-        className={selectClass}
-      >
-        {SORT_OPTIONS.map((s) => (
-          <option key={s} value={s}>
-            {SORT_LABELS[s]}
-          </option>
-        ))}
-      </select>
+        options={sortOptions}
+        onChange={(s) => navigate({ sort: s ?? "recentes" })}
+        allowClear={false}
+      />
     </div>
   );
 }
