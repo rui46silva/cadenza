@@ -3,11 +3,31 @@
 import { useState } from "react";
 import InstrumentInput from "@/components/InstrumentInput";
 
-export default function WaitlistForm({ initialCount }: { initialCount: number }) {
+export default function WaitlistForm({
+  initialCount,
+  limit,
+}: {
+  initialCount: number;
+  limit?: number;
+}) {
   const [email, setEmail] = useState("");
   const [instrument, setInstrument] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [count, setCount] = useState(initialCount);
+
+  const progress = limit ? (
+    <div className="flex w-full max-w-md flex-col gap-1">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${Math.min(100, (count / limit) * 100)}%` }}
+        />
+      </div>
+      <p className="text-xs text-black/50 dark:text-white/50">
+        {Math.min(count, limit)}/{limit} lugares de acesso antecipado ocupados
+      </p>
+    </div>
+  ) : null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,12 +50,15 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
 
   if (status === "done") {
     return (
-      <div className="flex flex-col items-center gap-1 rounded-xl border border-accent/30 bg-accent/10 px-6 py-4 text-center">
-        <p className="font-medium text-accent">Estás na lista! 🎉</p>
-        <p className="text-sm text-black/60 dark:text-white/60">
-          Avisamos-te por email assim que o acesso antecipado abrir
-          {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
-        </p>
+      <div className="flex w-full max-w-md flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-1 rounded-xl border border-accent/30 bg-accent/10 px-6 py-4 text-center">
+          <p className="font-medium text-accent">Estás na lista! 🎉</p>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Avisamos-te por email assim que o acesso antecipado abrir
+            {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
+          </p>
+        </div>
+        {progress}
       </div>
     );
   }
@@ -70,11 +93,12 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>
       )}
-      {count > 0 && (
-        <p className="text-xs text-black/50 dark:text-white/50">
-          Junta-te a {count} músicos já na lista de espera.
-        </p>
-      )}
+      {progress ??
+        (count > 0 && (
+          <p className="text-xs text-black/50 dark:text-white/50">
+            Junta-te a {count} músicos já na lista de espera.
+          </p>
+        ))}
     </div>
   );
 }

@@ -24,6 +24,7 @@ const SOCIAL_LINKS = [
 export default async function ComingSoonPage() {
   const count = await prisma.waitlistSignup.count();
   const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE;
+  const limit = Number(process.env.NEXT_PUBLIC_WAITLIST_LIMIT) || undefined;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-12 text-center">
@@ -40,7 +41,7 @@ export default async function ComingSoonPage() {
 
       {launchDate && <Countdown launchDate={launchDate} />}
 
-      <WaitlistForm initialCount={count} />
+      <WaitlistForm initialCount={count} limit={limit} />
 
       <p className="flex max-w-md items-center justify-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm text-accent">
         <Gift className="h-4 w-4 shrink-0" />
