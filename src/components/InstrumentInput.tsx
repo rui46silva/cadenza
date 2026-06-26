@@ -7,10 +7,12 @@ export default function InstrumentInput({
   name,
   value,
   onChange,
+  className,
 }: {
   name: string;
   value: string;
   onChange: (value: string) => void;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -29,7 +31,10 @@ export default function InstrumentInput({
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 100)}
         placeholder="Que instrumento tocas? (ex: piano, saxofone)"
-        className="w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        className={
+          className ??
+          "w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+        }
       />
       {open && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">

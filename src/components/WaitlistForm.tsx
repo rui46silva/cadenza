@@ -60,7 +60,12 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
             {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
           </button>
         </div>
-        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
+        <InstrumentInput
+          name="instrument"
+          value={instrument}
+          onChange={setInstrument}
+          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
+        />
       </form>
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>
