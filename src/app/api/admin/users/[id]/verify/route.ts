@@ -3,7 +3,10 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-const verifySchema = z.object({ status: z.enum(["APPROVED", "REJECTED"]) });
+const verifySchema = z.object({
+  status: z.enum(["APPROVED", "REJECTED"]),
+  rejectionReason: z.string().max(300).optional(),
+});
 
 export async function PATCH(
   req: Request,
@@ -23,7 +26,13 @@ export async function PATCH(
 
   const user = await prisma.user.update({
     where: { id },
-    data: { verificationStatus: parsed.data.status },
+    data: {
+      verificationStatus: parsed.data.status,
+      rejectionReason:
+        parsed.data.status === "REJECTED" ? parsed.data.rejectionReason : null,
+      verifiedAt: new Date(),
+      verifiedById: session!.user.id,
+    },
     select: { id: true, name: true, verificationStatus: true },
   });
 

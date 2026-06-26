@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
 import ProfileForm from "@/components/ProfileForm";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner";
+import LevelBadge from "@/components/LevelBadge";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,7 +19,10 @@ export default async function DashboardPage() {
       instrument: true,
       bio: true,
       avatarUrl: true,
+      instagramHandle: true,
       verificationStatus: true,
+      emailVerified: true,
+      points: true,
     },
   });
 
@@ -28,10 +33,13 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold">O meu perfil</h1>
         <p className="text-sm text-black/50 dark:text-white/50">{user.email}</p>
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <RoleBadge user={user} />
+          <LevelBadge points={user.points} />
         </div>
       </div>
+
+      {!user.emailVerified && <EmailVerificationBanner />}
 
       <ProfileForm profile={user} />
     </div>

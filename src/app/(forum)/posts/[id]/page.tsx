@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileText, Video, Pin } from "lucide-react";
+import type { Metadata } from "next";
+import { FileText, Video, Pin, Eye } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -10,6 +11,10 @@ import RoleBadge from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
+import DeletePostButton from "@/components/DeletePostButton";
+import ReportPostButton from "@/components/ReportPostButton";
+import { isStaff } from "@/lib/moderation";
+import { formatRelativeTime } from "@/lib/time";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -59,6 +64,41 @@ function buildCommentTree(
   return roots;
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const post = await prisma.post.findUnique({
+    where: { id },
+    select: { title: true, content: true, author: { select: { name: true } } },
+  });
+
+  if (!post) return { title: "Post não encontrado" };
+
+  const description = post.content
+    ? post.content.slice(0, 160)
+    : `Publicação de ${post.author.name} no fórum Cadenza.`;
+
+  return {
+    title: post.title,
+    description,
+    alternates: { canonical: `/posts/${id}` },
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      url: `/posts/${id}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+    },
+  };
+}
+
 export default async function PostPage({
   params,
 }: {
@@ -95,6 +135,8 @@ export default async function PostPage({
 
   if (!post) notFound();
 
+  await prisma.post.update({ where: { id }, data: { views: { increment: 1 } } });
+
   const score = post.votes.reduce(
     (acc, v) => acc + (v.value === "UP" ? 1 : -1),
     0
@@ -102,8 +144,31 @@ export default async function PostPage({
 
   const commentTree = buildCommentTree(post.comments);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: post.title,
+    text: post.content ?? undefined,
+    url: `${siteUrl}/posts/${post.id}`,
+    datePublished: post.createdAt.toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    author: { "@type": "Person", name: post.author.name },
+    interactionStatistic: [
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/CommentAction",
+        userInteractionCount: post.comments.filter((c) => !c.isDeleted).length,
+      },
+    ],
+  };
+
   return (
     <article className="flex flex-col gap-5">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="flex flex-col gap-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
@@ -122,8 +187,21 @@ export default async function PostPage({
             </span>
           </Link>
           <RoleBadge user={post.author} />
-          {session?.user?.role === "ADMIN" && (
-            <PinToggle postId={post.id} pinned={post.pinned} />
+          <span className="text-black/40 dark:text-white/40">
+            {formatRelativeTime(post.createdAt)}
+          </span>
+          <span className="flex items-center gap-1 text-black/40 dark:text-white/40">
+            <Eye className="h-3.5 w-3.5" />
+            {post.views + 1}
+          </span>
+          {session?.user && session.user.id !== post.author.id && (
+            <ReportPostButton postId={post.id} />
+          )}
+          {isStaff(session?.user?.role) && (
+            <>
+              <PinToggle postId={post.id} pinned={post.pinned} />
+              <DeletePostButton postId={post.id} />
+            </>
           )}
         </div>
         {post.tags.length > 0 && (
@@ -140,7 +218,7 @@ export default async function PostPage({
         )}
       </header>
 
-      {post.type === "VIDEO" && post.videoUrl ? (
+      {post.type === "VIDEO" && post.videoUrl && (
         <div className="aspect-video w-full overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
           <iframe
             src={getVideoEmbedUrl(post.videoUrl)}
@@ -148,7 +226,8 @@ export default async function PostPage({
             allowFullScreen
           />
         </div>
-      ) : (
+      )}
+      {post.content && (
         <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>
       )}
 

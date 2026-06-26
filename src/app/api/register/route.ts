@@ -2,14 +2,28 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { requiresVerification } from "@/lib/moderation";
+import { createAndSendVerificationEmail } from "@/lib/emailVerification";
 
-const registerSchema = z.object({
-  name: z.string().min(2).max(80),
-  email: z.string().email(),
-  password: z.string().min(8).max(100),
-  role: z.enum(["PROFESSOR", "ALUNO"]).default("ALUNO"),
-  instrument: z.string().max(60).optional(),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2).max(80),
+    email: z.string().email(),
+    password: z.string().min(8).max(100),
+    role: z.enum(["PROFESSOR", "MUSICO_PROFISSIONAL", "ALUNO"]).default("ALUNO"),
+    instrument: z.string().max(60).optional(),
+    verificationNote: z.string().max(1000).optional(),
+  })
+  .refine(
+    (data) =>
+      !requiresVerification(data.role) ||
+      (data.verificationNote && data.verificationNote.trim().length >= 30),
+    {
+      message:
+        "Descreve as tuas credenciais (mín. 30 caracteres)",
+      path: ["verificationNote"],
+    }
+  );
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -22,7 +36,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password, role, instrument } = parsed.data;
+  const { name, email, password, role, instrument, verificationNote } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -41,10 +55,13 @@ export async function POST(req: Request) {
       passwordHash,
       role,
       instrument,
-      verificationStatus: role === "PROFESSOR" ? "PENDING" : "APPROVED",
+      verificationStatus: requiresVerification(role) ? "PENDING" : "APPROVED",
+      verificationNote: requiresVerification(role) ? verificationNote : undefined,
     },
     select: { id: true, name: true, email: true, role: true },
   });
+
+  await createAndSendVerificationEmail(user);
 
   return NextResponse.json({ user }, { status: 201 });
 }

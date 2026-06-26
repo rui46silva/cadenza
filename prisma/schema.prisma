@@ -10,14 +10,32 @@ datasource db {
 
 enum Role {
   ADMIN
+  MODERATOR
   PROFESSOR
+  MUSICO_PROFISSIONAL
   ALUNO
+}
+
+enum InfractionType {
+  SPAM
+  DISCURSO_ODIO
+  ASSEDIO
+  DIREITOS_AUTOR
+  CONTEUDO_INAPROPRIADO
+  OUTRO
 }
 
 enum VerificationStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum ReportStatus {
+  PENDING
+  POST_DELETED
+  AUTHOR_BANNED
+  DISMISSED
 }
 
 enum PostType {
@@ -29,12 +47,20 @@ model User {
   id            String    @id @default(cuid())
   name          String
   email         String    @unique
+  emailVerified DateTime?
   passwordHash  String
   role          Role      @default(ALUNO)
   verificationStatus VerificationStatus @default(APPROVED)
+  verificationNote   String?
+  rejectionReason    String?
+  verifiedAt         DateTime?
+  verifiedById       String?
+  verifiedBy         User?     @relation("VerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
   bio           String?
   instrument    String?
   avatarUrl     String?
+  instagramHandle String?
+  points        Int       @default(0)
   instruments   Instrument[] @relation("UserInstruments")
   createdAt     DateTime  @default(now())
 
@@ -44,6 +70,51 @@ model User {
   commentVotes  CommentVote[]
   notificationsReceived Notification[] @relation("NotificationsReceived")
   notificationsSent     Notification[] @relation("NotificationsSent")
+  bans          Ban[]     @relation("BansReceived")
+  bansIssued    Ban[]     @relation("BansIssued")
+  verifiedUsers User[]    @relation("VerifiedBy")
+  emailVerificationTokens EmailVerificationToken[]
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsResolved Report[] @relation("ReportsResolved")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Ban {
+  id          String         @id @default(cuid())
+  user        User           @relation("BansReceived", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  infraction  InfractionType
+  reason      String?
+  bannedBy    User           @relation("BansIssued", fields: [bannedById], references: [id])
+  bannedById  String
+  expiresAt   DateTime?
+  liftedAt    DateTime?
+  createdAt   DateTime       @default(now())
+}
+
+model Report {
+  id           String         @id @default(cuid())
+  post         Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String
+  reporter     User           @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId   String
+  reason       InfractionType
+  details      String?
+  status       ReportStatus   @default(PENDING)
+  resolvedAt   DateTime?
+  resolvedBy   User?          @relation("ReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedById String?
+  createdAt    DateTime       @default(now())
+
+  @@unique([postId, reporterId])
 }
 
 model Instrument {
@@ -76,12 +147,14 @@ model Post {
   content     String?
   videoUrl    String?
   pinned      Boolean    @default(false)
+  views       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
   tags        PostTag[]
   comments    Comment[]
   votes       PostVote[]
   notifications Notification[]
+  reports     Report[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

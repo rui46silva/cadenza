@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Music2 } from "lucide-react";
+import { GraduationCap, Music2, Award } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
@@ -18,15 +18,17 @@ const STRENGTH_STYLES = {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"ALUNO" | "PROFESSOR">("ALUNO");
+  const [role, setRole] = useState<"ALUNO" | "PROFESSOR" | "MUSICO_PROFISSIONAL">("ALUNO");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [instrument, setInstrument] = useState("");
+  const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const strength = getPasswordStrength(password);
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+  const needsVerification = role === "PROFESSOR" || role === "MUSICO_PROFISSIONAL";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -46,6 +48,7 @@ export default function RegisterPage() {
       password,
       role,
       instrument: instrument || undefined,
+      verificationNote: needsVerification ? verificationNote : undefined,
     };
 
     const res = await fetch("/api/register", {
@@ -56,7 +59,8 @@ export default function RegisterPage() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error ?? "Não foi possível criar a conta.");
+      const fieldError = data?.details?.fieldErrors?.verificationNote?.[0];
+      setError(fieldError ?? data?.error ?? "Não foi possível criar a conta.");
       setLoading(false);
       return;
     }
@@ -75,8 +79,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-sm px-4 py-10">
-      <h1 className="text-xl font-bold mb-4">Criar conta</h1>
+    <div className="flex w-full justify-center px-4 py-10 sm:py-16">
+      <div className="w-full max-w-lg rounded-xl border border-black/10 dark:border-white/10 p-8 sm:p-10">
+        <h1 className="text-2xl font-bold mb-1">Criar conta</h1>
+        <p className="text-sm text-black/50 dark:text-white/50 mb-6">
+          Junta-te à comunidade Cadenza.
+        </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           name="name"
@@ -130,11 +138,11 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={() => setRole("ALUNO")}
-            className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm transition-colors ${
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
               role === "ALUNO"
                 ? "border-accent text-accent bg-accent/10"
                 : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
@@ -146,7 +154,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={() => setRole("PROFESSOR")}
-            className={`flex flex-col items-center gap-1.5 rounded-md border px-3 py-3 text-sm transition-colors ${
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
               role === "PROFESSOR"
                 ? "border-accent text-accent bg-accent/10"
                 : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
@@ -155,31 +163,65 @@ export default function RegisterPage() {
             <Music2 className="h-5 w-5" />
             Sou professor
           </button>
+          <button
+            type="button"
+            onClick={() => setRole("MUSICO_PROFISSIONAL")}
+            className={`flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm transition-colors ${
+              role === "MUSICO_PROFISSIONAL"
+                ? "border-accent text-accent bg-accent/10"
+                : "border-black/15 dark:border-white/20 hover:border-accent hover:text-accent"
+            }`}
+          >
+            <Award className="h-5 w-5" />
+            Músico profissional
+          </button>
         </div>
 
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
 
-        {role === "PROFESSOR" && (
-          <p className="text-xs text-amber-600 dark:text-amber-400">
-            Contas de professor ficam pendentes de verificação por um admin
-            antes de aparecerem como verificadas.
-          </p>
+        {needsVerification && (
+          <div>
+            <textarea
+              name="verificationNote"
+              required
+              minLength={30}
+              maxLength={1000}
+              rows={3}
+              value={verificationNote}
+              onChange={(e) => setVerificationNote(e.target.value)}
+              placeholder={
+                role === "PROFESSOR"
+                  ? "Conta-nos a tua experiência como professor: escola/conservatório, certificações, anos de ensino, redes sociais ou portefólio com aulas/atuações..."
+                  : "Conta-nos a tua experiência como músico profissional: orquestra/banda, agência, certificações, redes sociais ou portefólio com atuações/gravações..."
+              }
+              className="w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent text-sm"
+            />
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Contas de professor e músico profissional ficam pendentes de verificação por um admin.
+              Esta informação ajuda a confirmar que é mesmo verídico.
+            </p>
+          </div>
         )}
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button
           type="submit"
-          disabled={loading || passwordsMismatch}
+          disabled={
+            loading ||
+            passwordsMismatch ||
+            (needsVerification && verificationNote.trim().length < 30)
+          }
           className={`${buttonPrimary} disabled:opacity-50`}
         >
           {loading ? "A criar..." : "Criar conta"}
         </button>
       </form>
-      <p className="text-sm mt-3 text-black/60 dark:text-white/60">
+      <p className="text-sm mt-4 text-black/60 dark:text-white/60">
         Já tens conta?{" "}
         <Link href="/login" className="underline">
           Entra
         </Link>
       </p>
+      </div>
     </div>
   );
 }

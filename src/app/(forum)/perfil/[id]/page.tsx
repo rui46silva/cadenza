@@ -1,15 +1,43 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
+import InstagramIcon from "@/components/InstagramIcon";
+import LevelBadge from "@/components/LevelBadge";
 import { getUserBadges } from "@/lib/badges";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
   VIDEO: Video,
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { name: true, instrument: true, bio: true },
+  });
+
+  if (!user) return { title: "Perfil não encontrado" };
+
+  const description =
+    user.bio?.slice(0, 160) ??
+    `Perfil de ${user.name}${user.instrument ? `, ${user.instrument}` : ""} na comunidade Cadenza.`;
+
+  return {
+    title: user.name,
+    description,
+    alternates: { canonical: `/perfil/${id}` },
+    openGraph: { title: user.name, description, url: `/perfil/${id}` },
+  };
+}
 
 export default async function ProfilePage({
   params,
@@ -28,7 +56,9 @@ export default async function ProfilePage({
       verificationStatus: true,
       avatarUrl: true,
       bio: true,
+      instagramHandle: true,
       createdAt: true,
+      points: true,
       _count: { select: { posts: true, comments: true } },
     },
   });
@@ -55,8 +85,22 @@ export default async function ProfilePage({
         <Avatar name={user.name} avatarUrl={user.avatarUrl} size={56} />
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-bold">{user.name}</h1>
-          <RoleBadge user={user} />
+          <div className="flex items-center gap-2">
+            <RoleBadge user={user} />
+            <LevelBadge points={user.points} />
+          </div>
         </div>
+        {user.instagramHandle && (
+          <a
+            href={`https://instagram.com/${user.instagramHandle}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent"
+          >
+            <InstagramIcon className="h-4 w-4" />
+            @{user.instagramHandle}
+          </a>
+        )}
       </section>
 
       {user.bio && (

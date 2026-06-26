@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { awardPoints, POINTS } from "@/lib/points";
 
 const commentSchema = z.object({
   content: z.string().min(1).max(5000),
@@ -45,6 +46,8 @@ export async function POST(
     },
     include: { author: { select: { id: true, name: true, role: true } } },
   });
+
+  await awardPoints(session.user.id, POINTS.COMMENT_CREATED);
 
   const notifyUserId = parentComment ? parentComment.authorId : post.authorId;
   if (notifyUserId !== session.user.id) {

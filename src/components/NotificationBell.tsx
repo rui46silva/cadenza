@@ -71,7 +71,7 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <ul className="absolute right-0 z-10 mt-1 w-72 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <ul className="absolute right-0 z-10 mt-1 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
           {notifications.length === 0 && (
             <li className="px-3 py-4 text-center text-sm text-black/50 dark:text-white/50">
               Sem notificações.

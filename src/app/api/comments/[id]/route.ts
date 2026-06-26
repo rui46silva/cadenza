@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { isStaff } from "@/lib/moderation";
 
 export async function DELETE(
   _req: Request,
@@ -17,7 +18,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Comentário não encontrado" }, { status: 404 });
   }
 
-  if (comment.authorId !== session.user.id && session.user.role !== "ADMIN") {
+  if (comment.authorId !== session.user.id && !isStaff(session.user.role)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
