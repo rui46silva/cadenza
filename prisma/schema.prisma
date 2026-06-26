@@ -31,6 +31,13 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum ReportStatus {
+  PENDING
+  POST_DELETED
+  AUTHOR_BANNED
+  DISMISSED
+}
+
 enum PostType {
   TEXT
   VIDEO
@@ -67,6 +74,8 @@ model User {
   bansIssued    Ban[]     @relation("BansIssued")
   verifiedUsers User[]    @relation("VerifiedBy")
   emailVerificationTokens EmailVerificationToken[]
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsResolved Report[] @relation("ReportsResolved")
 }
 
 model EmailVerificationToken {
@@ -89,6 +98,23 @@ model Ban {
   expiresAt   DateTime?
   liftedAt    DateTime?
   createdAt   DateTime       @default(now())
+}
+
+model Report {
+  id           String         @id @default(cuid())
+  post         Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String
+  reporter     User           @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId   String
+  reason       InfractionType
+  details      String?
+  status       ReportStatus   @default(PENDING)
+  resolvedAt   DateTime?
+  resolvedBy   User?          @relation("ReportsResolved", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedById String?
+  createdAt    DateTime       @default(now())
+
+  @@unique([postId, reporterId])
 }
 
 model Instrument {
@@ -128,6 +154,7 @@ model Post {
   comments    Comment[]
   votes       PostVote[]
   notifications Notification[]
+  reports     Report[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

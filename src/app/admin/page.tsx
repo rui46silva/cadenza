@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import RoleBadge from "@/components/RoleBadge";
 import VerifyProfessorButtons from "@/components/VerifyProfessorButtons";
 import BanControls from "@/components/BanControls";
 import ModeratorToggle from "@/components/ModeratorToggle";
-import { isStaff } from "@/lib/moderation";
+import ReportActions from "@/components/ReportActions";
+import { isStaff, INFRACTION_LABELS } from "@/lib/moderation";
 import { getDashboardStats } from "@/lib/adminStats";
 
 export default async function AdminPage() {
@@ -64,6 +66,15 @@ export default async function AdminPage() {
     activeBan: u.bans[0] ?? null,
   }));
 
+  const reports = await prisma.report.findMany({
+    where: { status: "PENDING" },
+    include: {
+      post: { select: { id: true, title: true, author: { select: { name: true } } } },
+      reporter: { select: { name: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
   const statCards: { label: string; value: string | number }[] = [
     { label: "Utilizadores", value: stats.totalUsers },
     { label: "Posts", value: stats.totalPosts },
@@ -75,6 +86,7 @@ export default async function AdminPage() {
     { label: "Novos utilizadores (30d)", value: stats.newUsers30d },
     { label: "Verificações pendentes", value: stats.pendingVerifications },
     { label: "Banimentos ativos", value: stats.activeBans },
+    { label: "Denúncias pendentes", value: reports.length },
   ];
 
   return (
@@ -175,6 +187,44 @@ export default async function AdminPage() {
           </ul>
         </section>
       )}
+
+      <section>
+        <h2 className="font-semibold mb-3">Denúncias</h2>
+        <ul className="flex flex-col gap-3">
+          {reports.length === 0 && (
+            <p className="text-black/50 dark:text-white/50">
+              Sem denúncias pendentes.
+            </p>
+          )}
+          {reports.map((r) => (
+            <li
+              key={r.id}
+              className="rounded-lg border border-black/10 dark:border-white/10 p-4 flex flex-col gap-2"
+            >
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div>
+                  <Link
+                    href={`/posts/${r.post.id}`}
+                    className="font-medium hover:text-accent hover:underline"
+                  >
+                    {r.post.title}
+                  </Link>
+                  <p className="text-xs text-black/50 dark:text-white/50">
+                    de {r.post.author.name} · denunciado por {r.reporter.name} ·{" "}
+                    {INFRACTION_LABELS[r.reason]}
+                  </p>
+                  {r.details && (
+                    <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+                      &ldquo;{r.details}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </div>
+              <ReportActions reportId={r.id} />
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section>
         <h2 className="font-semibold mb-3">Moderação de utilizadores</h2>

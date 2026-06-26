@@ -4,6 +4,7 @@ import { Flame, FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
 import AdSlot from "@/components/AdSlot";
+import { formatRelativeTime } from "@/lib/time";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -74,7 +75,8 @@ export default async function PopularPage() {
               >
                 {post.author.name}
               </Link>{" "}
-              · {post.score} votos · {post._count.comments} comentários
+              · {post.score} votos · {post._count.comments} comentários ·{" "}
+              {formatRelativeTime(post.createdAt)}
             </span>
             {post.tags.length > 0 && (
               <span className="flex gap-1 flex-wrap mt-1">

@@ -11,7 +11,9 @@ import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
 import DeletePostButton from "@/components/DeletePostButton";
+import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";
+import { formatRelativeTime } from "@/lib/time";
 
 function getVideoEmbedUrl(url: string): string {
   try {
@@ -126,10 +128,16 @@ export default async function PostPage({
             </span>
           </Link>
           <RoleBadge user={post.author} />
+          <span className="text-black/40 dark:text-white/40">
+            {formatRelativeTime(post.createdAt)}
+          </span>
           <span className="flex items-center gap-1 text-black/40 dark:text-white/40">
             <Eye className="h-3.5 w-3.5" />
             {post.views + 1}
           </span>
+          {session?.user && session.user.id !== post.author.id && (
+            <ReportPostButton postId={post.id} />
+          )}
           {isStaff(session?.user?.role) && (
             <>
               <PinToggle postId={post.id} pinned={post.pinned} />

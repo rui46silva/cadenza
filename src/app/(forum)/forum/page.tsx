@@ -4,9 +4,9 @@ import { FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
-import TagCategoryRow from "@/components/TagCategoryRow";
-import { groupTagsByCategory, isTagCategory } from "@/lib/tagCategories";
-import { pill, pillActive } from "@/lib/ui";
+import ForumFilters, { SORT_OPTIONS, type SortOption } from "@/components/forum/ForumFilters";
+import { isTagCategory } from "@/lib/tagCategories";
+import { formatRelativeTime } from "@/lib/time";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -19,45 +19,53 @@ const FEED_AD_AFTER = 4;
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string; q?: string; category?: string }>;
+  searchParams: Promise<{ tag?: string; q?: string; category?: string; sort?: string }>;
 }) {
-  const { tag, q, category } = await searchParams;
+  const { tag, q, category, sort: sortParam } = await searchParams;
   const categoryFilter = category && isTagCategory(category) ? category : undefined;
+  const sort: SortOption = (SORT_OPTIONS as readonly string[]).includes(sortParam ?? "")
+    ? (sortParam as SortOption)
+    : "recentes";
 
-  const [posts, topTags] = await Promise.all([
-    prisma.post.findMany({
-      where: {
-        AND: [
-          tag ? { tags: { some: { tag: { name: tag } } } } : {},
-          categoryFilter
-            ? { tags: { some: { tag: { category: categoryFilter } } } }
-            : {},
-          q
-            ? {
-                OR: [
-                  { title: { contains: q, mode: "insensitive" } },
-                  { content: { contains: q, mode: "insensitive" } },
-                ],
-              }
-            : {},
-        ],
-      },
-      include: {
-        author: { select: { id: true, name: true, role: true, avatarUrl: true } },
-        tags: { include: { tag: true } },
-        _count: { select: { comments: true, votes: true } },
-      },
-      orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-      take: 30,
-    }),
-    prisma.tag.findMany({
-      include: { _count: { select: { posts: true } } },
-      orderBy: { posts: { _count: "desc" } },
-      take: 40,
-    }),
-  ]);
+  const posts = await prisma.post.findMany({
+    where: {
+      AND: [
+        tag ? { tags: { some: { tag: { name: tag } } } } : {},
+        categoryFilter
+          ? { tags: { some: { tag: { category: categoryFilter } } } }
+          : {},
+        q
+          ? {
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { content: { contains: q, mode: "insensitive" } },
+              ],
+            }
+          : {},
+      ],
+    },
+    include: {
+      author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+      tags: { include: { tag: true } },
+      votes: true,
+      _count: { select: { comments: true, votes: true } },
+    },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+    take: 100,
+  });
 
-  const tagGroups = groupTagsByCategory(topTags);
+  const ranked = posts
+    .map((post) => ({
+      ...post,
+      score: post.votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
+    }))
+    .sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (sort === "votados") return b.score - a.score;
+      if (sort === "comentados") return b._count.comments - a._count.comments;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    })
+    .slice(0, 30);
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,33 +78,15 @@ export default async function HomePage({
         </p>
       </section>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={q ? `/forum?q=${encodeURIComponent(q)}` : "/forum"}
-            className={!tag ? pillActive : pill}
-          >
-            Todos
-          </Link>
-        </div>
-        {tagGroups.map((group) => (
-          <TagCategoryRow
-            key={group.category}
-            label={group.label}
-            tags={group.tags}
-            activeTag={tag}
-            q={q}
-          />
-        ))}
-      </div>
+      <ForumFilters category={categoryFilter} sort={sort} q={q} />
 
       <ul className="flex flex-col gap-3">
-        {posts.length === 0 && (
+        {ranked.length === 0 && (
           <p className="text-black/50 dark:text-white/50">
             Ainda não há posts. Sê o primeiro a partilhar algo!
           </p>
         )}
-        {posts.map((post, index) => {
+        {ranked.map((post, index) => {
           const Icon = TYPE_ICON[post.type];
           return (
           <Fragment key={post.id}>
@@ -115,7 +105,8 @@ export default async function HomePage({
                 >
                   {post.author.name}
                 </Link>{" "}
-                · {post._count.comments} comentários · {post._count.votes} votos
+                · {post._count.comments} comentários · {post.score} votos ·{" "}
+                {formatRelativeTime(post.createdAt)}
               </span>
               {post.tags.length > 0 && (
                 <span className="flex gap-1 flex-wrap mt-1">
