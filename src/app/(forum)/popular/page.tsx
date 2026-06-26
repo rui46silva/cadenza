@@ -1,12 +1,17 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { Flame, FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
+import AdSlot from "@/components/AdSlot";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
   VIDEO: Video,
 };
+
+// Após quantos posts aparece o anúncio intercalado no ranking.
+const FEED_AD_AFTER = 4;
 
 export default async function PopularPage() {
   const posts = await prisma.post.findMany({
@@ -48,11 +53,11 @@ export default async function PopularPage() {
             Ainda não há posts suficientes para gerar um ranking.
           </p>
         )}
-        {ranked.map((post) => {
+        {ranked.map((post, index) => {
           const Icon = TYPE_ICON[post.type];
           return (
+          <Fragment key={post.id}>
           <li
-            key={post.id}
             className="rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors flex flex-col gap-1"
           >
             <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
@@ -85,6 +90,12 @@ export default async function PopularPage() {
               </span>
             )}
           </li>
+          {index === FEED_AD_AFTER - 1 && (
+            <li>
+              <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FEED} />
+            </li>
+          )}
+          </Fragment>
           );
         })}
       </ul>
