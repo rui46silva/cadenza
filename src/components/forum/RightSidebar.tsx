@@ -27,7 +27,7 @@ export default async function RightSidebar() {
   });
 
   return (
-    <div className="flex flex-col gap-6 text-sm">
+    <div className="flex min-w-0 flex-col gap-6 text-sm">
       {topUsers.length > 0 && (
         <section>
           <h2 className="mb-2 flex items-center gap-1.5 font-semibold text-black/70 dark:text-white/70">

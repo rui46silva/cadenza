@@ -33,13 +33,13 @@ export default function AdSlot({ slot }: { slot?: string }) {
   if (!enabled) return null;
 
   return (
-    <aside className="rounded-lg border border-black/10 dark:border-white/10 p-2 text-center">
+    <aside className="w-full max-w-full min-w-0 overflow-hidden rounded-lg border border-black/10 dark:border-white/10 p-2 text-center">
       <span className="block text-[10px] uppercase tracking-wide text-black/40 dark:text-white/40 mb-1">
         Publicidade
       </span>
       <ins
         className="adsbygoogle"
-        style={{ display: "block" }}
+        style={{ display: "block", width: "100%" }}
         data-ad-client={client}
         data-ad-slot={slot}
         data-ad-format="auto"
