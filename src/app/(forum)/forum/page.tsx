@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
 import ForumFilters from "@/components/forum/ForumFilters";
 import ForumFeedList from "@/components/forum/ForumFeedList";
@@ -6,6 +7,13 @@ import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
 
 const FORUM_PAGE_SIZE = 10;
+
+export const metadata: Metadata = {
+  title: "Fórum",
+  description:
+    "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer no fórum Cadenza.",
+  alternates: { canonical: "/forum" },
+};
 
 export default async function HomePage({
   searchParams,

@@ -12,7 +12,7 @@ export default function ForumLayout({
         <LeftSidebar />
       </aside>
       <main className="flex min-w-0 flex-col gap-4">{children}</main>
-      <aside className="hidden lg:sticky lg:top-20 lg:block lg:min-w-0 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-hidden">
+      <aside className="hidden lg:sticky lg:top-20 lg:block lg:min-w-0 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto lg:overflow-x-hidden">
         <RightSidebar />
       </aside>
     </div>

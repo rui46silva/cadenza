@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { LayoutGrid } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import {
@@ -8,6 +9,22 @@ import {
   isTagCategory,
 } from "@/lib/tagCategories";
 import { pill } from "@/lib/ui";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ categoria: string }>;
+}): Promise<Metadata> {
+  const { categoria } = await params;
+  const category = categoria.toUpperCase();
+  if (!isTagCategory(category)) return {};
+
+  return {
+    title: CATEGORY_LABELS[category],
+    description: CATEGORY_DESCRIPTIONS[category],
+    alternates: { canonical: `/categorias/${categoria}` },
+  };
+}
 
 export default async function CategoriaPage({
   params,

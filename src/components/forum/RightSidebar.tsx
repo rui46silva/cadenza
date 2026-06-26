@@ -87,7 +87,7 @@ export default async function RightSidebar() {
 
       <section className="mt-auto border-t border-black/10 dark:border-white/10 pt-4">
         <h2 className="mb-2 font-semibold text-black/70 dark:text-white/70">
-          Sitemap
+          Links úteis
         </h2>
         <ul className="flex flex-col gap-1">
           {SITEMAP_LINKS.map((link) => (

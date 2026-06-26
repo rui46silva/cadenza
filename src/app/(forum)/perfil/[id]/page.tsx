@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FileText, Video } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
@@ -12,6 +13,31 @@ const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
   VIDEO: Video,
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { name: true, instrument: true, bio: true },
+  });
+
+  if (!user) return { title: "Perfil não encontrado" };
+
+  const description =
+    user.bio?.slice(0, 160) ??
+    `Perfil de ${user.name}${user.instrument ? `, ${user.instrument}` : ""} na comunidade Cadenza.`;
+
+  return {
+    title: user.name,
+    description,
+    alternates: { canonical: `/perfil/${id}` },
+    openGraph: { title: user.name, description, url: `/perfil/${id}` },
+  };
+}
 
 export default async function ProfilePage({
   params,

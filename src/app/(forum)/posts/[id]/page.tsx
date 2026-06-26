@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FileText, Video, Pin, Eye } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -63,6 +64,41 @@ function buildCommentTree(
   return roots;
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const post = await prisma.post.findUnique({
+    where: { id },
+    select: { title: true, content: true, author: { select: { name: true } } },
+  });
+
+  if (!post) return { title: "Post não encontrado" };
+
+  const description = post.content
+    ? post.content.slice(0, 160)
+    : `Publicação de ${post.author.name} no fórum Cadenza.`;
+
+  return {
+    title: post.title,
+    description,
+    alternates: { canonical: `/posts/${id}` },
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      url: `/posts/${id}`,
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description,
+    },
+  };
+}
+
 export default async function PostPage({
   params,
 }: {
@@ -108,8 +144,31 @@ export default async function PostPage({
 
   const commentTree = buildCommentTree(post.comments);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: post.title,
+    text: post.content ?? undefined,
+    url: `${siteUrl}/posts/${post.id}`,
+    datePublished: post.createdAt.toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    author: { "@type": "Person", name: post.author.name },
+    interactionStatistic: [
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/CommentAction",
+        userInteractionCount: post.comments.filter((c) => !c.isDeleted).length,
+      },
+    ],
+  };
+
   return (
     <article className="flex flex-col gap-5">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="flex flex-col gap-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
