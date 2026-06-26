@@ -3,15 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import type { TagCategory } from "@prisma/client";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tagCategories";
-
-export const SORT_OPTIONS = ["recentes", "votados", "comentados"] as const;
-export type SortOption = (typeof SORT_OPTIONS)[number];
-
-const SORT_LABELS: Record<SortOption, string> = {
-  recentes: "Mais recentes",
-  votados: "Mais votados",
-  comentados: "Mais comentados",
-};
+import { SORT_OPTIONS, SORT_LABELS, type SortOption } from "@/lib/forumSort";
 
 const selectClass =
   "rounded-md border border-black/15 dark:border-white/20 bg-transparent px-3 py-1.5 text-sm";

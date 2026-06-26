@@ -4,7 +4,8 @@ import { FileText, Video, Pin } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
-import ForumFilters, { SORT_OPTIONS, type SortOption } from "@/components/forum/ForumFilters";
+import ForumFilters from "@/components/forum/ForumFilters";
+import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
 import { formatRelativeTime } from "@/lib/time";
 
