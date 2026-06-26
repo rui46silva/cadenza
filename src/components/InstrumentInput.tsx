@@ -42,6 +42,7 @@ export default function InstrumentInput({
             <li key={s}>
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   onChange(s);
                   setOpen(false);
