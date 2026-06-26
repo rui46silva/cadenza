@@ -6,14 +6,43 @@ import InstrumentInput from "@/components/InstrumentInput";
 export default function WaitlistForm({
   initialCount,
   limit,
+  initials = [],
 }: {
   initialCount: number;
   limit?: number;
+  initials?: string[];
 }) {
   const [email, setEmail] = useState("");
   const [instrument, setInstrument] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [count, setCount] = useState(initialCount);
+
+  const socialProof =
+    count > 0 ? (
+      <div className="flex items-center gap-3">
+        <div className="flex items-center -space-x-2">
+          {initials.map((init, i) => (
+            <span
+              key={i}
+              className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-black bg-accent/20 text-xs font-semibold text-accent"
+            >
+              {init}
+            </span>
+          ))}
+          {count > initials.length && (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white dark:border-black bg-black/10 dark:bg-white/10 text-xs font-semibold text-black/60 dark:text-white/60">
+              +
+            </span>
+          )}
+        </div>
+        <p className="text-sm">
+          <span className="font-semibold">{count} músicos</span> já na lista de espera
+        </p>
+        <span className="flex items-center gap-1 text-xs text-emerald-500">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />A crescer agora
+        </span>
+      </div>
+    ) : null;
 
   const progress = limit ? (
     <div className="flex w-full max-w-md flex-col gap-1">
@@ -58,6 +87,7 @@ export default function WaitlistForm({
             {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
           </p>
         </div>
+        {socialProof}
         {progress}
       </div>
     );
@@ -93,12 +123,8 @@ export default function WaitlistForm({
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>
       )}
-      {progress ??
-        (count > 0 && (
-          <p className="text-xs text-black/50 dark:text-white/50">
-            Junta-te a {count} músicos já na lista de espera.
-          </p>
-        ))}
+      {socialProof}
+      {progress}
     </div>
   );
 }
