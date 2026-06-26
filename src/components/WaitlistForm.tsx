@@ -2,8 +2,19 @@
 
 import { useState } from "react";
 
+const INSTRUMENTS = [
+  "Guitarra",
+  "Piano/Teclado",
+  "Voz",
+  "Baixo",
+  "Bateria",
+  "Violino",
+  "Outro",
+];
+
 export default function WaitlistForm({ initialCount }: { initialCount: number }) {
   const [email, setEmail] = useState("");
+  const [instrument, setInstrument] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [count, setCount] = useState(initialCount);
 
@@ -15,7 +26,7 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, instrument: instrument || undefined }),
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -31,7 +42,8 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
       <div className="flex flex-col items-center gap-1 rounded-xl border border-accent/30 bg-accent/10 px-6 py-4 text-center">
         <p className="font-medium text-accent">Estás na lista! 🎉</p>
         <p className="text-sm text-black/60 dark:text-white/60">
-          Avisamos-te por email assim que o acesso antecipado abrir.
+          Avisamos-te por email assim que o acesso antecipado abrir
+          {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
         </p>
       </div>
     );
@@ -39,22 +51,36 @@ export default function WaitlistForm({ initialCount }: { initialCount: number })
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-2">
-      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2 sm:flex-row">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          required
-          placeholder="O teu email"
-          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
-        />
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-2 sm:flex-row">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            required
+            placeholder="O teu email"
+            className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
+          />
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
+          >
+            {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
+          </button>
+        </div>
+        <select
+          value={instrument}
+          onChange={(e) => setInstrument(e.target.value)}
+          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm text-black/70 dark:text-white/70"
         >
-          {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
-        </button>
+          <option value="">O teu instrumento (opcional)</option>
+          {INSTRUMENTS.map((i) => (
+            <option key={i} value={i}>
+              {i}
+            </option>
+          ))}
+        </select>
       </form>
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>

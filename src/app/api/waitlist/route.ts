@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 const waitlistSchema = z.object({
   email: z.string().email(),
+  instrument: z.string().trim().min(1).max(50).optional(),
 });
 
 export async function GET() {
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email inválido" }, { status: 400 });
   }
 
-  const { email } = parsed.data;
+  const { email, instrument } = parsed.data;
 
   try {
-    await prisma.waitlistSignup.create({ data: { email } });
+    await prisma.waitlistSignup.create({ data: { email, instrument } });
   } catch {
     // Email já está na lista — tratamos como sucesso para não revelar quem já se inscreveu.
   }

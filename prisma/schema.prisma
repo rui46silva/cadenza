@@ -232,7 +232,8 @@ model CommentVote {
 }
 
 model WaitlistSignup {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  email      String   @unique
+  instrument String?
+  createdAt  DateTime @default(now())
 }

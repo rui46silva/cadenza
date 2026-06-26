@@ -44,7 +44,8 @@ export default async function ComingSoonPage() {
 
       <p className="flex max-w-md items-center justify-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm text-accent">
         <Gift className="h-4 w-4 shrink-0" />
-        Os primeiros inscritos ganham acesso beta gratuito e a 1.ª masterclass sem custo.
+        Os primeiros inscritos ganham acesso beta gratuito e a 1.ª masterclass do
+        teu instrumento sem custo.
       </p>
 
       <ul className="flex flex-col gap-3 sm:flex-row sm:gap-6">
