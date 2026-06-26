@@ -49,8 +49,8 @@ export default async function ComingSoonPage() {
           O lugar onde os músicos <span className="text-accent">crescem juntos</span>
         </h1>
         <p className="max-w-md text-black/60 dark:text-white/60">
-          Entra na lista de espera e garante acesso gratuito antecipado para
-          partilhares o teu trabalho e aprenderes com outros músicos.
+          Entra na lista de espera e garante acesso antecipado ao fórum, totalmente
+          gratuito, para partilhares o teu trabalho e aprenderes com outros músicos.
         </p>
       </div>
 
