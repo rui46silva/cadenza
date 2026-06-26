@@ -92,7 +92,7 @@ export async function generateMetadata({
       url: `/posts/${id}`,
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: post.title,
       description,
     },
