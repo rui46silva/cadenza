@@ -8,7 +8,6 @@ import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
-import AdSenseScript from "@/components/AdSenseScript";
 import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -133,6 +132,18 @@ export default function RootLayout({
   gtag('config', 'G-CT664N9STS');`,
           }}
         />
+        {/*
+          Tag do AdSense exigida pela Google para verificação do site e para
+          servir anúncios. Carrega sempre (não depende do consentimento) — a
+          personalização de anúncios é controlada pelo Consent Mode v2 acima.
+        */}
+        {adsenseClient && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
@@ -142,7 +153,6 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               {!comingSoon && <Footer />}
               <CookieConsent />
-              <AdSenseScript />
             </ConsentProvider>
           </Providers>
         </ThemeProvider>
