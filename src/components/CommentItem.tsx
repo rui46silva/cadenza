@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CommentForm from "@/components/CommentForm";
 import RoleBadge from "@/components/RoleBadge";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export type CommentNode = {
   id: string;
@@ -33,6 +34,7 @@ export default function CommentItem({
   const router = useRouter();
   const [replying, setReplying] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const canDelete =
     !comment.isDeleted &&
@@ -41,10 +43,10 @@ export default function CommentItem({
       currentUserRole === "MODERATOR");
 
   async function handleDelete() {
-    if (!confirm("Eliminar este comentário?")) return;
     setDeleting(true);
     await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
     setDeleting(false);
+    setConfirmOpen(false);
     router.refresh();
   }
 
@@ -72,7 +74,7 @@ export default function CommentItem({
               </button>
               {canDelete && (
                 <button
-                  onClick={handleDelete}
+                  onClick={() => setConfirmOpen(true)}
                   disabled={deleting}
                   className="text-rose-500 hover:underline disabled:opacity-50"
                 >
@@ -80,6 +82,17 @@ export default function CommentItem({
                 </button>
               )}
             </div>
+          )}
+
+          {confirmOpen && (
+            <ConfirmDialog
+              title="Eliminar comentário"
+              description="Esta ação não pode ser desfeita."
+              confirmLabel="Eliminar"
+              loading={deleting}
+              onConfirm={handleDelete}
+              onCancel={() => setConfirmOpen(false)}
+            />
           )}
 
           {replying && (

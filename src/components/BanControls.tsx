@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { INFRACTION_LABELS, INFRACTION_ORDER } from "@/lib/moderation";
 import type { InfractionType } from "@prisma/client";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function BanControls({
   userId,
@@ -18,6 +19,7 @@ export default function BanControls({
   const [reason, setReason] = useState("");
   const [permanent, setPermanent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [unbanConfirmOpen, setUnbanConfirmOpen] = useState(false);
 
   async function handleBan() {
     setLoading(true);
@@ -32,10 +34,10 @@ export default function BanControls({
   }
 
   async function handleUnban() {
-    if (!confirm("Levantar o banimento deste utilizador?")) return;
     setLoading(true);
     await fetch(`/api/admin/users/${userId}/ban`, { method: "DELETE" });
     setLoading(false);
+    setUnbanConfirmOpen(false);
     router.refresh();
   }
 
@@ -49,12 +51,23 @@ export default function BanControls({
             : " (permanente)"}
         </span>
         <button
-          onClick={handleUnban}
+          onClick={() => setUnbanConfirmOpen(true)}
           disabled={loading}
           className="text-accent hover:underline disabled:opacity-50"
         >
           Levantar banimento
         </button>
+        {unbanConfirmOpen && (
+          <ConfirmDialog
+            title="Levantar banimento"
+            description="O utilizador volta a poder publicar e comentar normalmente."
+            confirmLabel="Levantar banimento"
+            danger={false}
+            loading={loading}
+            onConfirm={handleUnban}
+            onCancel={() => setUnbanConfirmOpen(false)}
+          />
+        )}
       </div>
     );
   }
