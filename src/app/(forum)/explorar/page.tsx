@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass, MessagesSquare, Flame, Newspaper } from "lucide-react";
+import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { groupTagsByCategory } from "@/lib/tagCategories";
 import { card, pill } from "@/lib/ui";
@@ -41,9 +41,16 @@ export default async function ExplorarPage() {
         </Link>
         <Link href="/noticias" className={card}>
           <Newspaper className="h-6 w-6 text-accent" />
-          <h2 className="font-semibold mt-1">Notícias</h2>
+          <h2 className="font-semibold mt-1">Notícias e vagas</h2>
           <p className="text-sm text-black/60 dark:text-white/60">
-            Notícias do mundo da música (brevemente).
+            Novidades do mundo da música e oportunidades em orquestras, bandas e outros projetos.
+          </p>
+        </Link>
+        <Link href="/categorias" className={card}>
+          <LayoutGrid className="h-6 w-6 text-accent" />
+          <h2 className="font-semibold mt-1">Categorias</h2>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Explora o fórum organizado por instrumento, género e nível.
           </p>
         </Link>
       </section>

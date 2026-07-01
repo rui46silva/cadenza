@@ -43,7 +43,7 @@ export default async function NoticiasPage() {
         )}
         <div className="grid gap-4 sm:grid-cols-2">
           {articles.map((a) => (
-            <div key={a.id} className={`${card} flex flex-col gap-2`}>
+            <Link key={a.id} href={`/noticias/${a.id}`} className={`${card} flex flex-col gap-2`}>
               {a.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -54,23 +54,10 @@ export default async function NoticiasPage() {
               )}
               <span className="font-semibold">{a.title}</span>
               <span className="text-sm text-black/60 dark:text-white/60">{a.summary}</span>
-              <span className="flex items-center justify-between text-xs text-black/40 dark:text-white/40">
-                <span>
-                  {a.source ?? "Cadenza"} · {formatRelativeTime(a.publishedAt)}
-                </span>
-                {a.url && (
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-accent hover:underline"
-                  >
-                    Ler mais
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
+              <span className="flex items-center gap-1 text-xs text-black/40 dark:text-white/40">
+                {a.source ?? "Cadenza"} · {formatRelativeTime(a.publishedAt)}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -98,7 +85,9 @@ export default async function NoticiasPage() {
             >
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div>
-                  <span className="font-semibold">{j.title}</span>
+                  <Link href={`/vagas/${j.id}`} className="font-semibold hover:text-accent hover:underline">
+                    {j.title}
+                  </Link>
                   {j.featured && (
                     <span className="ml-2 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">
                       Destaque
@@ -133,7 +122,7 @@ export default async function NoticiasPage() {
                   )}
                 </div>
               </div>
-              <p className="text-sm text-black/70 dark:text-white/70 whitespace-pre-wrap">
+              <p className="text-sm text-black/70 dark:text-white/70 line-clamp-3">
                 {j.description}
               </p>
             </div>

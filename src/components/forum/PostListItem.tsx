@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { FileText, Video, Pin, CheckCircle2 } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2, Flame } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import { formatRelativeTime } from "@/lib/time";
+import { isTrending } from "@/lib/trending";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -31,10 +32,19 @@ export default function PostListItem({
   const Icon = TYPE_ICON[post.type];
   const createdAt =
     post.createdAt instanceof Date ? post.createdAt : new Date(post.createdAt);
+  const trending = isTrending({
+    score: post.score,
+    createdAt,
+    commentCount: post._count.comments,
+  });
 
   return (
     <li
-      className={`rounded-lg border border-black/10 dark:border-white/10 p-4 hover:border-accent/60 transition-colors flex flex-col gap-1 ${className}`}
+      className={`rounded-lg border p-4 transition-colors flex flex-col gap-1 ${
+        trending
+          ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
+          : "border-black/10 dark:border-white/10 hover:border-accent/60"
+      } ${className}`}
     >
       <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
         <Icon className="h-4 w-4 text-accent shrink-0" />
@@ -42,6 +52,12 @@ export default function PostListItem({
         {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}
         {post.bestAnswerId && (
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+        )}
+        {trending && (
+          <span className="flex items-center gap-0.5 rounded-full bg-orange-500/15 px-2 py-0.5 text-[10px] font-semibold text-orange-500 shrink-0">
+            <Flame className="h-3 w-3" />
+            Em alta
+          </span>
         )}
       </Link>
       <span className="flex flex-wrap items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
