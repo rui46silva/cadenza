@@ -48,9 +48,15 @@ export default function LoginPage() {
   async function handleDemoLogin() {
     setError(null);
     setDemoLoading(true);
-    const ok = await attemptSignIn("demo@cadenza.app", "demo1234");
-    setDemoLoading(false);
-    if (ok) event("login", { method: "demo" });
+    try {
+      await fetch("/api/demo-login", { method: "POST" });
+      const ok = await attemptSignIn("demo@cadenza.app", "demo1234");
+      if (ok) event("login", { method: "demo" });
+    } catch {
+      setError("Não foi possível preparar a conta demo. Tenta novamente.");
+    } finally {
+      setDemoLoading(false);
+    }
   }
 
   return (
