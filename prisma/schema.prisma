@@ -43,6 +43,14 @@ enum PostType {
   VIDEO
 }
 
+enum JobType {
+  ORQUESTRA
+  BANDA_FILARMONICA
+  JAZZ
+  CORO
+  OUTRO
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -61,7 +69,12 @@ model User {
   avatarUrl     String?
   instagramHandle String?
   points        Int       @default(0)
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastActiveAt  DateTime?
+  onboardedAt   DateTime?
   instruments   Instrument[] @relation("UserInstruments")
+  tagFollows    TagFollow[]
   createdAt     DateTime  @default(now())
 
   posts         Post[]
@@ -76,6 +89,8 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsResolved Report[] @relation("ReportsResolved")
+  newsArticles    NewsArticle[]
+  jobListings     JobListing[]
 }
 
 model EmailVerificationToken {
@@ -138,6 +153,18 @@ model Tag {
   instrument Instrument? @relation(fields: [instrumentId], references: [id])
   instrumentId String?
   posts      PostTag[]
+  followers  TagFollow[]
+}
+
+model TagFollow {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tagId])
 }
 
 model Post {
@@ -155,6 +182,8 @@ model Post {
   votes       PostVote[]
   notifications Notification[]
   reports     Report[]
+  bestAnswerId String?    @unique
+  bestAnswer  Comment?   @relation("PostBestAnswer", fields: [bestAnswerId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -181,6 +210,7 @@ model Comment {
   replies    Comment[]     @relation("CommentReplies")
   votes      CommentVote[]
   notifications Notification[]
+  bestAnswerOf Post?       @relation("PostBestAnswer")
   createdAt  DateTime      @default(now())
 }
 
@@ -236,4 +266,37 @@ model WaitlistSignup {
   email      String   @unique
   instrument String?
   createdAt  DateTime @default(now())
+}
+
+model NewsArticle {
+  id          String    @id @default(cuid())
+  title       String
+  summary     String
+  url         String?
+  imageUrl    String?
+  source      String?
+  published   Boolean   @default(true)
+  publishedAt DateTime  @default(now())
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model JobListing {
+  id          String    @id @default(cuid())
+  title       String
+  organization String
+  location    String?
+  type        JobType   @default(OUTRO)
+  instrument  String?
+  description String
+  applyUrl    String?
+  contactEmail String?
+  featured    Boolean   @default(false)
+  expiresAt   DateTime?
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

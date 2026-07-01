@@ -1,4 +1,4 @@
-import { BadgeCheck, MessageSquarePlus, Medal, Sparkles } from "lucide-react";
+import { BadgeCheck, MessageSquarePlus, Medal, Sparkles, Flame } from "lucide-react";
 
 export type Badge = {
   id: string;
@@ -11,6 +11,7 @@ export function getUserBadges(stats: {
   commentCount: number;
   verificationStatus: string | null;
   createdAt: Date;
+  longestStreak?: number;
 }): Badge[] {
   const badges: Badge[] = [];
 
@@ -25,6 +26,12 @@ export function getUserBadges(stats: {
   }
   if (stats.verificationStatus === "APPROVED") {
     badges.push({ id: "verified", label: "Verificado", icon: BadgeCheck });
+  }
+  if ((stats.longestStreak ?? 0) >= 7) {
+    badges.push({ id: "streak-7", label: "7 dias seguidos", icon: Flame });
+  }
+  if ((stats.longestStreak ?? 0) >= 30) {
+    badges.push({ id: "streak-30", label: "30 dias seguidos", icon: Flame });
   }
 
   return badges;

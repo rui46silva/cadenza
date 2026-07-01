@@ -16,6 +16,7 @@ export default function ForumFeedList({
   q,
   category,
   sort,
+  following = false,
   adSlot,
 }: {
   initialPosts: PostListItemData[];
@@ -25,6 +26,7 @@ export default function ForumFeedList({
   q?: string;
   category?: TagCategory;
   sort: SortOption;
+  following?: boolean;
   adSlot?: string;
 }) {
   const [posts, setPosts] = useState(initialPosts);
@@ -40,6 +42,7 @@ export default function ForumFeedList({
     if (q) params.set("q", q);
     if (category) params.set("category", category);
     if (sort) params.set("sort", sort);
+    if (following) params.set("following", "1");
     params.set("skip", String(posts.length));
     params.set("take", String(pageSize));
     try {
@@ -52,7 +55,7 @@ export default function ForumFeedList({
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, posts.length, tag, q, category, sort, pageSize]);
+  }, [loading, hasMore, posts.length, tag, q, category, sort, following, pageSize]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

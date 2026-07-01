@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Flame, Newspaper, Compass, LayoutGrid } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
+import AdSlot from "@/components/AdSlot";
 
 const LINKS = [
   { href: "/popular", label: "Popular", icon: Flame },
@@ -24,6 +25,9 @@ export default function LeftSidebar() {
       ))}
       <div className="my-2 border-t border-black/10 dark:border-white/10" />
       <ResourcesDropdown />
+      <div className="mt-4">
+        <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR_LEFT} />
+      </div>
     </nav>
   );
 }

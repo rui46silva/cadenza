@@ -3,6 +3,9 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { awardPoints, POINTS } from "@/lib/points";
+import { COMMON_INSTRUMENTS } from "@/lib/instruments";
+
+const INSTRUMENT_NAMES = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -69,10 +72,13 @@ export async function POST(req: Request) {
       tags: {
         create: await Promise.all(
           tagNames.map(async (name) => {
+            const category = INSTRUMENT_NAMES.has(name.toLowerCase())
+              ? "INSTRUMENT"
+              : "OTHER";
             const tag = await prisma.tag.upsert({
               where: { name },
               update: {},
-              create: { name },
+              create: { name, category },
             });
             return { tagId: tag.id };
           })

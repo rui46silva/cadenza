@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InstrumentInput from "@/components/InstrumentInput";
 
 export default function WaitlistForm({
@@ -14,8 +14,13 @@ export default function WaitlistForm({
 }) {
   const [email, setEmail] = useState("");
   const [instrument, setInstrument] = useState("");
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [count, setCount] = useState(initialCount);
+  const renderedAt = useRef<number | null>(null);
+  useEffect(() => {
+    renderedAt.current = Date.now();
+  }, []);
 
   const socialProof =
     count > 0 ? (
@@ -66,7 +71,12 @@ export default function WaitlistForm({
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, instrument: instrument || undefined }),
+        body: JSON.stringify({
+          email,
+          instrument: instrument || undefined,
+          website: website || undefined,
+          renderedAt: renderedAt.current ?? undefined,
+        }),
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -96,6 +106,16 @@ export default function WaitlistForm({
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-2">
       <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2">
+        <input
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+        />
         <div className="flex w-full flex-col gap-2 sm:flex-row">
           <input
             value={email}

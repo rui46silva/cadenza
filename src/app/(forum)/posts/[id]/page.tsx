@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Video, Pin, Eye } from "lucide-react";
+import { FileText, Video, Pin, Eye, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -141,6 +141,9 @@ export default async function PostPage({
     (acc, v) => acc + (v.value === "UP" ? 1 : -1),
     0
   );
+  const currentUserVote = session?.user
+    ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
+    : null;
 
   const commentTree = buildCommentTree(post.comments);
 
@@ -178,6 +181,12 @@ export default async function PostPage({
           )}
           {post.title}
           {post.pinned && <Pin className="h-4 w-4 text-accent shrink-0" />}
+          {post.bestAnswerId && (
+            <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Resolvido
+            </span>
+          )}
         </h1>
         <div className="flex items-center gap-2 text-sm">
           <Link href={`/perfil/${post.author.id}`} className="flex items-center gap-2 hover:underline">
@@ -231,7 +240,9 @@ export default async function PostPage({
         <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>
       )}
 
-      {session?.user && <VoteButtons postId={post.id} initialScore={score} />}
+      {session?.user && (
+        <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
+      )}
 
       <section className="flex flex-col gap-4 mt-2">
         <h2 className="font-semibold">
@@ -251,6 +262,8 @@ export default async function PostPage({
             <CommentItem
               key={comment.id}
               postId={post.id}
+              postAuthorId={post.author.id}
+              bestAnswerId={post.bestAnswerId}
               comment={comment}
               currentUserId={session?.user?.id}
               currentUserRole={session?.user?.role}

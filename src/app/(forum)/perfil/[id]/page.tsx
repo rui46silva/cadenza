@@ -59,6 +59,7 @@ export default async function ProfilePage({
       instagramHandle: true,
       createdAt: true,
       points: true,
+      longestStreak: true,
       _count: { select: { posts: true, comments: true } },
     },
   });
@@ -77,6 +78,7 @@ export default async function ProfilePage({
     commentCount: user._count.comments,
     verificationStatus: user.verificationStatus,
     createdAt: user.createdAt,
+    longestStreak: user.longestStreak,
   });
 
   return (
