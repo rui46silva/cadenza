@@ -2,13 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { isStaff } from "@/lib/moderation";
 
 const bodySchema = z.object({ commentId: z.string() });
-
-async function canManage(postAuthorId: string, userId: string, role?: string) {
-  return postAuthorId === userId || isStaff(role);
-}
 
 export async function PATCH(
   req: Request,
@@ -24,7 +19,7 @@ export async function PATCH(
   if (!post) {
     return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
   }
-  if (!(await canManage(post.authorId, session.user.id, session.user.role))) {
+  if (post.authorId !== session.user.id) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
@@ -62,7 +57,7 @@ export async function DELETE(
   if (!post) {
     return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
   }
-  if (!(await canManage(post.authorId, session.user.id, session.user.role))) {
+  if (post.authorId !== session.user.id) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 

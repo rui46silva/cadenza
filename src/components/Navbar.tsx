@@ -35,9 +35,6 @@ export default async function Navbar() {
       {isDemo && (
         <div className="flex items-center justify-center gap-2 bg-accent/10 px-4 py-1.5 text-xs text-accent">
           Estás em modo demo — os dados podem ser reiniciados a qualquer momento.
-          <Link href="/register" className="font-medium underline">
-            Cria a tua conta gratuita
-          </Link>
         </div>
       )}
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">

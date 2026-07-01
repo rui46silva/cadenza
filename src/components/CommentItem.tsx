@@ -47,10 +47,7 @@ export default function CommentItem({
       currentUserRole === "ADMIN" ||
       currentUserRole === "MODERATOR");
 
-  const canManageBestAnswer =
-    currentUserId === postAuthorId ||
-    currentUserRole === "ADMIN" ||
-    currentUserRole === "MODERATOR";
+  const canManageBestAnswer = currentUserId === postAuthorId;
 
   async function handleDelete() {
     setDeleting(true);

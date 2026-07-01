@@ -141,6 +141,9 @@ export default async function PostPage({
     (acc, v) => acc + (v.value === "UP" ? 1 : -1),
     0
   );
+  const currentUserVote = session?.user
+    ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
+    : null;
 
   const commentTree = buildCommentTree(post.comments);
 
@@ -237,7 +240,9 @@ export default async function PostPage({
         <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>
       )}
 
-      {session?.user && <VoteButtons postId={post.id} initialScore={score} />}
+      {session?.user && (
+        <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
+      )}
 
       <section className="flex flex-col gap-4 mt-2">
         <h2 className="font-semibold">

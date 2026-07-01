@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { Pin } from "lucide-react";
 
 export default function BestAnswerToggle({
   postId,
@@ -35,8 +35,8 @@ export default function BestAnswerToggle({
     return (
       <span className="flex items-center gap-2 text-xs">
         <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 dark:text-emerald-400">
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          Melhor resposta
+          <Pin className="h-3.5 w-3.5" />
+          Resposta fixada
         </span>
         {canManage && (
           <button
@@ -59,7 +59,7 @@ export default function BestAnswerToggle({
       disabled={loading}
       className="text-black/50 dark:text-white/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline disabled:opacity-50"
     >
-      Marcar como melhor resposta
+      Fixar resposta
     </button>
   );
 }
