@@ -11,9 +11,16 @@ const ALLOWED_PREFIXES = [
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const hostname = req.headers.get("host") ?? "";
+  const isDemoHost = hostname.startsWith("demo.") || process.env.DEMO_MODE === "true";
 
-  if (process.env.DEMO_MODE === "true" && pathname === "/") {
-    return NextResponse.redirect(new URL("/demo", req.url));
+  if (isDemoHost) {
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/demo", req.url));
+    }
+    // O subdomínio de demo ignora o modo "brevemente" para os embaixadores
+    // conseguirem explorar a plataforma toda, mesmo com o domínio principal fechado.
+    return NextResponse.next();
   }
 
   if (process.env.COMING_SOON !== "true") {
