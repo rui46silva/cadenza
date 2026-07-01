@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Flame } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import { buttonPrimarySm } from "@/lib/ui";
 import { isStaff } from "@/lib/moderation";
+import { touchStreak } from "@/lib/streaks";
 
 export default async function Navbar() {
   const session = await auth();
@@ -24,6 +26,8 @@ export default async function Navbar() {
       })
     : null;
 
+  const streak = session?.user ? await touchStreak(session.user.id) : 0;
+
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
@@ -38,6 +42,15 @@ export default async function Navbar() {
           <ThemeToggle />
           {session?.user && user ? (
             <>
+              {streak >= 2 && (
+                <span
+                  title={`${streak} dias seguidos na Cadenza`}
+                  className="hidden items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-semibold text-orange-500 sm:flex"
+                >
+                  <Flame className="h-3.5 w-3.5" />
+                  {streak}
+                </span>
+              )}
               <NotificationBell />
               <Link href="/dashboard" className="flex items-center gap-2 group">
                 {user.avatarUrl ? (
