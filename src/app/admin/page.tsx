@@ -9,6 +9,7 @@ import ModeratorToggle from "@/components/ModeratorToggle";
 import ReportActions from "@/components/ReportActions";
 import DeleteWaitlistEntry from "@/components/DeleteWaitlistEntry";
 import DeleteUserButton from "@/components/DeleteUserButton";
+import TagCategoryManager from "@/components/admin/TagCategoryManager";
 import { isStaff, INFRACTION_LABELS } from "@/lib/moderation";
 import { getDashboardStats } from "@/lib/adminStats";
 
@@ -75,6 +76,17 @@ export default async function AdminPage() {
       })
     : [];
 
+  const tagsWithCounts = await prisma.tag.findMany({
+    include: { _count: { select: { posts: true } } },
+    orderBy: { name: "asc" },
+  });
+  const tagsForManager = tagsWithCounts.map((t) => ({
+    id: t.id,
+    name: t.name,
+    category: t.category,
+    postCount: t._count.posts,
+  }));
+
   const reports = await prisma.report.findMany({
     where: { status: "PENDING" },
     include: {
@@ -100,9 +112,19 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl flex flex-col gap-6 px-4 py-6">
-      <h1 className="text-2xl font-bold">
-        {isAdmin ? "Painel de Admin" : "Painel de Moderação"}
-      </h1>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h1 className="text-2xl font-bold">
+          {isAdmin ? "Painel de Admin" : "Painel de Moderação"}
+        </h1>
+        {isAdmin && (
+          <Link
+            href="/admin/conteudo"
+            className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
+          >
+            Gerir notícias e vagas
+          </Link>
+        )}
+      </div>
 
       <section>
         <h2 className="font-semibold mb-3">Visão geral</h2>
@@ -222,6 +244,15 @@ export default async function AdminPage() {
           </ul>
         </section>
       )}
+
+      <section>
+        <h2 className="font-semibold mb-3">Categorias dos tópicos</h2>
+        <p className="text-sm text-black/50 dark:text-white/50 -mt-2 mb-1">
+          Tópicos criados livremente pelos utilizadores começam como &ldquo;Outras&rdquo;;
+          reatribui-os à categoria correta para aparecerem em /categorias.
+        </p>
+        <TagCategoryManager tags={tagsForManager} />
+      </section>
 
       <section>
         <h2 className="font-semibold mb-3">Denúncias</h2>
