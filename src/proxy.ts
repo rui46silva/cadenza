@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ALLOWED_PREFIXES = ["/coming-soon", "/login", "/admin", "/api/auth"];
+const ALLOWED_PREFIXES = [
+  "/coming-soon",
+  "/login",
+  "/admin",
+  "/api/auth",
+  "/api/waitlist",
+];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
