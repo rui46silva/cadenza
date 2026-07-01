@@ -11,20 +11,10 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const res = await signIn("credentials", {
-      email: formData.get("email"),
-      password: formData.get("password"),
-      redirect: false,
-    });
-
-    setLoading(false);
+  async function attemptSignIn(email: string, password: string) {
+    const res = await signIn("credentials", { email, password, redirect: false });
     if (res?.error) {
       if (res.code === "banned") {
         setError(
@@ -33,11 +23,34 @@ export default function LoginPage() {
       } else {
         setError("Email ou password incorretos.");
       }
-      return;
+      return false;
     }
-    event("login", { method: "credentials" });
     router.push("/forum");
     router.refresh();
+    return true;
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const ok = await attemptSignIn(
+      formData.get("email") as string,
+      formData.get("password") as string
+    );
+
+    setLoading(false);
+    if (ok) event("login", { method: "credentials" });
+  }
+
+  async function handleDemoLogin() {
+    setError(null);
+    setDemoLoading(true);
+    const ok = await attemptSignIn("demo@cadenza.app", "demo1234");
+    setDemoLoading(false);
+    if (ok) event("login", { method: "demo" });
   }
 
   return (
@@ -71,6 +84,25 @@ export default function LoginPage() {
             {loading ? "A entrar..." : "Entrar"}
           </button>
         </form>
+
+        <div className="my-5 flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
+          <span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
+          ou
+          <span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleDemoLogin}
+          disabled={demoLoading}
+          className="w-full rounded-md border border-black/15 dark:border-white/20 px-4 py-2.5 text-sm font-medium transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+        >
+          {demoLoading ? "A entrar..." : "Experimentar em modo demo"}
+        </button>
+        <p className="mt-1.5 text-xs text-black/40 dark:text-white/40">
+          Explora a Cadenza com uma conta de demonstração, sem precisares de te registares.
+        </p>
+
         <p className="text-sm mt-4 text-black/60 dark:text-white/60">
           Ainda não tens conta?{" "}
           <Link href="/register" className="underline">

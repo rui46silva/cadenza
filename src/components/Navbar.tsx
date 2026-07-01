@@ -18,6 +18,7 @@ export default async function Navbar() {
         where: { id: session.user.id },
         select: {
           name: true,
+          email: true,
           role: true,
           instrument: true,
           verificationStatus: true,
@@ -27,9 +28,18 @@ export default async function Navbar() {
     : null;
 
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
+  const isDemo = user?.email === "demo@cadenza.app";
 
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
+      {isDemo && (
+        <div className="flex items-center justify-center gap-2 bg-accent/10 px-4 py-1.5 text-xs text-accent">
+          Estás em modo demo — os dados podem ser reiniciados a qualquer momento.
+          <Link href="/register" className="font-medium underline">
+            Cria a tua conta gratuita
+          </Link>
+        </div>
+      )}
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
           <Logo className="h-7 w-auto" />
