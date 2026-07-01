@@ -5,6 +5,8 @@ import ForumFeedList from "@/components/forum/ForumFeedList";
 import { getForumFeed } from "@/lib/forumFeed";
 import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 const FORUM_PAGE_SIZE = 10;
 
@@ -18,19 +20,33 @@ export const metadata: Metadata = {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tag?: string; q?: string; category?: string; sort?: string }>;
+  searchParams: Promise<{
+    tag?: string;
+    q?: string;
+    category?: string;
+    sort?: string;
+    following?: string;
+  }>;
 }) {
-  const { tag, q, category, sort: sortParam } = await searchParams;
+  const { tag, q, category, sort: sortParam, following } = await searchParams;
   const categoryFilter = category && isTagCategory(category) ? category : undefined;
   const sort: SortOption = (SORT_OPTIONS as readonly string[]).includes(sortParam ?? "")
     ? (sortParam as SortOption)
     : "recentes";
+
+  const session = await auth();
+  const hasFollows = session?.user
+    ? (await prisma.tagFollow.count({ where: { userId: session.user.id } })) > 0
+    : false;
+  const followingOnly = following === "1" && hasFollows;
+  const followingUserId = followingOnly ? session?.user?.id : undefined;
 
   const { posts, hasMore } = await getForumFeed({
     tag,
     q,
     category: categoryFilter,
     sort,
+    followingUserId,
     skip: 0,
     take: FORUM_PAGE_SIZE,
   });
@@ -46,9 +62,16 @@ export default async function HomePage({
         </p>
       </section>
 
-      <ForumFilters category={categoryFilter} sort={sort} q={q} />
+      <ForumFilters
+        category={categoryFilter}
+        sort={sort}
+        q={q}
+        following={followingOnly}
+        showFollowingTab={hasFollows}
+      />
 
       <ForumFeedList
+        key={`${tag ?? ""}-${q ?? ""}-${categoryFilter ?? ""}-${sort}-${followingOnly}`}
         initialPosts={posts}
         initialHasMore={hasMore}
         pageSize={FORUM_PAGE_SIZE}
@@ -56,6 +79,7 @@ export default async function HomePage({
         q={q}
         category={categoryFilter}
         sort={sort}
+        following={followingOnly}
         adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FEED}
       />
 

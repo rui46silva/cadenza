@@ -172,6 +172,8 @@ model Post {
   votes       PostVote[]
   notifications Notification[]
   reports     Report[]
+  bestAnswerId String?    @unique
+  bestAnswer  Comment?   @relation("PostBestAnswer", fields: [bestAnswerId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -198,6 +200,7 @@ model Comment {
   replies    Comment[]     @relation("CommentReplies")
   votes      CommentVote[]
   notifications Notification[]
+  bestAnswerOf Post?       @relation("PostBestAnswer")
   createdAt  DateTime      @default(now())
 }
 

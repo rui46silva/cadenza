@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Video, Pin } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2 } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import { formatRelativeTime } from "@/lib/time";
 
@@ -13,6 +13,7 @@ export type PostListItemData = {
   title: string;
   type: string;
   pinned: boolean;
+  bestAnswerId: string | null;
   createdAt: Date | string;
   score: number;
   author: { id: string; name: string; avatarUrl: string | null };
@@ -39,6 +40,9 @@ export default function PostListItem({
         <Icon className="h-4 w-4 text-accent shrink-0" />
         {post.title}
         {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}
+        {post.bestAnswerId && (
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+        )}
       </Link>
       <span className="flex flex-wrap items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
         <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />

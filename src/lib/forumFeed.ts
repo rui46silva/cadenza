@@ -9,6 +9,7 @@ export async function getForumFeed({
   q,
   category,
   sort,
+  followingUserId,
   skip = 0,
   take = 10,
 }: {
@@ -16,6 +17,7 @@ export async function getForumFeed({
   q?: string;
   category?: TagCategory;
   sort: SortOption;
+  followingUserId?: string;
   skip?: number;
   take?: number;
 }) {
@@ -24,6 +26,9 @@ export async function getForumFeed({
       AND: [
         tag ? { tags: { some: { tag: { name: tag } } } } : {},
         category ? { tags: { some: { tag: { category } } } } : {},
+        followingUserId
+          ? { tags: { some: { tag: { followers: { some: { userId: followingUserId } } } } } }
+          : {},
         q
           ? {
               OR: [

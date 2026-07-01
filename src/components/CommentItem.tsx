@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CommentForm from "@/components/CommentForm";
 import RoleBadge from "@/components/RoleBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import BestAnswerToggle from "@/components/BestAnswerToggle";
 
 export type CommentNode = {
   id: string;
@@ -22,11 +23,15 @@ export type CommentNode = {
 
 export default function CommentItem({
   postId,
+  postAuthorId,
+  bestAnswerId,
   comment,
   currentUserId,
   currentUserRole,
 }: {
   postId: string;
+  postAuthorId: string;
+  bestAnswerId: string | null;
   comment: CommentNode;
   currentUserId?: string;
   currentUserRole?: string;
@@ -42,6 +47,11 @@ export default function CommentItem({
       currentUserRole === "ADMIN" ||
       currentUserRole === "MODERATOR");
 
+  const canManageBestAnswer =
+    currentUserId === postAuthorId ||
+    currentUserRole === "ADMIN" ||
+    currentUserRole === "MODERATOR";
+
   async function handleDelete() {
     setDeleting(true);
     await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
@@ -51,7 +61,13 @@ export default function CommentItem({
   }
 
   return (
-    <li className="rounded-lg border border-black/10 dark:border-white/10 p-3">
+    <li
+      className={`rounded-lg border p-3 ${
+        comment.id === bestAnswerId
+          ? "border-emerald-500/40 bg-emerald-500/5"
+          : "border-black/10 dark:border-white/10"
+      }`}
+    >
       {comment.isDeleted ? (
         <p className="text-sm italic text-black/40 dark:text-white/40">
           [comentário eliminado]
@@ -63,6 +79,17 @@ export default function CommentItem({
             <RoleBadge user={comment.author} />
           </div>
           <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
+
+          {(comment.id === bestAnswerId || (currentUserId && canManageBestAnswer)) && (
+            <div className="mt-2">
+              <BestAnswerToggle
+                postId={postId}
+                commentId={comment.id}
+                isBestAnswer={comment.id === bestAnswerId}
+                canManage={Boolean(currentUserId && canManageBestAnswer)}
+              />
+            </div>
+          )}
 
           {currentUserId && (
             <div className="mt-2 flex gap-3 text-xs">
@@ -114,6 +141,8 @@ export default function CommentItem({
             <CommentItem
               key={child.id}
               postId={postId}
+              postAuthorId={postAuthorId}
+              bestAnswerId={bestAnswerId}
               comment={child}
               currentUserId={currentUserId}
               currentUserRole={currentUserRole}
