@@ -13,11 +13,16 @@ type Notification = {
   post: { id: string; title: string } | null;
 };
 
+const FADE_AFTER_MS = 2500;
+const REMOVE_AFTER_MS = 5000;
+
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
   const ref = useRef<HTMLDivElement>(null);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   function load() {
     fetch("/api/notifications")
@@ -46,13 +51,37 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    const activeTimers = timers.current;
+    return () => {
+      activeTimers.forEach(clearTimeout);
+    };
+  }, []);
+
+  function scheduleClear(ids: string[]) {
+    const fadeTimer = setTimeout(() => {
+      setFadingIds((prev) => new Set([...prev, ...ids]));
+    }, FADE_AFTER_MS);
+    const removeTimer = setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => !ids.includes(n.id)));
+      setFadingIds((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+    }, REMOVE_AFTER_MS);
+    timers.current.push(fadeTimer, removeTimer);
+  }
+
   async function toggleOpen() {
     const next = !open;
     setOpen(next);
     if (next && unreadCount > 0) {
+      const idsToClear = notifications.filter((n) => !n.read).map((n) => n.id);
       await fetch("/api/notifications", { method: "PATCH" });
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      scheduleClear(idsToClear);
     }
   }
 
@@ -78,7 +107,12 @@ export default function NotificationBell() {
             </li>
           )}
           {notifications.map((n) => (
-            <li key={n.id} className={!n.read ? "bg-accent/5" : ""}>
+            <li
+              key={n.id}
+              className={`transition-opacity duration-1000 ${
+                !n.read ? "bg-accent/5" : ""
+              } ${fadingIds.has(n.id) ? "opacity-30" : "opacity-100"}`}
+            >
               <Link
                 href={n.post ? `/posts/${n.post.id}` : "#"}
                 onClick={() => setOpen(false)}

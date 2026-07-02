@@ -1,19 +1,12 @@
 import { BadgeCheck, Sparkles } from "lucide-react";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
+import { ROLE_PILL_STYLE, ROLE_PILL_STYLE_FALLBACK } from "@/lib/roleColors";
 
 type RoleBadgeUser = {
   role: string;
   instrument?: string | null;
   verificationStatus?: string | null;
   isAmbassador?: boolean;
-};
-
-const ROLE_STYLE: Record<string, string> = {
-  ADMIN: "border-rose-500 text-rose-600 dark:text-rose-400",
-  MODERATOR: "border-violet-500 text-violet-600 dark:text-violet-400",
-  PROFESSOR: "border-blue-500 text-blue-600 dark:text-blue-400",
-  MUSICO_PROFISSIONAL: "border-amber-500 text-amber-600 dark:text-amber-400",
-  ALUNO: "border-emerald-500 text-emerald-600 dark:text-emerald-400",
 };
 
 export function roleLabel(user: RoleBadgeUser): string {
@@ -52,7 +45,7 @@ export default function RoleBadge({ user }: { user: RoleBadgeUser }) {
       {user.isAmbassador && <AmbassadorBadge />}
       <span
         className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs bg-transparent ${
-          ROLE_STYLE[user.role] ?? "border-black/20 text-black/60 dark:border-white/20 dark:text-white/60"
+          ROLE_PILL_STYLE[user.role] ?? ROLE_PILL_STYLE_FALLBACK
         }`}
       >
         {roleLabel(user)}
