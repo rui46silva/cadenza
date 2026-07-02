@@ -5,7 +5,7 @@ import { useState } from "react";
 import CategoryDropdown from "@/components/CategoryDropdown";
 
 export default function SearchBar({
-  className = "hidden flex-1 items-center gap-2 sm:flex sm:max-w-md",
+  className = "hidden flex-1 items-center gap-2 lg:flex lg:max-w-md",
 }: {
   className?: string;
 }) {
