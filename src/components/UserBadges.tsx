@@ -1,5 +1,6 @@
 import { BadgeCheck, Sparkles } from "lucide-react";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
+import { ROLE_ACCENT_BG, ROLE_ACCENT_BG_FALLBACK } from "@/lib/roleColors";
 
 type BadgeUser = {
   role: string;
@@ -34,7 +35,9 @@ export default function UserBadges({ user }: { user: BadgeUser }) {
       {verified && (
         <span
           title="Verificado"
-          className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-white"
+          className={`flex h-4 w-4 items-center justify-center rounded-full text-white ${
+            ROLE_ACCENT_BG[user.role] ?? ROLE_ACCENT_BG_FALLBACK
+          }`}
         >
           <BadgeCheck className="h-2.5 w-2.5" />
         </span>
