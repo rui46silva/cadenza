@@ -9,7 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import MobileMenu from "@/components/MobileMenu";
 import MobileNavLinks from "@/components/MobileNavLinks";
-import { buttonPrimarySm } from "@/lib/ui";
+import { buttonPrimarySm, buttonOutlineSm } from "@/lib/ui";
 import { isStaff } from "@/lib/moderation";
 import { touchStreak } from "@/lib/streaks";
 
@@ -207,18 +207,18 @@ export default async function Navbar() {
               ) : (
                 <>
                   <Link
-                    href="/login"
-                    className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/10"
-                  >
-                    <LogIn className="h-4 w-4 text-accent" />
-                    Entrar
-                  </Link>
-                  <Link
                     href="/register"
                     className={`${buttonPrimarySm} flex w-full items-center justify-center gap-2`}
                   >
                     <UserPlus className="h-4 w-4" />
                     Criar conta
+                  </Link>
+                  <Link
+                    href="/login"
+                    className={`${buttonOutlineSm} flex w-full items-center justify-center gap-2`}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Entrar
                   </Link>
                 </>
               )}
