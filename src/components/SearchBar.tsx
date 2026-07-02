@@ -4,7 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CategoryDropdown from "@/components/CategoryDropdown";
 
-export default function SearchBar() {
+export default function SearchBar({
+  className = "hidden flex-1 items-center gap-2 sm:flex sm:max-w-md",
+}: {
+  className?: string;
+}) {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
@@ -20,10 +24,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="hidden flex-1 items-center gap-2 sm:flex sm:max-w-md"
-    >
+    <form onSubmit={handleSubmit} className={className}>
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}

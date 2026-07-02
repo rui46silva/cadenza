@@ -7,6 +7,8 @@ import UserBadges from "@/components/UserBadges";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
+import MobileMenu from "@/components/MobileMenu";
+import MobileNavLinks from "@/components/MobileNavLinks";
 import { buttonPrimarySm } from "@/lib/ui";
 import { isStaff } from "@/lib/moderation";
 import { touchStreak } from "@/lib/streaks";
@@ -39,9 +41,15 @@ export default async function Navbar() {
         </div>
       )}
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
-          <Logo className="h-7 w-auto" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <MobileMenu>
+            <SearchBar className="flex items-center gap-2 sm:hidden" />
+            <MobileNavLinks />
+          </MobileMenu>
+          <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
+            <Logo className="h-7 w-auto" />
+          </Link>
+        </div>
         <SearchBar />
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 text-sm sm:gap-3 md:gap-4">
           <Link href="/forum" className="hover:underline">
