@@ -24,6 +24,7 @@ export default async function DashboardPage() {
       verificationStatus: true,
       emailVerified: true,
       points: true,
+      isAmbassador: true,
     },
   });
 

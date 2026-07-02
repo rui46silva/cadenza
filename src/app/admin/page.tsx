@@ -6,6 +6,7 @@ import RoleBadge from "@/components/RoleBadge";
 import VerifyProfessorButtons from "@/components/VerifyProfessorButtons";
 import BanControls from "@/components/BanControls";
 import ModeratorToggle from "@/components/ModeratorToggle";
+import AmbassadorToggle from "@/components/AmbassadorToggle";
 import ReportActions from "@/components/ReportActions";
 import DeleteWaitlistEntry from "@/components/DeleteWaitlistEntry";
 import DeleteUserButton from "@/components/DeleteUserButton";
@@ -38,6 +39,7 @@ export default async function AdminPage() {
           verifiedAt: true,
           verifiedBy: { select: { name: true } },
           createdAt: true,
+          isAmbassador: true,
         },
       })
     : [];
@@ -52,6 +54,7 @@ export default async function AdminPage() {
       role: true,
       instrument: true,
       verificationStatus: true,
+      isAmbassador: true,
       bans: {
         where: {
           liftedAt: null,
@@ -194,14 +197,17 @@ export default async function AdminPage() {
                       <RoleBadge user={p} />
                     </div>
                   </div>
-                  {p.verificationStatus === "PENDING" ? (
-                    <VerifyProfessorButtons userId={p.id} />
-                  ) : (
-                    <span className="text-sm text-black/50 dark:text-white/50">
-                      {p.verificationStatus === "APPROVED" ? "Aprovado" : "Rejeitado"}
-                      {p.verifiedBy && ` por ${p.verifiedBy.name}`}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <AmbassadorToggle userId={p.id} isAmbassador={p.isAmbassador} />
+                    {p.verificationStatus === "PENDING" ? (
+                      <VerifyProfessorButtons userId={p.id} />
+                    ) : (
+                      <span className="text-sm text-black/50 dark:text-white/50">
+                        {p.verificationStatus === "APPROVED" ? "Aprovado" : "Rejeitado"}
+                        {p.verifiedBy && ` por ${p.verifiedBy.name}`}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {p.verificationNote && (
                   <p className="text-sm text-black/60 dark:text-white/60 rounded-md bg-black/5 dark:bg-white/5 p-2">
@@ -317,6 +323,9 @@ export default async function AdminPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <AmbassadorToggle userId={u.id} isAmbassador={u.isAmbassador} />
+                )}
                 {isAdmin && (
                   <ModeratorToggle userId={u.id} isModerator={u.role === "MODERATOR"} />
                 )}

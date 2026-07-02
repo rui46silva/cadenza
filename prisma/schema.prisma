@@ -73,6 +73,7 @@ model User {
   longestStreak Int       @default(0)
   lastActiveAt  DateTime?
   onboardedAt   DateTime?
+  isAmbassador  Boolean   @default(false)
   instruments   Instrument[] @relation("UserInstruments")
   tagFollows    TagFollow[]
   createdAt     DateTime  @default(now())

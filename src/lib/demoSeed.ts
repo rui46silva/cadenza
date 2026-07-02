@@ -66,7 +66,7 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
 
   const mariana = await prisma.user.upsert({
     where: { email: "mariana@cadenza.app" },
-    update: {},
+    update: { isAmbassador: true },
     create: {
       name: "Mariana Ferreira",
       email: "mariana@cadenza.app",
@@ -81,6 +81,7 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
       currentStreak: 9,
       longestStreak: 31,
       lastActiveAt: now,
+      isAmbassador: true,
     },
   });
 
