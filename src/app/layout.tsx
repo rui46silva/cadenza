@@ -70,7 +70,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const headerList = await headers();
-  const comingSoon = process.env.COMING_SOON === "true" && !isDemoHost(headerList.get("host"));
+  const pathname = headerList.get("x-pathname") ?? "";
+  const hideChrome =
+    (process.env.COMING_SOON === "true" && !isDemoHost(headerList.get("host"))) ||
+    pathname === "/demo";
   const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
   const adsensePublisherId = adsenseClient?.replace(/^ca-/, "");
 
@@ -152,9 +155,9 @@ export default async function RootLayout({
         <ThemeProvider>
           <Providers>
             <ConsentProvider>
-              {!comingSoon && <Navbar />}
+              {!hideChrome && <Navbar />}
               <main className="flex-1">{children}</main>
-              {!comingSoon && <Footer />}
+              {!hideChrome && <Footer />}
               <CookieConsent />
             </ConsentProvider>
           </Providers>
