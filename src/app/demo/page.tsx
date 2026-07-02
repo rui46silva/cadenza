@@ -9,9 +9,11 @@ import {
   Flame,
   Newspaper,
   Sparkles,
+  GraduationCap,
+  Music2,
+  Star,
 } from "lucide-react";
 import Logo from "@/components/Logo";
-import { buttonPrimary } from "@/lib/ui";
 
 const FEATURES = [
   { icon: MessagesSquare, label: "Fórum com posts, comentários e melhores respostas" },
@@ -21,36 +23,62 @@ const FEATURES = [
   { icon: Newspaper, label: "Notícias e vagas em orquestras, bandas e outros projetos" },
 ];
 
+const PERSONAS = [
+  {
+    id: "aluno",
+    icon: GraduationCap,
+    label: "Como aluno",
+    description: "João, aluno de saxofone. Vê como é participar, pedir ajuda e evoluir.",
+    email: "aluno@cadenza.app",
+  },
+  {
+    id: "professor",
+    icon: Music2,
+    label: "Como professor",
+    description: "Maria, professora de piano verificada. Vê a perspetiva de quem ensina.",
+    email: "professor@cadenza.app",
+  },
+  {
+    id: "embaixador",
+    icon: Star,
+    label: "Como embaixador",
+    description: "Mariana, violinista profissional e embaixadora. Vê o badge especial em ação.",
+    email: "mariana@cadenza.app",
+  },
+] as const;
+
+const DEMO_PASSWORD = "password123";
+
 export default function DemoPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleEnterDemo() {
+  async function handleEnterDemo(personaId: string, email: string) {
     setError(null);
-    setLoading(true);
+    setLoadingId(personaId);
     try {
       const seedRes = await fetch("/api/demo-login", { method: "POST" });
       if (!seedRes.ok) {
         setError("Não foi possível preparar a conta demo. Tenta novamente.");
-        setLoading(false);
+        setLoadingId(null);
         return;
       }
       const res = await signIn("credentials", {
-        email: "demo@cadenza.app",
-        password: "demo1234",
+        email,
+        password: DEMO_PASSWORD,
         redirect: false,
       });
       if (res?.error) {
         setError("Não foi possível entrar em modo demo. Tenta novamente.");
-        setLoading(false);
+        setLoadingId(null);
         return;
       }
       router.push("/forum");
       router.refresh();
     } catch {
       setError("Não foi possível entrar em modo demo. Tenta novamente.");
-      setLoading(false);
+      setLoadingId(null);
     }
   }
 
@@ -65,19 +93,32 @@ export default function DemoPage() {
           Experimenta a <span className="text-accent">Cadenza</span> em ação
         </h1>
         <p className="max-w-md text-black/60 dark:text-white/60">
-          Entra numa conta de demonstração já cheia de atividade — posts, comentários,
-          pontuações e tudo — sem precisares de criar conta nem inserir dados reais.
+          Escolhe uma perspetiva e entra numa conta de demonstração já cheia de atividade —
+          posts, comentários, pontuações e tudo — sem precisares de criar conta.
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={handleEnterDemo}
-        disabled={loading}
-        className={`${buttonPrimary} disabled:opacity-50`}
-      >
-        {loading ? "A preparar a demo..." : "Entrar em modo demo"}
-      </button>
+      <div className="grid w-full max-w-2xl gap-3 sm:grid-cols-3">
+        {PERSONAS.map((persona) => (
+          <button
+            key={persona.id}
+            type="button"
+            onClick={() => handleEnterDemo(persona.id, persona.email)}
+            disabled={loadingId !== null}
+            className="flex flex-col items-center gap-2 rounded-xl border border-black/10 dark:border-white/10 p-5 text-center transition-colors hover:border-accent hover:bg-accent/5 disabled:opacity-50"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
+              <persona.icon className="h-5 w-5" />
+            </span>
+            <span className="font-semibold">
+              {loadingId === persona.id ? "A preparar..." : persona.label}
+            </span>
+            <span className="text-xs text-black/50 dark:text-white/50">
+              {persona.description}
+            </span>
+          </button>
+        ))}
+      </div>
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <ul className="flex flex-col gap-3 text-left sm:grid sm:grid-cols-2 sm:gap-3">

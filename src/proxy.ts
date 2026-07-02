@@ -10,6 +10,12 @@ const ALLOWED_PREFIXES = [
   "/api/waitlist",
 ];
 
+function next(req: NextRequest) {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get("host");
@@ -20,15 +26,15 @@ export function proxy(req: NextRequest) {
     }
     // O subdomínio de demo ignora o modo "brevemente" para os embaixadores
     // conseguirem explorar a plataforma toda, mesmo com o domínio principal fechado.
-    return NextResponse.next();
+    return next(req);
   }
 
   if (process.env.COMING_SOON !== "true") {
-    return NextResponse.next();
+    return next(req);
   }
 
   if (ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    return NextResponse.next();
+    return next(req);
   }
 
   return NextResponse.redirect(new URL("/coming-soon", req.url));
