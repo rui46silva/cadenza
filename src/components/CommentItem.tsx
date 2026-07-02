@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CommentForm from "@/components/CommentForm";
-import RoleBadge from "@/components/RoleBadge";
+import UserBadges from "@/components/UserBadges";
+import { roleLabel } from "@/components/RoleBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import BestAnswerToggle from "@/components/BestAnswerToggle";
 
@@ -72,9 +73,12 @@ export default function CommentItem({
         </p>
       ) : (
         <>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium">{comment.author.name}</span>
-            <RoleBadge user={comment.author} />
+            <UserBadges user={comment.author} />
+            <span className="text-xs text-black/40 dark:text-white/40">
+              · {roleLabel(comment.author)}
+            </span>
           </div>
           <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
 

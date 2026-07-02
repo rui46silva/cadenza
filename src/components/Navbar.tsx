@@ -3,7 +3,7 @@ import { Flame } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import RoleBadge from "@/components/RoleBadge";
+import UserBadges from "@/components/UserBadges";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
@@ -73,13 +73,11 @@ export default async function Navbar() {
                     {user.name.charAt(0).toUpperCase()}
                   </span>
                 )}
-                <span className="hidden text-black/60 dark:text-white/60 md:inline">
+                <span className="hidden items-center gap-1 text-black/60 dark:text-white/60 md:inline-flex">
                   {user.name}
+                  <UserBadges user={user} />
                 </span>
               </Link>
-              <span className="hidden lg:inline">
-                <RoleBadge user={user} />
-              </span>
               {isStaff(user.role) && (
                 <Link href="/admin" className="hover:underline">
                   {user.role === "ADMIN" ? "Admin" : "Moderação"}
