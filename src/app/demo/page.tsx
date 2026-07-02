@@ -30,7 +30,12 @@ export default function DemoPage() {
     setError(null);
     setLoading(true);
     try {
-      await fetch("/api/demo-login", { method: "POST" });
+      const seedRes = await fetch("/api/demo-login", { method: "POST" });
+      if (!seedRes.ok) {
+        setError("Não foi possível preparar a conta demo. Tenta novamente.");
+        setLoading(false);
+        return;
+      }
       const res = await signIn("credentials", {
         email: "demo@cadenza.app",
         password: "demo1234",
