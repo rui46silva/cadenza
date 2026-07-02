@@ -23,6 +23,7 @@ export default async function Navbar() {
           instrument: true,
           verificationStatus: true,
           avatarUrl: true,
+          isAmbassador: true,
         },
       })
     : null;

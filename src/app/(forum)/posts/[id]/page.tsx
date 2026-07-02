@@ -44,6 +44,7 @@ function buildCommentTree(
       role: string;
       instrument: string | null;
       verificationStatus: string | null;
+      isAmbassador: boolean;
     };
   }[]
 ): CommentNode[] {
@@ -118,6 +119,7 @@ export default async function PostPage({
           instrument: true,
           verificationStatus: true,
           avatarUrl: true,
+          isAmbassador: true,
         },
       },
       tags: { include: { tag: true } },
@@ -125,7 +127,13 @@ export default async function PostPage({
       comments: {
         include: {
           author: {
-            select: { name: true, role: true, instrument: true, verificationStatus: true },
+            select: {
+              name: true,
+              role: true,
+              instrument: true,
+              verificationStatus: true,
+              isAmbassador: true,
+            },
           },
         },
         orderBy: { createdAt: "asc" },

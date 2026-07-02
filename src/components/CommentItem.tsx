@@ -17,6 +17,7 @@ export type CommentNode = {
     role: string;
     instrument: string | null;
     verificationStatus: string | null;
+    isAmbassador: boolean;
   };
   children: CommentNode[];
 };

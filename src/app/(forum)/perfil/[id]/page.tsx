@@ -60,6 +60,7 @@ export default async function ProfilePage({
       createdAt: true,
       points: true,
       longestStreak: true,
+      isAmbassador: true,
       _count: { select: { posts: true, comments: true } },
     },
   });
