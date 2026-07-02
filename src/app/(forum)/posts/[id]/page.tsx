@@ -7,7 +7,8 @@ import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
 import CommentItem, { CommentNode } from "@/components/CommentItem";
 import VoteButtons from "@/components/VoteButtons";
-import RoleBadge from "@/components/RoleBadge";
+import UserBadges from "@/components/UserBadges";
+import { roleLabel } from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
@@ -196,14 +197,13 @@ export default async function PostPage({
             </span>
           )}
         </h1>
-        <div className="flex items-center gap-2 text-sm">
-          <Link href={`/perfil/${post.author.id}`} className="flex items-center gap-2 hover:underline">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <Link href={`/perfil/${post.author.id}`} className="flex items-center gap-1.5 hover:underline">
             <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} />
-            <span className="text-black/50 dark:text-white/50">
-              por {post.author.name}
-            </span>
+            <span className="text-black/50 dark:text-white/50">por {post.author.name}</span>
+            <UserBadges user={post.author} />
           </Link>
-          <RoleBadge user={post.author} />
+          <span className="text-black/40 dark:text-white/40">· {roleLabel(post.author)}</span>
           <span className="text-black/40 dark:text-white/40">
             {formatRelativeTime(post.createdAt)}
           </span>
