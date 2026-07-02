@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isDemoHost } from "@/lib/demoHost";
 
 const ALLOWED_PREFIXES = [
   "/coming-soon",
@@ -11,10 +12,9 @@ const ALLOWED_PREFIXES = [
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const hostname = req.headers.get("host") ?? "";
-  const isDemoHost = hostname.startsWith("demo.") || process.env.DEMO_MODE === "true";
+  const hostname = req.headers.get("host");
 
-  if (isDemoHost) {
+  if (isDemoHost(hostname)) {
     if (pathname === "/") {
       return NextResponse.redirect(new URL("/demo", req.url));
     }

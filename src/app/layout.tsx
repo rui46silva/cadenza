@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -9,6 +10,7 @@ import { ConsentProvider } from "@/components/ConsentProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
 import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
+import { isDemoHost } from "@/lib/demoHost";
 import "./globals.css";
 
 const sans = Poppins({
@@ -62,12 +64,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const comingSoon = process.env.COMING_SOON === "true";
+  const headerList = await headers();
+  const comingSoon = process.env.COMING_SOON === "true" && !isDemoHost(headerList.get("host"));
   const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
   const adsensePublisherId = adsenseClient?.replace(/^ca-/, "");
 
