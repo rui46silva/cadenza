@@ -36,9 +36,16 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
       {open && (
-        <div className="absolute inset-x-0 top-full z-20 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-black/10 dark:border-white/10 bg-white dark:bg-black p-4 shadow-md">
-          <div className="flex flex-col gap-6">{children}</div>
-        </div>
+        <>
+          <div
+            className="fixed inset-0 top-full z-10 bg-black/30"
+            aria-hidden="true"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute inset-x-0 top-full z-20 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-black/10 dark:border-white/10 bg-white dark:bg-black p-4 shadow-lg">
+            <div className="flex flex-col gap-5">{children}</div>
+          </div>
+        </>
       )}
     </div>
   );
