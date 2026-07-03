@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { FileText, Video, Pin, CheckCircle2, Flame } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import { formatRelativeTime } from "@/lib/time";
 import { isTrending } from "@/lib/trending";
+import PostVoteCompact from "@/components/forum/PostVoteCompact";
+import FollowTagButton from "@/components/forum/FollowTagButton";
+import SharePostButton from "@/components/forum/SharePostButton";
+import ReportPostButton from "@/components/ReportPostButton";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -17,6 +21,8 @@ export type PostListItemData = {
   bestAnswerId: string | null;
   createdAt: Date | string;
   score: number;
+  viewerVote?: "UP" | "DOWN" | null;
+  primaryTagFollowed?: boolean;
   author: { id: string; name: string; avatarUrl: string | null };
   tags: { tag: { id: string; name: string } }[];
   _count: { comments: number };
@@ -25,9 +31,11 @@ export type PostListItemData = {
 export default function PostListItem({
   post,
   className = "",
+  currentUserId,
 }: {
   post: PostListItemData;
   className?: string;
+  currentUserId?: string;
 }) {
   const Icon = TYPE_ICON[post.type];
   const createdAt =
@@ -37,6 +45,7 @@ export default function PostListItem({
     createdAt,
     commentCount: post._count.comments,
   });
+  const primaryTag = post.tags[0]?.tag;
 
   return (
     <li
@@ -66,8 +75,7 @@ export default function PostListItem({
         <Link href={`/perfil/${post.author.id}`} className="hover:text-accent hover:underline">
           {post.author.name}
         </Link>{" "}
-        · {post._count.comments} comentários · {post.score} votos ·{" "}
-        {formatRelativeTime(createdAt)}
+        · {formatRelativeTime(createdAt)}
       </span>
       {post.tags.length > 0 && (
         <span className="flex gap-1 flex-wrap mt-1">
@@ -82,6 +90,42 @@ export default function PostListItem({
           ))}
         </span>
       )}
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {currentUserId ? (
+          <PostVoteCompact
+            postId={post.id}
+            initialScore={post.score}
+            initialUserVote={post.viewerVote ?? null}
+          />
+        ) : (
+          <span className="rounded-full border border-black/10 dark:border-white/10 px-2.5 py-1 text-xs text-black/50 dark:text-white/50">
+            {post.score} votos
+          </span>
+        )}
+
+        <Link
+          href={`/posts/${post.id}#comentarios`}
+          className="flex items-center gap-1 rounded-full border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs text-black/50 dark:text-white/50 hover:border-accent hover:text-accent"
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          {post._count.comments}
+        </Link>
+
+        <SharePostButton postId={post.id} title={post.title} />
+
+        {currentUserId && primaryTag && (
+          <FollowTagButton
+            tagId={primaryTag.id}
+            tagName={primaryTag.name}
+            initialFollowing={post.primaryTagFollowed ?? false}
+          />
+        )}
+
+        {currentUserId && currentUserId !== post.author.id && (
+          <ReportPostButton postId={post.id} />
+        )}
+      </div>
     </li>
   );
 }

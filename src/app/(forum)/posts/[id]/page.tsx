@@ -252,7 +252,7 @@ export default async function PostPage({
         <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
       )}
 
-      <section className="flex flex-col gap-4 mt-2">
+      <section id="comentarios" className="flex flex-col gap-4 mt-2 scroll-mt-20">
         <h2 className="font-semibold">
           Comentários ({post.comments.filter((c) => !c.isDeleted).length})
         </h2>

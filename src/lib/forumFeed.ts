@@ -10,6 +10,7 @@ export async function getForumFeed({
   category,
   sort,
   followingUserId,
+  viewerId,
   skip = 0,
   take = 10,
 }: {
@@ -18,6 +19,7 @@ export async function getForumFeed({
   category?: TagCategory;
   sort: SortOption;
   followingUserId?: string;
+  viewerId?: string;
   skip?: number;
   take?: number;
 }) {
@@ -53,6 +55,7 @@ export async function getForumFeed({
     .map(({ votes, ...post }) => ({
       ...post,
       score: votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
+      viewerVote: viewerId ? votes.find((v) => v.userId === viewerId)?.value ?? null : null,
     }))
     .sort((a, b) => {
       if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
@@ -64,7 +67,35 @@ export async function getForumFeed({
   const page = ranked.slice(skip, skip + take);
   const hasMore = skip + take < ranked.length;
 
-  return { posts: page, hasMore };
+  const withFollowStatus = await attachPrimaryTagFollowStatus(page, viewerId);
+
+  return { posts: withFollowStatus, hasMore };
+}
+
+async function attachPrimaryTagFollowStatus<
+  T extends { tags: { tag: { id: string; name: string } }[] },
+>(posts: T[], viewerId?: string) {
+  if (!viewerId) {
+    return posts.map((post) => ({ ...post, primaryTagFollowed: false }));
+  }
+
+  const primaryTagIds = Array.from(
+    new Set(posts.map((p) => p.tags[0]?.tag.id).filter((id): id is string => Boolean(id)))
+  );
+
+  const follows =
+    primaryTagIds.length > 0
+      ? await prisma.tagFollow.findMany({
+          where: { userId: viewerId, tagId: { in: primaryTagIds } },
+          select: { tagId: true },
+        })
+      : [];
+  const followedIds = new Set(follows.map((f) => f.tagId));
+
+  return posts.map((post) => ({
+    ...post,
+    primaryTagFollowed: post.tags[0] ? followedIds.has(post.tags[0].tag.id) : false,
+  }));
 }
 
 export type ForumFeedPost = Awaited<ReturnType<typeof getForumFeed>>["posts"][number];

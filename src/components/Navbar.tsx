@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Palette, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
+import { Flame, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +9,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import MobileMenu from "@/components/MobileMenu";
 import MobileNavLinks from "@/components/MobileNavLinks";
+import MobileMoreMenu from "@/components/MobileMoreMenu";
 import { buttonPrimarySm, buttonOutlineSm } from "@/lib/ui";
 import { isStaff } from "@/lib/moderation";
 import { touchStreak } from "@/lib/streaks";
@@ -40,6 +41,7 @@ export default async function Navbar() {
 
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
   const isDemo = user?.email === "demo@cadenza.app";
+  const year = new Date().getFullYear();
 
   const signOutForm = (
     <form
@@ -66,10 +68,14 @@ export default async function Navbar() {
         </div>
       )}
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
+        <Link
+          href="/"
+          className="hidden shrink-0 items-center text-black dark:text-white lg:flex"
+        >
           <Logo className="h-7 w-auto" />
         </Link>
         <SearchBar className="hidden flex-1 items-center gap-2 lg:flex lg:max-w-md" />
+        <SearchBar className="flex flex-1 items-center gap-2 lg:hidden" showCategory={false} />
 
         {/* Ecrãs grandes: tudo visível na barra */}
         <div className="hidden shrink-0 items-center gap-3 text-sm md:gap-4 lg:flex">
@@ -129,20 +135,26 @@ export default async function Navbar() {
           )}
         </div>
 
-        {/* Tablet/mobile: nome + sino (se autenticado) e o menu hambúrguer */}
-        <div className="flex shrink-0 items-center gap-2 lg:hidden">
-          {session?.user && user && (
-            <>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-1 text-sm text-black/70 dark:text-white/70"
-              >
-                {user.name}
-                <UserBadges user={user} />
-              </Link>
-              <NotificationBell />
-            </>
+        {/* Tablet/mobile: entrar (ou sino+nome), menu de mais opções e hambúrguer */}
+        <div className="flex shrink-0 items-center gap-1 lg:hidden">
+          {session?.user && user ? (
+            <NotificationBell />
+          ) : (
+            <Link href="/login" className={`${buttonOutlineSm} shrink-0`}>
+              Entrar
+            </Link>
           )}
+          <MobileMoreMenu>
+            {!session?.user && (
+              <Link
+                href="/register"
+                className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                <UserPlus className="h-4 w-4 text-accent" />
+                Criar conta
+              </Link>
+            )}
+          </MobileMoreMenu>
           <MobileMenu>
             {session?.user && user && (
               <Link
@@ -178,7 +190,6 @@ export default async function Navbar() {
 
             <div className="flex flex-col gap-2">
               <SectionLabel>Navegar</SectionLabel>
-              <SearchBar className="flex items-center gap-2" />
               <MobileNavLinks />
             </div>
 
@@ -224,12 +235,11 @@ export default async function Navbar() {
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-black/10 dark:border-white/10 pt-4">
-              <span className="flex items-center gap-2 text-sm">
-                <Palette className="h-4 w-4 text-accent" />
-                Tema
+            <div className="flex flex-col items-center gap-2 border-t border-black/10 dark:border-white/10 pt-4 text-center">
+              <Logo className="h-6 w-auto" />
+              <span className="text-xs text-black/40 dark:text-white/40">
+                © {year} Cadenza. Todos os direitos reservados.
               </span>
-              <ThemeToggle />
             </div>
           </MobileMenu>
         </div>
