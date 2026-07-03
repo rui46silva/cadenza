@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Flame, Newspaper, Compass, LayoutGrid } from "lucide-react";
+import { MessagesSquare, Flame, Newspaper, Compass, LayoutGrid } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 
 const LINKS = [
+  { href: "/forum", label: "Fórum", icon: MessagesSquare },
   { href: "/popular", label: "Popular", icon: Flame },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/explorar", label: "Explorar", icon: Compass },

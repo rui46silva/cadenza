@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Flame, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
@@ -42,6 +43,8 @@ export default async function Navbar() {
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
   const isDemo = user?.email === "demo@cadenza.app";
   const year = new Date().getFullYear();
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const showSearch = pathname !== "/";
 
   const signOutForm = (
     <form
@@ -73,7 +76,11 @@ export default async function Navbar() {
           <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
-          <SearchBar className="flex flex-1 items-center gap-2 lg:max-w-md" />
+          {showSearch ? (
+            <SearchBar className="flex flex-1 items-center gap-2 lg:max-w-md" />
+          ) : (
+            <span className="flex-1" />
+          )}
           <div className="flex shrink-0 items-center gap-3 text-sm md:gap-4">
             <Link href="/forum" className="hover:underline">
               Fórum
@@ -132,9 +139,10 @@ export default async function Navbar() {
           </div>
         </div>
 
-        {/* Tablet/mobile: hambúrguer à esquerda, logo à direita, pesquisa numa linha própria */}
+        {/* Tablet/mobile: hambúrguer + logo à esquerda, entrar + mais opções à direita */}
         <div className="flex flex-col gap-2 lg:hidden">
           <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
             <MobileMenu>
               {session?.user && user && (
                 <Link
@@ -220,6 +228,11 @@ export default async function Navbar() {
               </p>
             </MobileMenu>
 
+            <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
+              <Logo className="h-6 w-auto" />
+            </Link>
+            </div>
+
             <div className="flex items-center gap-1">
               {session?.user && user ? (
                 <NotificationBell />
@@ -240,13 +253,11 @@ export default async function Navbar() {
                 )}
               </MobileMoreMenu>
             </div>
-
-            <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
-              <Logo className="h-6 w-auto" />
-            </Link>
           </div>
 
-          <SearchBar className="flex w-full items-center gap-2" showCategory={false} />
+          {showSearch && (
+            <SearchBar className="flex w-full items-center gap-2" showCategory={false} />
+          )}
         </div>
       </nav>
     </header>
