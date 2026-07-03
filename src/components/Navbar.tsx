@@ -71,17 +71,17 @@ export default async function Navbar() {
         </div>
       )}
       <nav className="mx-auto max-w-7xl px-4 py-3">
-        {/* Ecrãs grandes: tudo numa linha */}
-        <div className="hidden items-center justify-between gap-4 lg:flex">
+        {/* Ecrãs grandes: tudo numa linha, pesquisa centrada */}
+        <div className="hidden items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
           <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
           {showSearch ? (
-            <SearchBar className="flex flex-1 items-center gap-2 lg:max-w-md" />
+            <SearchBar className="flex w-full max-w-md items-center gap-2 justify-self-center" />
           ) : (
-            <span className="flex-1" />
+            <span />
           )}
-          <div className="flex shrink-0 items-center gap-3 text-sm md:gap-4">
+          <div className="flex shrink-0 items-center justify-self-end gap-3 text-sm md:gap-4">
             <Link href="/forum" className="hover:underline">
               Fórum
             </Link>
