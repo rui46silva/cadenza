@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdSlot from "@/components/AdSlot";
+import CookiePreferencesButton from "@/components/CookiePreferencesButton";
 
 const SITEMAP_LINKS = [
   { href: "/forum", label: "Fórum" },
@@ -97,6 +98,11 @@ export default async function RightSidebar() {
               </Link>
             </li>
           ))}
+          <li>
+            <CookiePreferencesButton className="block w-full rounded-md px-2 py-1 text-left text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10">
+              Preferências de cookies
+            </CookiePreferencesButton>
+          </li>
         </ul>
       </section>
     </div>
