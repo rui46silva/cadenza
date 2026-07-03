@@ -114,12 +114,13 @@ export default async function RootLayout({
   function gtag(){dataLayer.push(arguments);}
   var storedConsent = null;
   try { storedConsent = window.localStorage.getItem('cadenza-cookie-consent'); } catch (e) {}
-  var status = storedConsent === 'granted' ? 'granted' : 'denied';
+  var adStatus = storedConsent === 'all' ? 'granted' : 'denied';
+  var analyticsStatus = (storedConsent === 'all' || storedConsent === 'essential') ? 'granted' : 'denied';
   gtag('consent', 'default', {
-    'ad_storage': status,
-    'ad_user_data': status,
-    'ad_personalization': status,
-    'analytics_storage': status,
+    'ad_storage': adStatus,
+    'ad_user_data': adStatus,
+    'ad_personalization': adStatus,
+    'analytics_storage': analyticsStatus,
     'functionality_storage': 'granted',
     'security_storage': 'granted',
     'wait_for_update': 500

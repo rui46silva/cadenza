@@ -24,18 +24,25 @@ export function event(action: string, params: GtagParams = {}) {
   window.gtag("event", action, params);
 }
 
+export type ConsentDecision = "all" | "essential" | "none";
+
 /**
  * Atualiza os sinais do Google Consent Mode v2 depois da decisão do
  * utilizador no banner de cookies (ver gtag('consent', 'default', ...)
  * no <head>, que arranca tudo como "denied").
+ *
+ * "all" concede publicidade e análise, "essential" recusa publicidade mas
+ * mantém a análise (ajuda a melhorar a plataforma sem identificar ninguém),
+ * "none" recusa tudo.
  */
-export function updateConsent(granted: boolean) {
+export function updateConsent(decision: ConsentDecision) {
   if (typeof window === "undefined" || !window.gtag) return;
-  const status = granted ? "granted" : "denied";
+  const adStatus = decision === "all" ? "granted" : "denied";
+  const analyticsStatus = decision === "none" ? "denied" : "granted";
   window.gtag("consent", "update", {
-    ad_storage: status,
-    ad_user_data: status,
-    ad_personalization: status,
-    analytics_storage: status,
+    ad_storage: adStatus,
+    ad_user_data: adStatus,
+    ad_personalization: adStatus,
+    analytics_storage: analyticsStatus,
   });
 }
