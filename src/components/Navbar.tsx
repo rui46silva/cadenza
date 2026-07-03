@@ -70,7 +70,7 @@ export default async function Navbar() {
       <nav className="mx-auto max-w-7xl px-4 py-3">
         {/* Ecrãs grandes: tudo numa linha, pesquisa centrada */}
         <div className="hidden items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-          <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
+          <Link href="/" className="flex w-fit shrink-0 items-center justify-self-start text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
           <SearchBar className="flex w-full max-w-md items-center gap-2 justify-self-center" />
