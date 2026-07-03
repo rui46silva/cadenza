@@ -3,6 +3,7 @@ import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare } from "lucide
 import Avatar from "@/components/Avatar";
 import { formatRelativeTime } from "@/lib/time";
 import { isTrending } from "@/lib/trending";
+import { getVideoEmbedUrl } from "@/lib/video";
 import PostVoteCompact from "@/components/forum/PostVoteCompact";
 import FollowTagButton from "@/components/forum/FollowTagButton";
 import SharePostButton from "@/components/forum/SharePostButton";
@@ -17,6 +18,8 @@ export type PostListItemData = {
   id: string;
   title: string;
   type: string;
+  content: string | null;
+  videoUrl: string | null;
   pinned: boolean;
   bestAnswerId: string | null;
   createdAt: Date | string;
@@ -89,6 +92,20 @@ export default function PostListItem({
             </Link>
           ))}
         </span>
+      )}
+
+      {post.type === "TEXT" && post.content && (
+        <Link href={`/posts/${post.id}`} className="mt-1 block">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-black/80 dark:text-white/80">
+            {post.content}
+          </p>
+        </Link>
+      )}
+
+      {post.type === "VIDEO" && post.videoUrl && (
+        <div className="mt-1 aspect-video w-full overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
+          <iframe src={getVideoEmbedUrl(post.videoUrl)} className="h-full w-full" allowFullScreen />
+        </div>
       )}
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
