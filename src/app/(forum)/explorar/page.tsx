@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid, Sparkles } from "lucide-react";
+import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid, Sparkles, HelpCircle, GraduationCap } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { groupTagsByCategory } from "@/lib/tagCategories";
 import { card, pill } from "@/lib/ui";
@@ -58,6 +58,20 @@ export default async function ExplorarPage() {
           <h2 className="font-semibold mt-1">Embaixadores</h2>
           <p className="text-sm text-black/60 dark:text-white/60">
             Os músicos que mais ajudam a comunidade a crescer.
+          </p>
+        </Link>
+        <Link href="/duvidas" className={card}>
+          <HelpCircle className="h-6 w-6 text-accent" />
+          <h2 className="font-semibold mt-1">Dúvidas</h2>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Perguntas respondidas por professores e profissionais verificados.
+          </p>
+        </Link>
+        <Link href="/professores" className={card}>
+          <GraduationCap className="h-6 w-6 text-accent" />
+          <h2 className="font-semibold mt-1">Professores</h2>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Diretório de contas verificadas — tira dúvidas diretamente com quem sabe.
           </p>
         </Link>
       </section>

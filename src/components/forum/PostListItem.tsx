@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare, HelpCircle } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import UserBadges from "@/components/UserBadges";
 import { formatRelativeTime } from "@/lib/time";
@@ -27,6 +27,9 @@ export type PostListItemData = {
   score: number;
   viewerVote?: "UP" | "DOWN" | null;
   primaryTagFollowed?: boolean;
+  isQuestion?: boolean;
+  questionStatus?: "unanswered" | "answered" | "resolved";
+  directedTo?: { id: string; name: string } | null;
   author: {
     id: string;
     name: string;
@@ -69,11 +72,32 @@ export default function PostListItem({
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
       } ${className}`}
     >
-      <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
+      <Link href={`/posts/${post.id}`} className="flex flex-wrap items-center gap-2 font-medium">
         <Icon className="h-4 w-4 text-accent shrink-0" />
         {post.title}
         {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}
-        {post.bestAnswerId && (
+        {post.isQuestion && (
+          <span className="flex items-center gap-0.5 rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400 shrink-0">
+            <HelpCircle className="h-3 w-3" />
+            Dúvida
+          </span>
+        )}
+        {post.questionStatus === "unanswered" && (
+          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+            Por responder
+          </span>
+        )}
+        {post.questionStatus === "answered" && (
+          <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
+            Respondida por verificado
+          </span>
+        )}
+        {post.questionStatus === "resolved" && (
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
+            Resolvida
+          </span>
+        )}
+        {post.bestAnswerId && !post.questionStatus && (
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
         )}
         {trending && (
@@ -91,6 +115,18 @@ export default function PostListItem({
         </Link>
         {post.author.role && <UserBadges user={post.author} />}{" "}
         · {formatRelativeTime(createdAt)}
+        {post.directedTo && (
+          <>
+            {" "}
+            · dirigida a{" "}
+            <Link
+              href={`/perfil/${post.directedTo.id}`}
+              className="font-medium hover:text-accent hover:underline"
+            >
+              {post.directedTo.name}
+            </Link>
+          </>
+        )}
       </span>
       {post.tags.length > 0 && (
         <span className="flex gap-1 flex-wrap mt-1">

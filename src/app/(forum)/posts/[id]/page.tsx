@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Video, Pin, Eye, CheckCircle2 } from "lucide-react";
+import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -119,6 +119,7 @@ export default async function PostPage({
           isAmbassador: true,
         },
       },
+      directedTo: { select: { id: true, name: true } },
       tags: { include: { tag: true } },
       votes: true,
       comments: {
@@ -186,13 +187,30 @@ export default async function PostPage({
           )}
           {post.title}
           {post.pinned && <Pin className="h-4 w-4 text-accent shrink-0" />}
+          {post.isQuestion && (
+            <span className="flex items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-xs font-medium text-sky-600 dark:text-sky-400">
+              <HelpCircle className="h-3.5 w-3.5" />
+              Dúvida
+            </span>
+          )}
           {post.bestAnswerId && (
             <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Resolvido
+              {post.isQuestion ? "Resolvida" : "Resolvido"}
             </span>
           )}
         </h1>
+        {post.directedTo && (
+          <p className="text-sm text-black/50 dark:text-white/50">
+            Dúvida dirigida a{" "}
+            <Link
+              href={`/perfil/${post.directedTo.id}`}
+              className="font-medium text-accent hover:underline"
+            >
+              {post.directedTo.name}
+            </Link>
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Link href={`/perfil/${post.author.id}`} className="flex items-center gap-1.5 hover:underline">
             <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} />
