@@ -73,7 +73,9 @@ export default async function Navbar() {
           <Link href="/" className="flex w-fit shrink-0 items-center justify-self-start text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
-          <SearchBar className="flex w-full max-w-md items-center gap-2 justify-self-center" />
+          <div className="w-full max-w-md justify-self-center">
+            <SearchBar className="flex w-full items-center gap-2" />
+          </div>
           <div className="flex shrink-0 items-center justify-self-end gap-3 text-sm md:gap-4">
             <Link href="/forum" className="hover:underline">
               Fórum
