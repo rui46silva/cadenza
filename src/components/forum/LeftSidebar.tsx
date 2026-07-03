@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, Newspaper, Compass, LayoutGrid } from "lucide-react";
+import { Flame, Newspaper, Compass, LayoutGrid, Sparkles } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 import AdSlot from "@/components/AdSlot";
 
@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/explorar", label: "Explorar", icon: Compass },
   { href: "/categorias", label: "Categorias", icon: LayoutGrid },
+  { href: "/embaixadores", label: "Embaixadores", icon: Sparkles },
 ];
 
 export default function LeftSidebar() {

@@ -3,13 +3,13 @@ import { VERIFIABLE_ROLES } from "@/lib/moderation";
 import { ROLE_ACCENT_BG, ROLE_ACCENT_BG_FALLBACK } from "@/lib/roleColors";
 
 type BadgeUser = {
-  role: string;
+  role?: string;
   verificationStatus?: string | null;
   isAmbassador?: boolean;
 };
 
-function isVerifiableRole(role: string): boolean {
-  return (VERIFIABLE_ROLES as readonly string[]).includes(role);
+function isVerifiableRole(role?: string): boolean {
+  return Boolean(role) && (VERIFIABLE_ROLES as readonly string[]).includes(role!);
 }
 
 /**
@@ -36,7 +36,7 @@ export default function UserBadges({ user }: { user: BadgeUser }) {
         <span
           title="Verificado"
           className={`flex h-4 w-4 items-center justify-center rounded-full text-white ${
-            ROLE_ACCENT_BG[user.role] ?? ROLE_ACCENT_BG_FALLBACK
+            (user.role && ROLE_ACCENT_BG[user.role]) ?? ROLE_ACCENT_BG_FALLBACK
           }`}
         >
           <BadgeCheck className="h-2.5 w-2.5" />

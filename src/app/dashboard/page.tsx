@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Eye, MessageSquare, ThumbsUp, CheckCircle2 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import RoleBadge from "@/components/RoleBadge";
@@ -42,6 +43,33 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  const impact = user.isAmbassador
+    ? await (async () => {
+        const [totalViews, commentsReceived, upvotesReceived, bestAnswersGiven] =
+          await Promise.all([
+            prisma.post.aggregate({
+              where: { authorId: session.user.id },
+              _sum: { views: true },
+            }),
+            prisma.comment.count({
+              where: { post: { authorId: session.user.id }, authorId: { not: session.user.id } },
+            }),
+            prisma.postVote.count({
+              where: { value: "UP", post: { authorId: session.user.id } },
+            }),
+            prisma.post.count({
+              where: { bestAnswer: { authorId: session.user.id } },
+            }),
+          ]);
+        return {
+          views: totalViews._sum.views ?? 0,
+          commentsReceived,
+          upvotesReceived,
+          bestAnswersGiven,
+        };
+      })()
+    : null;
+
   return (
     <div className="mx-auto w-full max-w-md flex flex-col gap-6 px-4 py-6">
       <div>
@@ -54,6 +82,37 @@ export default async function DashboardPage() {
       </div>
 
       {!user.emailVerified && <EmailVerificationBanner />}
+
+      {impact && (
+        <div>
+          <h2 className="font-semibold mb-1">O teu impacto</h2>
+          <p className="text-sm text-black/50 dark:text-white/50 mb-3">
+            Como embaixador, isto é o que a tua atividade tem gerado na comunidade.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3 text-center">
+              <Eye className="h-4 w-4 text-accent" />
+              <span className="text-lg font-bold">{impact.views}</span>
+              <span className="text-xs text-black/50 dark:text-white/50">Visualizações nos teus posts</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3 text-center">
+              <MessageSquare className="h-4 w-4 text-accent" />
+              <span className="text-lg font-bold">{impact.commentsReceived}</span>
+              <span className="text-xs text-black/50 dark:text-white/50">Comentários recebidos</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3 text-center">
+              <ThumbsUp className="h-4 w-4 text-accent" />
+              <span className="text-lg font-bold">{impact.upvotesReceived}</span>
+              <span className="text-xs text-black/50 dark:text-white/50">Votos positivos recebidos</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/5 p-3 text-center">
+              <CheckCircle2 className="h-4 w-4 text-accent" />
+              <span className="text-lg font-bold">{impact.bestAnswersGiven}</span>
+              <span className="text-xs text-black/50 dark:text-white/50">Dúvidas que resolveste</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ProfileForm profile={user} />
 

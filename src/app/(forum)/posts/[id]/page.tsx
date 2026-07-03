@@ -48,6 +48,17 @@ function buildCommentTree(
       roots.push(node);
     }
   }
+
+  // Prioriza respostas de embaixadores no topo de cada nível, mantendo a
+  // ordem cronológica (sort é estável) dentro de cada grupo.
+  function byAmbassadorFirst(a: CommentNode, b: CommentNode) {
+    return Number(b.author.isAmbassador) - Number(a.author.isAmbassador);
+  }
+  for (const node of byId.values()) {
+    node.children.sort(byAmbassadorFirst);
+  }
+  roots.sort(byAmbassadorFirst);
+
   return roots;
 }
 

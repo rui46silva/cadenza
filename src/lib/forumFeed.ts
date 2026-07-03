@@ -42,7 +42,16 @@ export async function getForumFeed({
       ],
     },
     include: {
-      author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          avatarUrl: true,
+          verificationStatus: true,
+          isAmbassador: true,
+        },
+      },
       tags: { include: { tag: true } },
       votes: true,
       _count: { select: { comments: true, votes: true } },

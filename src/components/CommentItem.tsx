@@ -64,6 +64,8 @@ export default function CommentItem({
       className={`rounded-lg border p-3 ${
         comment.id === bestAnswerId
           ? "border-emerald-500/40 bg-emerald-500/5"
+          : comment.author.isAmbassador
+          ? "border-fuchsia-500/30 bg-fuchsia-500/5"
           : "border-black/10 dark:border-white/10"
       }`}
     >

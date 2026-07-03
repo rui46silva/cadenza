@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare } from "lucide-react";
 import Avatar from "@/components/Avatar";
+import UserBadges from "@/components/UserBadges";
 import { formatRelativeTime } from "@/lib/time";
 import { isTrending } from "@/lib/trending";
 import { getVideoEmbedUrl } from "@/lib/video";
@@ -26,7 +27,14 @@ export type PostListItemData = {
   score: number;
   viewerVote?: "UP" | "DOWN" | null;
   primaryTagFollowed?: boolean;
-  author: { id: string; name: string; avatarUrl: string | null };
+  author: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    role?: string;
+    verificationStatus?: string | null;
+    isAmbassador?: boolean;
+  };
   tags: { tag: { id: string; name: string } }[];
   _count: { comments: number };
 };
@@ -49,12 +57,15 @@ export default function PostListItem({
     commentCount: post._count.comments,
   });
   const primaryTag = post.tags[0]?.tag;
+  const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
   return (
     <li
       className={`rounded-lg border p-4 transition-colors flex flex-col gap-1 ${
         trending
           ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
+          : ambassadorAuthor
+          ? "border-fuchsia-500/30 bg-fuchsia-500/5 hover:border-fuchsia-500/60"
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
       } ${className}`}
     >
@@ -77,7 +88,8 @@ export default function PostListItem({
         por{" "}
         <Link href={`/perfil/${post.author.id}`} className="hover:text-accent hover:underline">
           {post.author.name}
-        </Link>{" "}
+        </Link>
+        {post.author.role && <UserBadges user={post.author} />}{" "}
         · {formatRelativeTime(createdAt)}
       </span>
       {post.tags.length > 0 && (
