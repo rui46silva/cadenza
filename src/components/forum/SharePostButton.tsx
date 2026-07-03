@@ -12,6 +12,7 @@ export default function SharePostButton({
 }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [message, setMessage] = useState(title);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,14 +32,15 @@ export default function SharePostButton({
   async function handleCopy(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    await navigator.clipboard.writeText(getUrl()).catch(() => null);
+    const text = message.trim() || title;
+    await navigator.clipboard.writeText(`${text}\n${getUrl()}`).catch(() => null);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
 
   function shareLink(kind: "whatsapp" | "twitter" | "facebook") {
     const url = encodeURIComponent(getUrl());
-    const text = encodeURIComponent(title);
+    const text = encodeURIComponent(message.trim() || title);
     if (kind === "whatsapp") return `https://wa.me/?text=${text}%20${url}`;
     if (kind === "twitter") return `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
     return `https://www.facebook.com/sharer/sharer.php?u=${url}`;
@@ -62,8 +64,18 @@ export default function SharePostButton({
       {open && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute left-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-1 shadow-md text-sm"
+          className="absolute left-0 z-20 mt-1 w-64 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-2 shadow-md text-sm"
         >
+          <label className="block px-1 pb-1 text-xs text-black/50 dark:text-white/50">
+            Mensagem
+          </label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            rows={3}
+            className="mb-2 w-full resize-none rounded-md border border-black/15 dark:border-white/20 bg-transparent px-2 py-1.5 text-sm"
+          />
           <a
             href={shareLink("whatsapp")}
             target="_blank"
