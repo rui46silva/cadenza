@@ -1,0 +1,66 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowBigUp, ArrowBigDown } from "lucide-react";
+
+export default function PostVoteCompact({
+  postId,
+  initialScore,
+  initialUserVote,
+}: {
+  postId: string;
+  initialScore: number;
+  initialUserVote: "UP" | "DOWN" | null;
+}) {
+  const [score, setScore] = useState(initialScore);
+  const [userVote, setUserVote] = useState(initialUserVote);
+  const [loading, setLoading] = useState(false);
+
+  async function vote(e: React.MouseEvent, value: "UP" | "DOWN") {
+    e.preventDefault();
+    e.stopPropagation();
+    if (loading) return;
+    setLoading(true);
+    const res = await fetch(`/api/posts/${postId}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value }),
+    });
+    setLoading(false);
+    if (res.ok) {
+      const data = await res.json();
+      setScore(data.score);
+      setUserVote(data.userVote);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-1 rounded-full border border-black/10 dark:border-white/10 px-1 py-0.5">
+      <button
+        type="button"
+        onClick={(e) => vote(e, "UP")}
+        disabled={loading}
+        aria-pressed={userVote === "UP"}
+        aria-label="Votar a favor"
+        className={`flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-50 ${
+          userVote === "UP" ? "text-accent" : "text-black/40 dark:text-white/40 hover:text-accent"
+        }`}
+      >
+        <ArrowBigUp className="h-4 w-4" fill={userVote === "UP" ? "currentColor" : "none"} />
+      </button>
+      <span className="min-w-[1.5ch] text-center text-xs font-medium">{score}</span>
+      <button
+        type="button"
+        onClick={(e) => vote(e, "DOWN")}
+        disabled={loading}
+        aria-pressed={userVote === "DOWN"}
+        aria-label="Votar contra"
+        className={`flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-50 ${
+          userVote === "DOWN" ? "text-rose-500" : "text-black/40 dark:text-white/40 hover:text-rose-500"
+        }`}
+      >
+        <ArrowBigDown className="h-4 w-4" fill={userVote === "DOWN" ? "currentColor" : "none"} />
+      </button>
+    </div>
+  );
+}

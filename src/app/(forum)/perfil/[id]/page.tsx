@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Flame, MessageSquare, FileText, Star, CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import InstagramIcon from "@/components/InstagramIcon";
@@ -62,6 +63,9 @@ export default async function ProfilePage({
 
   if (!user) notFound();
 
+  const session = await auth();
+  const viewerId = session?.user?.id;
+
   const posts = await prisma.post.findMany({
     where: { authorId: user.id },
     include: {
@@ -74,9 +78,23 @@ export default async function ProfilePage({
     take: 30,
   });
 
+  const primaryTagIds = Array.from(
+    new Set(posts.map((p) => p.tags[0]?.tag.id).filter((tagId): tagId is string => Boolean(tagId)))
+  );
+  const follows =
+    viewerId && primaryTagIds.length > 0
+      ? await prisma.tagFollow.findMany({
+          where: { userId: viewerId, tagId: { in: primaryTagIds } },
+          select: { tagId: true },
+        })
+      : [];
+  const followedTagIds = new Set(follows.map((f) => f.tagId));
+
   const postsWithScore = posts.map(({ votes, ...post }) => ({
     ...post,
     score: votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
+    viewerVote: viewerId ? votes.find((v) => v.userId === viewerId)?.value ?? null : null,
+    primaryTagFollowed: post.tags[0] ? followedTagIds.has(post.tags[0].tag.id) : false,
   }));
 
   const badges = getUserBadges({
@@ -173,7 +191,7 @@ export default async function ProfilePage({
             </p>
           )}
           {postsWithScore.map((post) => (
-            <PostListItem key={post.id} post={post} />
+            <PostListItem key={post.id} post={post} currentUserId={viewerId} />
           ))}
         </ul>
       </section>

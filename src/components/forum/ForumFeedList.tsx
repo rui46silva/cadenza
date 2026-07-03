@@ -18,6 +18,7 @@ export default function ForumFeedList({
   sort,
   following = false,
   adSlot,
+  currentUserId,
 }: {
   initialPosts: PostListItemData[];
   initialHasMore: boolean;
@@ -28,6 +29,7 @@ export default function ForumFeedList({
   sort: SortOption;
   following?: boolean;
   adSlot?: string;
+  currentUserId?: string;
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -83,6 +85,7 @@ export default function ForumFeedList({
             <PostListItem
               post={post}
               className={index >= initialPosts.length ? "animate-feed-item" : ""}
+              currentUserId={currentUserId}
             />
             {index === FEED_AD_AFTER - 1 && (
               <li>

@@ -3,14 +3,17 @@
 import {
   createContext,
   useContext,
+  useState,
   useSyncExternalStore,
 } from "react";
-
-type Consent = "granted" | "denied";
+import type { ConsentDecision } from "@/lib/gtag";
 
 type ConsentContextValue = {
-  consent: Consent | null;
-  setConsent: (value: Consent) => void;
+  consent: ConsentDecision | null;
+  setConsent: (value: ConsentDecision) => void;
+  promptOpen: boolean;
+  openPrompt: () => void;
+  closePrompt: () => void;
 };
 
 const STORAGE_KEY = "cadenza-cookie-consent";
@@ -19,6 +22,9 @@ const EVENT = "cadenza-consent-change";
 const ConsentContext = createContext<ConsentContextValue>({
   consent: null,
   setConsent: () => {},
+  promptOpen: false,
+  openPrompt: () => {},
+  closePrompt: () => {},
 });
 
 function subscribe(callback: () => void) {
@@ -30,21 +36,33 @@ function subscribe(callback: () => void) {
   };
 }
 
-function getSnapshot(): Consent | null {
+function getSnapshot(): ConsentDecision | null {
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "granted" || stored === "denied" ? stored : null;
+  return stored === "all" || stored === "essential" || stored === "none"
+    ? stored
+    : null;
 }
 
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const consent = useSyncExternalStore(subscribe, getSnapshot, () => null);
+  const [promptOpen, setPromptOpen] = useState(false);
 
-  const setConsent = (value: Consent) => {
+  const setConsent = (value: ConsentDecision) => {
     window.localStorage.setItem(STORAGE_KEY, value);
     window.dispatchEvent(new Event(EVENT));
+    setPromptOpen(false);
   };
 
   return (
-    <ConsentContext.Provider value={{ consent, setConsent }}>
+    <ConsentContext.Provider
+      value={{
+        consent,
+        setConsent,
+        promptOpen,
+        openPrompt: () => setPromptOpen(true),
+        closePrompt: () => setPromptOpen(false),
+      }}
+    >
       {children}
     </ConsentContext.Provider>
   );

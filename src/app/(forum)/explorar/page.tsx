@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid } from "lucide-react";
+import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { groupTagsByCategory } from "@/lib/tagCategories";
 import { card, pill } from "@/lib/ui";
@@ -51,6 +51,13 @@ export default async function ExplorarPage() {
           <h2 className="font-semibold mt-1">Categorias</h2>
           <p className="text-sm text-black/60 dark:text-white/60">
             Explora o fórum organizado por instrumento, género e nível.
+          </p>
+        </Link>
+        <Link href="/embaixadores" className={card}>
+          <Sparkles className="h-6 w-6 text-accent" />
+          <h2 className="font-semibold mt-1">Embaixadores</h2>
+          <p className="text-sm text-black/60 dark:text-white/60">
+            Os músicos que mais ajudam a comunidade a crescer.
           </p>
         </Link>
       </section>

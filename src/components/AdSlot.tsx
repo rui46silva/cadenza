@@ -18,7 +18,7 @@ export default function AdSlot({ slot }: { slot?: string }) {
   const client = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
   const pushed = useRef(false);
 
-  const enabled = Boolean(client && slot && consent === "granted");
+  const enabled = Boolean(client && slot && consent === "all");
 
   useEffect(() => {
     if (!enabled || pushed.current) return;

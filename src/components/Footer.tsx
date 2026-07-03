@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import CookiePreferencesButton from "@/components/CookiePreferencesButton";
 
 const LINKS = [
   { href: "/regras", label: "Regras do fórum" },
@@ -22,6 +23,9 @@ export default function Footer() {
               {l.label}
             </Link>
           ))}
+          <CookiePreferencesButton className="hover:text-accent">
+            Preferências de cookies
+          </CookiePreferencesButton>
         </nav>
         <span className="text-xs text-black/40 dark:text-white/40">
           © {year} Cadenza. Todos os direitos reservados.

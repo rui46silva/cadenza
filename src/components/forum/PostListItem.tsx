@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { FileText, Video, Pin, CheckCircle2, Flame } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare } from "lucide-react";
 import Avatar from "@/components/Avatar";
+import UserBadges from "@/components/UserBadges";
 import { formatRelativeTime } from "@/lib/time";
 import { isTrending } from "@/lib/trending";
+import { getVideoEmbedUrl } from "@/lib/video";
+import PostVoteCompact from "@/components/forum/PostVoteCompact";
+import FollowTagButton from "@/components/forum/FollowTagButton";
+import SharePostButton from "@/components/forum/SharePostButton";
+import ReportPostButton from "@/components/ReportPostButton";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -13,11 +19,22 @@ export type PostListItemData = {
   id: string;
   title: string;
   type: string;
+  content: string | null;
+  videoUrl: string | null;
   pinned: boolean;
   bestAnswerId: string | null;
   createdAt: Date | string;
   score: number;
-  author: { id: string; name: string; avatarUrl: string | null };
+  viewerVote?: "UP" | "DOWN" | null;
+  primaryTagFollowed?: boolean;
+  author: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    role?: string;
+    verificationStatus?: string | null;
+    isAmbassador?: boolean;
+  };
   tags: { tag: { id: string; name: string } }[];
   _count: { comments: number };
 };
@@ -25,9 +42,11 @@ export type PostListItemData = {
 export default function PostListItem({
   post,
   className = "",
+  currentUserId,
 }: {
   post: PostListItemData;
   className?: string;
+  currentUserId?: string;
 }) {
   const Icon = TYPE_ICON[post.type];
   const createdAt =
@@ -37,12 +56,16 @@ export default function PostListItem({
     createdAt,
     commentCount: post._count.comments,
   });
+  const primaryTag = post.tags[0]?.tag;
+  const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
   return (
     <li
       className={`rounded-lg border p-4 transition-colors flex flex-col gap-1 ${
         trending
           ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
+          : ambassadorAuthor
+          ? "border-fuchsia-500/30 bg-fuchsia-500/5 hover:border-fuchsia-500/60"
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
       } ${className}`}
     >
@@ -65,9 +88,9 @@ export default function PostListItem({
         por{" "}
         <Link href={`/perfil/${post.author.id}`} className="hover:text-accent hover:underline">
           {post.author.name}
-        </Link>{" "}
-        · {post._count.comments} comentários · {post.score} votos ·{" "}
-        {formatRelativeTime(createdAt)}
+        </Link>
+        {post.author.role && <UserBadges user={post.author} />}{" "}
+        · {formatRelativeTime(createdAt)}
       </span>
       {post.tags.length > 0 && (
         <span className="flex gap-1 flex-wrap mt-1">
@@ -82,6 +105,56 @@ export default function PostListItem({
           ))}
         </span>
       )}
+
+      {post.type === "TEXT" && post.content && (
+        <Link href={`/posts/${post.id}`} className="mt-1 block">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-black/80 dark:text-white/80">
+            {post.content}
+          </p>
+        </Link>
+      )}
+
+      {post.type === "VIDEO" && post.videoUrl && (
+        <div className="mt-1 aspect-video w-full overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
+          <iframe src={getVideoEmbedUrl(post.videoUrl)} className="h-full w-full" allowFullScreen />
+        </div>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {currentUserId ? (
+          <PostVoteCompact
+            postId={post.id}
+            initialScore={post.score}
+            initialUserVote={post.viewerVote ?? null}
+          />
+        ) : (
+          <span className="rounded-full border border-black/10 dark:border-white/10 px-2.5 py-1 text-xs text-black/50 dark:text-white/50">
+            {post.score} votos
+          </span>
+        )}
+
+        <Link
+          href={`/posts/${post.id}#comentarios`}
+          className="flex items-center gap-1 rounded-full border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs text-black/50 dark:text-white/50 hover:border-accent hover:text-accent"
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          {post._count.comments}
+        </Link>
+
+        <SharePostButton postId={post.id} title={post.title} />
+
+        {currentUserId && primaryTag && (
+          <FollowTagButton
+            tagId={primaryTag.id}
+            tagName={primaryTag.name}
+            initialFollowing={post.primaryTagFollowed ?? false}
+          />
+        )}
+
+        {currentUserId && currentUserId !== post.author.id && (
+          <ReportPostButton postId={post.id} />
+        )}
+      </div>
     </li>
   );
 }

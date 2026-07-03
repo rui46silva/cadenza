@@ -16,22 +16,7 @@ import DeletePostButton from "@/components/DeletePostButton";
 import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";
 import { formatRelativeTime } from "@/lib/time";
-
-function getVideoEmbedUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes("youtube.com")) {
-      const v = u.searchParams.get("v");
-      if (v) return `https://www.youtube.com/embed/${v}`;
-    }
-    if (u.hostname === "youtu.be") {
-      return `https://www.youtube.com/embed${u.pathname}`;
-    }
-    return url;
-  } catch {
-    return url;
-  }
-}
+import { getVideoEmbedUrl } from "@/lib/video";
 
 function buildCommentTree(
   comments: {
@@ -63,6 +48,17 @@ function buildCommentTree(
       roots.push(node);
     }
   }
+
+  // Prioriza respostas de embaixadores no topo de cada nível, mantendo a
+  // ordem cronológica (sort é estável) dentro de cada grupo.
+  function byAmbassadorFirst(a: CommentNode, b: CommentNode) {
+    return Number(b.author.isAmbassador) - Number(a.author.isAmbassador);
+  }
+  for (const node of byId.values()) {
+    node.children.sort(byAmbassadorFirst);
+  }
+  roots.sort(byAmbassadorFirst);
+
   return roots;
 }
 
@@ -252,7 +248,7 @@ export default async function PostPage({
         <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
       )}
 
-      <section className="flex flex-col gap-4 mt-2">
+      <section id="comentarios" className="flex flex-col gap-4 mt-2 scroll-mt-20">
         <h2 className="font-semibold">
           Comentários ({post.comments.filter((c) => !c.isDeleted).length})
         </h2>

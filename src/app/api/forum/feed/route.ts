@@ -17,11 +17,8 @@ export async function GET(req: Request) {
   const skip = Number(searchParams.get("skip") ?? "0") || 0;
   const take = Number(searchParams.get("take") ?? "10") || 10;
 
-  let followingUserId: string | undefined;
-  if (searchParams.get("following") === "1") {
-    const session = await auth();
-    followingUserId = session?.user?.id;
-  }
+  const session = await auth();
+  const followingUserId = searchParams.get("following") === "1" ? session?.user?.id : undefined;
 
   const { posts, hasMore } = await getForumFeed({
     tag,
@@ -29,6 +26,7 @@ export async function GET(req: Request) {
     category,
     sort,
     followingUserId,
+    viewerId: session?.user?.id,
     skip,
     take,
   });

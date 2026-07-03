@@ -47,6 +47,7 @@ export default async function HomePage({
     category: categoryFilter,
     sort,
     followingUserId,
+    viewerId: session?.user?.id,
     skip: 0,
     take: FORUM_PAGE_SIZE,
   });
@@ -81,6 +82,7 @@ export default async function HomePage({
         sort={sort}
         following={followingOnly}
         adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FEED}
+        currentUserId={session?.user?.id}
       />
 
       <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
