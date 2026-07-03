@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { Flame, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
@@ -43,8 +42,6 @@ export default async function Navbar() {
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
   const isDemo = user?.email === "demo@cadenza.app";
   const year = new Date().getFullYear();
-  const pathname = (await headers()).get("x-pathname") ?? "";
-  const showSearch = pathname !== "/";
 
   const signOutForm = (
     <form
@@ -76,11 +73,7 @@ export default async function Navbar() {
           <Link href="/" className="flex shrink-0 items-center text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
-          {showSearch ? (
-            <SearchBar className="flex w-full max-w-md items-center gap-2 justify-self-center" />
-          ) : (
-            <span />
-          )}
+          <SearchBar className="flex w-full max-w-md items-center gap-2 justify-self-center" />
           <div className="flex shrink-0 items-center justify-self-end gap-3 text-sm md:gap-4">
             <Link href="/forum" className="hover:underline">
               Fórum
@@ -255,9 +248,7 @@ export default async function Navbar() {
             </div>
           </div>
 
-          {showSearch && (
-            <SearchBar className="flex w-full items-center gap-2" showCategory={false} />
-          )}
+          <SearchBar className="flex w-full items-center gap-2" showCategory={false} />
         </div>
       </nav>
     </header>

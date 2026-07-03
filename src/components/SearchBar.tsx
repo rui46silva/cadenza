@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import CategoryDropdown from "@/components/CategoryDropdown";
@@ -15,6 +15,7 @@ export default function SearchBar({
   showCategory?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [value, setValue] = useState("");
   const [category, setCategory] = useState("");
   const [open, setOpen] = useState(false);
@@ -44,6 +45,8 @@ export default function SearchBar({
     const qs = params.toString();
     router.push(qs ? `/forum?${qs}` : "/forum");
   }
+
+  if (pathname === "/") return null;
 
   return (
     <form onSubmit={handleSubmit} className={className}>
