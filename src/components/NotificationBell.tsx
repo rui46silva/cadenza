@@ -6,7 +6,7 @@ import { Bell } from "lucide-react";
 
 type Notification = {
   id: string;
-  type: "COMMENT" | "REPLY";
+  type: "COMMENT" | "REPLY" | "QUESTION";
   read: boolean;
   createdAt: string;
   fromUser: { name: string };
@@ -120,7 +120,11 @@ export default function NotificationBell() {
               >
                 <span>
                   <strong>{n.fromUser.name}</strong>{" "}
-                  {n.type === "REPLY" ? "respondeu ao teu comentário" : "comentou no teu post"}
+                  {n.type === "QUESTION"
+                    ? "publicou uma dúvida para ti"
+                    : n.type === "REPLY"
+                    ? "respondeu ao teu comentário"
+                    : "comentou no teu post"}
                   {n.post && <> em &ldquo;{n.post.title}&rdquo;</>}
                 </span>
               </Link>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { awardPoints, POINTS } from "@/lib/points";
 import { COMMON_INSTRUMENTS } from "@/lib/instruments";
+import { VERIFIABLE_ROLES } from "@/lib/moderation";
 
 const INSTRUMENT_NAMES = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
@@ -30,6 +31,8 @@ const postSchema = z.object({
   content: z.string().max(10000).optional(),
   videoUrl: z.string().url().optional(),
   tagNames: z.array(z.string()).max(8).default([]),
+  isQuestion: z.boolean().default(false),
+  directedToId: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -47,7 +50,26 @@ export async function POST(req: Request) {
     );
   }
 
-  const { title, type, content, videoUrl, tagNames } = parsed.data;
+  const { title, type, content, videoUrl, tagNames, isQuestion, directedToId } = parsed.data;
+
+  // Uma dúvida só pode ser dirigida a um professor/profissional verificado.
+  let directedTo: { id: string } | null = null;
+  if (isQuestion && directedToId) {
+    directedTo = await prisma.user.findFirst({
+      where: {
+        id: directedToId,
+        role: { in: [...VERIFIABLE_ROLES] },
+        verificationStatus: "APPROVED",
+      },
+      select: { id: true },
+    });
+    if (!directedTo) {
+      return NextResponse.json(
+        { error: "Professor não encontrado ou não verificado" },
+        { status: 400 }
+      );
+    }
+  }
 
   if (type === "VIDEO" && !videoUrl) {
     return NextResponse.json(
@@ -68,6 +90,8 @@ export async function POST(req: Request) {
       type,
       content,
       videoUrl,
+      isQuestion,
+      directedToId: directedTo?.id,
       authorId: session.user.id,
       tags: {
         create: await Promise.all(
@@ -89,6 +113,36 @@ export async function POST(req: Request) {
   });
 
   await awardPoints(session.user.id, POINTS.POST_CREATED);
+
+  if (isQuestion) {
+    // Notifica o professor a quem a dúvida foi dirigida e os verificados cujo
+    // instrumento corresponde às tags da pergunta, para a verem na fila.
+    const tagNamesLower = tagNames.map((n) => n.toLowerCase());
+    const verifiedPros = await prisma.user.findMany({
+      where: {
+        role: { in: [...VERIFIABLE_ROLES] },
+        verificationStatus: "APPROVED",
+        id: { not: session.user.id },
+      },
+      select: { id: true, instrument: true },
+    });
+    const notifyIds = new Set<string>();
+    if (directedTo) notifyIds.add(directedTo.id);
+    for (const pro of verifiedPros) {
+      const instrument = pro.instrument?.trim().toLowerCase();
+      if (instrument && tagNamesLower.includes(instrument)) notifyIds.add(pro.id);
+    }
+    if (notifyIds.size > 0) {
+      await prisma.notification.createMany({
+        data: [...notifyIds].map((userId) => ({
+          type: "QUESTION" as const,
+          userId,
+          fromUserId: session.user.id,
+          postId: post.id,
+        })),
+      });
+    }
+  }
 
   return NextResponse.json({ post }, { status: 201 });
 }

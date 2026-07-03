@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { MessagesSquare, Flame, Newspaper, Compass, LayoutGrid, Sparkles } from "lucide-react";
+import { MessagesSquare, Flame, Newspaper, Compass, LayoutGrid, Sparkles, HelpCircle, GraduationCap } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 
 const LINKS = [
   { href: "/forum", label: "Fórum", icon: MessagesSquare },
   { href: "/popular", label: "Popular", icon: Flame },
+  { href: "/duvidas", label: "Dúvidas", icon: HelpCircle },
+  { href: "/professores", label: "Professores", icon: GraduationCap },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/explorar", label: "Explorar", icon: Compass },
   { href: "/categorias", label: "Categorias", icon: LayoutGrid },

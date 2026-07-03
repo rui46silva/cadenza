@@ -4,6 +4,7 @@ export const POINTS = {
   POST_CREATED: 10,
   COMMENT_CREATED: 3,
   UPVOTE_RECEIVED: 2,
+  BEST_ANSWER: 15,
 } as const;
 
 export async function awardPoints(userId: string, amount: number) {

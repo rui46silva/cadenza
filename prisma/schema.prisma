@@ -92,6 +92,7 @@ model User {
   reportsResolved Report[] @relation("ReportsResolved")
   newsArticles    NewsArticle[]
   jobListings     JobListing[]
+  questionsDirected Post[] @relation("QuestionsDirected")
 }
 
 model EmailVerificationToken {
@@ -175,6 +176,7 @@ model Post {
   content     String?
   videoUrl    String?
   pinned      Boolean    @default(false)
+  isQuestion  Boolean    @default(false)
   views       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
@@ -185,6 +187,8 @@ model Post {
   reports     Report[]
   bestAnswerId String?    @unique
   bestAnswer  Comment?   @relation("PostBestAnswer", fields: [bestAnswerId], references: [id], onDelete: SetNull)
+  directedTo   User?     @relation("QuestionsDirected", fields: [directedToId], references: [id], onDelete: SetNull)
+  directedToId String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -218,6 +222,7 @@ model Comment {
 enum NotificationType {
   COMMENT
   REPLY
+  QUESTION
 }
 
 model Notification {

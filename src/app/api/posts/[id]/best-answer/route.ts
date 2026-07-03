@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { awardPoints, POINTS } from "@/lib/points";
 
 const bodySchema = z.object({ commentId: z.string() });
 
@@ -15,7 +16,10 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const post = await prisma.post.findUnique({ where: { id }, select: { authorId: true } });
+  const post = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true, bestAnswerId: true },
+  });
   if (!post) {
     return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
   }
@@ -39,6 +43,12 @@ export async function PATCH(
     data: { bestAnswerId: comment.id },
     select: { id: true, bestAnswerId: true },
   });
+
+  // Recompensa quem resolveu a dúvida — só na primeira marcação, para não
+  // permitir farmar pontos a alternar a melhor resposta.
+  if (!post.bestAnswerId && comment.authorId !== session.user.id) {
+    await awardPoints(comment.authorId, POINTS.BEST_ANSWER);
+  }
 
   return NextResponse.json({ post: updated });
 }
