@@ -6,7 +6,7 @@ type RoleBadgeUser = {
   role: string;
   instrument?: string | null;
   verificationStatus?: string | null;
-  isAmbassador?: boolean;
+  isAmbassador?: boolean | null;
 };
 
 export function roleLabel(user: RoleBadgeUser): string {

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Flame, MessageSquare, FileText, Star, CalendarDays } from "lucide-react";
+import { Flame, MessageSquare, FileText, Star, CalendarDays, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
@@ -8,7 +8,10 @@ import RoleBadge from "@/components/RoleBadge";
 import InstagramIcon from "@/components/InstagramIcon";
 import LevelBadge from "@/components/LevelBadge";
 import PostListItem from "@/components/forum/PostListItem";
+import ProfileTabs from "@/components/ProfileTabs";
+import AskQuestionButton from "@/components/AskQuestionButton";
 import { getUserBadges } from "@/lib/badges";
+import { isExpert } from "@/lib/experts";
 
 export async function generateMetadata({
   params,
@@ -66,10 +69,25 @@ export default async function ProfilePage({
   const session = await auth();
   const viewerId = session?.user?.id;
 
+  const expert = isExpert(user);
+  const bestAnswersGiven = await prisma.post.count({
+    where: { bestAnswer: { authorId: user.id } },
+  });
+
   const posts = await prisma.post.findMany({
     where: { authorId: user.id },
     include: {
-      author: { select: { id: true, name: true, avatarUrl: true } },
+      author: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          role: true,
+          verificationStatus: true,
+          isAmbassador: true,
+        },
+      },
+      directedTo: { select: { id: true, name: true } },
       tags: { include: { tag: true } },
       votes: true,
       _count: { select: { comments: true, votes: true } },
@@ -95,7 +113,15 @@ export default async function ProfilePage({
     score: votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
     viewerVote: viewerId ? votes.find((v) => v.userId === viewerId)?.value ?? null : null,
     primaryTagFollowed: post.tags[0] ? followedTagIds.has(post.tags[0].tag.id) : false,
+    questionStatus: post.isQuestion
+      ? post.bestAnswerId
+        ? ("resolved" as const)
+        : ("unanswered" as const)
+      : undefined,
   }));
+
+  const regularPosts = postsWithScore.filter((p) => !p.isQuestion);
+  const questionPosts = postsWithScore.filter((p) => p.isQuestion);
 
   const badges = getUserBadges({
     postCount: user._count.posts,
@@ -114,8 +140,12 @@ export default async function ProfilePage({
     { icon: FileText, label: "Posts", value: user._count.posts },
     { icon: MessageSquare, label: "Comentários", value: user._count.comments },
     { icon: Star, label: "Pontos", value: user.points },
-    { icon: Flame, label: "Melhor sequência", value: `${user.longestStreak} dias` },
+    expert
+      ? { icon: CheckCircle2, label: "Dúvidas resolvidas", value: bestAnswersGiven }
+      : { icon: Flame, label: "Melhor sequência", value: `${user.longestStreak} dias` },
   ];
+
+  const canAsk = Boolean(viewerId) && viewerId !== user.id && expert;
 
   return (
     <div className="flex flex-col gap-6">
@@ -148,6 +178,14 @@ export default async function ProfilePage({
             <p className="rounded-lg bg-black/5 dark:bg-white/5 p-3 text-sm text-black/70 dark:text-white/70">
               {user.bio}
             </p>
+          )}
+          {canAsk && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <AskQuestionButton expertId={user.id} />
+              <span className="text-xs text-black/40 dark:text-white/40">
+                Conta verificada — podes tirar uma dúvida diretamente.
+              </span>
+            </div>
           )}
         </div>
       </section>
@@ -182,19 +220,36 @@ export default async function ProfilePage({
         </section>
       )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="font-semibold">Posts recentes</h2>
-        <ul className="flex flex-col gap-3">
-          {postsWithScore.length === 0 && (
-            <p className="text-black/50 dark:text-white/50">
-              Ainda não publicou nenhum post.
-            </p>
-          )}
-          {postsWithScore.map((post) => (
-            <PostListItem key={post.id} post={post} currentUserId={viewerId} />
-          ))}
-        </ul>
-      </section>
+      <ProfileTabs
+        postCount={regularPosts.length}
+        questionCount={questionPosts.length}
+        posts={
+          <ul className="flex flex-col gap-3">
+            {regularPosts.length === 0 ? (
+              <p className="text-black/50 dark:text-white/50">
+                Ainda não publicou nenhum post.
+              </p>
+            ) : (
+              regularPosts.map((post) => (
+                <PostListItem key={post.id} post={post} currentUserId={viewerId} />
+              ))
+            )}
+          </ul>
+        }
+        questions={
+          <ul className="flex flex-col gap-3">
+            {questionPosts.length === 0 ? (
+              <p className="text-black/50 dark:text-white/50">
+                Ainda não colocou nenhuma dúvida.
+              </p>
+            ) : (
+              questionPosts.map((post) => (
+                <PostListItem key={post.id} post={post} currentUserId={viewerId} />
+              ))
+            )}
+          </ul>
+        }
+      />
     </div>
   );
 }

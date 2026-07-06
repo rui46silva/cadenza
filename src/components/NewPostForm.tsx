@@ -2,27 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Video, HelpCircle, X } from "lucide-react";
+import { FileText, Video, HelpCircle } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
+import { COMMON_INSTRUMENTS } from "@/lib/instruments";
 import TagPicker from "@/components/TagPicker";
+import ExpertPicker, { type Expert } from "@/components/ExpertPicker";
 import { useToast } from "@/components/ToastProvider";
+
+const INSTRUMENT_SET = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
 export default function NewPostForm({
   initialQuestion = false,
   directedTo = null,
 }: {
   initialQuestion?: boolean;
-  directedTo?: { id: string; name: string } | null;
+  directedTo?: Expert | null;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [type, setType] = useState<"TEXT" | "VIDEO">("TEXT");
   const [isQuestion, setIsQuestion] = useState(initialQuestion);
-  const [directed, setDirected] = useState(directedTo);
+  const [directed, setDirected] = useState<Expert | null>(directedTo);
   const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Instrumento inferido das tags escolhidas, para sugerir os especialistas certos.
+  const instrumentTag = tags.find((t) => INSTRUMENT_SET.has(t.toLowerCase()));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -125,30 +132,21 @@ export default function NewPostForm({
         </div>
 
         {isQuestion && (
-          <p className="rounded-md bg-sky-500/10 px-3 py-2 text-sm text-sky-700 dark:text-sky-300">
-            {directed ? (
-              <span className="flex items-center justify-between gap-2">
-                <span>
-                  Dúvida dirigida a <strong>{directed.name}</strong> — vai ser
-                  notificado, e a resposta fica pública para ajudar toda a gente.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setDirected(null)}
-                  title="Remover destinatário"
-                  className="shrink-0 rounded-full p-1 hover:bg-sky-500/20"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </span>
-            ) : (
-              <>
-                A tua dúvida entra na fila dos professores certificados e
-                profissionais verificados. Adiciona a tag do teu instrumento
-                para chegar aos professores certos.
-              </>
-            )}
-          </p>
+          <div className="flex flex-col gap-2 rounded-md bg-sky-500/10 p-3">
+            <label className="text-sm font-medium text-sky-700 dark:text-sky-300">
+              Dirigir a alguém em particular?
+            </label>
+            <ExpertPicker
+              value={directed}
+              onChange={setDirected}
+              instrument={instrumentTag}
+            />
+            <p className="text-xs text-sky-700/80 dark:text-sky-300/80">
+              {directed
+                ? `${directed.name} vai ser notificado — a resposta fica pública para ajudar toda a gente.`
+                : "Se não escolheres ninguém, a dúvida entra na fila de todos os professores e profissionais do teu instrumento. Adiciona a tag do instrumento para chegar às pessoas certas."}
+            </p>
+          </div>
         )}
 
         {type === "VIDEO" && (

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { awardPoints, POINTS } from "@/lib/points";
 import { COMMON_INSTRUMENTS } from "@/lib/instruments";
-import { VERIFIABLE_ROLES } from "@/lib/moderation";
+import { expertWhere } from "@/lib/experts";
 
 const INSTRUMENT_NAMES = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
@@ -52,20 +52,17 @@ export async function POST(req: Request) {
 
   const { title, type, content, videoUrl, tagNames, isQuestion, directedToId } = parsed.data;
 
-  // Uma dúvida só pode ser dirigida a um professor/profissional verificado.
+  // Uma dúvida só pode ser dirigida a um especialista (professor/profissional
+  // verificado ou embaixador).
   let directedTo: { id: string } | null = null;
   if (isQuestion && directedToId) {
     directedTo = await prisma.user.findFirst({
-      where: {
-        id: directedToId,
-        role: { in: [...VERIFIABLE_ROLES] },
-        verificationStatus: "APPROVED",
-      },
+      where: { AND: [{ id: directedToId }, expertWhere] },
       select: { id: true },
     });
     if (!directedTo) {
       return NextResponse.json(
-        { error: "Professor não encontrado ou não verificado" },
+        { error: "Destinatário não encontrado ou não verificado" },
         { status: 400 }
       );
     }
@@ -115,20 +112,16 @@ export async function POST(req: Request) {
   await awardPoints(session.user.id, POINTS.POST_CREATED);
 
   if (isQuestion) {
-    // Notifica o professor a quem a dúvida foi dirigida e os verificados cujo
-    // instrumento corresponde às tags da pergunta, para a verem na fila.
+    // Notifica o especialista a quem a dúvida foi dirigida e os especialistas
+    // cujo instrumento corresponde às tags da pergunta, para a verem na fila.
     const tagNamesLower = tagNames.map((n) => n.toLowerCase());
-    const verifiedPros = await prisma.user.findMany({
-      where: {
-        role: { in: [...VERIFIABLE_ROLES] },
-        verificationStatus: "APPROVED",
-        id: { not: session.user.id },
-      },
+    const experts = await prisma.user.findMany({
+      where: { AND: [expertWhere, { id: { not: session.user.id } }] },
       select: { id: true, instrument: true },
     });
     const notifyIds = new Set<string>();
     if (directedTo) notifyIds.add(directedTo.id);
-    for (const pro of verifiedPros) {
+    for (const pro of experts) {
       const instrument = pro.instrument?.trim().toLowerCase();
       if (instrument && tagNamesLower.includes(instrument)) notifyIds.add(pro.id);
     }
