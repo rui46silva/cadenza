@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
-import { Eye, MessageSquare, ThumbsUp, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Eye, MessageSquare, ThumbsUp, CheckCircle2, Inbox } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { VERIFIABLE_ROLES } from "@/lib/moderation";
 import RoleBadge from "@/components/RoleBadge";
 import ProfileForm from "@/components/ProfileForm";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
@@ -30,6 +32,26 @@ export default async function DashboardPage() {
   });
 
   if (!user) redirect("/login");
+
+  const isVerifiedPro =
+    (VERIFIABLE_ROLES as readonly string[]).includes(user.role) &&
+    user.verificationStatus === "APPROVED";
+
+  const openQuestions = isVerifiedPro
+    ? await prisma.post.count({
+        where: {
+          isQuestion: true,
+          bestAnswerId: null,
+          authorId: { not: session.user.id },
+          OR: [
+            { directedToId: session.user.id },
+            ...(user.instrument
+              ? [{ tags: { some: { tag: { name: { equals: user.instrument, mode: "insensitive" as const } } } } }]
+              : []),
+          ],
+        },
+      })
+    : 0;
 
   const [allTags, followedTags] = await Promise.all([
     prisma.tag.findMany({
@@ -82,6 +104,25 @@ export default async function DashboardPage() {
       </div>
 
       {!user.emailVerified && <EmailVerificationBanner />}
+
+      {isVerifiedPro && openQuestions > 0 && (
+        <Link
+          href="/duvidas/responder"
+          className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/5 p-4 transition-colors hover:border-accent"
+        >
+          <Inbox className="h-5 w-5 shrink-0 text-accent" />
+          <span className="flex-1 text-sm">
+            <strong>
+              {openQuestions === 1
+                ? "1 dúvida à tua espera"
+                : `${openQuestions} dúvidas à tua espera`}
+            </strong>
+            <span className="block text-black/60 dark:text-white/60">
+              Dirigidas a ti ou do teu instrumento — responde e ganha pontos.
+            </span>
+          </span>
+        </Link>
+      )}
 
       {impact && (
         <div>

@@ -62,50 +62,61 @@ export default function PostListItem({
   const primaryTag = post.tags[0]?.tag;
   const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
+  const hasBadges =
+    trending || post.isQuestion || post.questionStatus || (post.bestAnswerId && !post.questionStatus);
+
   return (
     <li
       className={`rounded-lg border p-4 transition-colors flex flex-col gap-1 ${
         trending
-          ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
-          : ambassadorAuthor
-          ? "border-fuchsia-500/30 bg-fuchsia-500/5 hover:border-fuchsia-500/60"
+          ? "border-orange-500/40 bg-gradient-to-br from-orange-500/10 to-transparent hover:border-orange-500/70"
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
+      } ${
+        ambassadorAuthor && !trending ? "border-l-2 border-l-fuchsia-500/60" : ""
       } ${className}`}
     >
-      <Link href={`/posts/${post.id}`} className="flex flex-wrap items-center gap-2 font-medium">
+      {hasBadges && (
+        <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+          {trending && (
+            <span className="flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+              <Flame className="h-3 w-3" />
+              Em alta
+            </span>
+          )}
+          {post.isQuestion && (
+            <span className="flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+              <HelpCircle className="h-3 w-3" />
+              Dúvida
+            </span>
+          )}
+          {post.questionStatus === "unanswered" && (
+            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+              Por responder
+            </span>
+          )}
+          {post.questionStatus === "answered" && (
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[11px] font-semibold text-accent">
+              Respondida por verificado
+            </span>
+          )}
+          {post.questionStatus === "resolved" && (
+            <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" />
+              Resolvida
+            </span>
+          )}
+          {post.bestAnswerId && !post.questionStatus && (
+            <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" />
+              Resolvido
+            </span>
+          )}
+        </div>
+      )}
+      <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
         <Icon className="h-4 w-4 text-accent shrink-0" />
         {post.title}
         {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}
-        {post.isQuestion && (
-          <span className="flex items-center gap-0.5 rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400 shrink-0">
-            <HelpCircle className="h-3 w-3" />
-            Dúvida
-          </span>
-        )}
-        {post.questionStatus === "unanswered" && (
-          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">
-            Por responder
-          </span>
-        )}
-        {post.questionStatus === "answered" && (
-          <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
-            Respondida por verificado
-          </span>
-        )}
-        {post.questionStatus === "resolved" && (
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-            Resolvida
-          </span>
-        )}
-        {post.bestAnswerId && !post.questionStatus && (
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-        )}
-        {trending && (
-          <span className="flex items-center gap-0.5 rounded-full bg-orange-500/15 px-2 py-0.5 text-[10px] font-semibold text-orange-500 shrink-0">
-            <Flame className="h-3 w-3" />
-            Em alta
-          </span>
-        )}
       </Link>
       <span className="flex flex-wrap items-center gap-1.5 text-xs text-black/50 dark:text-white/50">
         <Avatar name={post.author.name} avatarUrl={post.author.avatarUrl} size={16} />

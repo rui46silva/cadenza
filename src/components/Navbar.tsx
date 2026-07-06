@@ -68,15 +68,15 @@ export default async function Navbar() {
         </div>
       )}
       <nav className="mx-auto max-w-7xl px-4 py-3">
-        {/* Ecrãs grandes: tudo numa linha, pesquisa centrada */}
-        <div className="hidden items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-          <Link href="/" className="flex w-fit shrink-0 items-center justify-self-start text-black dark:text-white">
+        {/* Ecrãs grandes: logo e ações a tamanho de conteúdo, pesquisa a ocupar o meio */}
+        <div className="hidden items-center gap-6 lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <Link href="/" className="flex w-fit shrink-0 items-center text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
-          <div className="w-full max-w-md justify-self-center">
+          <div className="mx-auto w-full max-w-xl">
             <SearchBar className="flex w-full items-center gap-2" />
           </div>
-          <div className="flex shrink-0 items-center justify-self-end gap-3 text-sm md:gap-4">
+          <div className="flex shrink-0 items-center gap-3 text-sm">
             <Link href="/forum" className="hover:underline">
               Fórum
             </Link>
@@ -106,7 +106,7 @@ export default async function Navbar() {
                       {user.name.charAt(0).toUpperCase()}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-black/60 dark:text-white/60">
+                  <span className="hidden items-center gap-1 text-black/60 dark:text-white/60 xl:inline-flex">
                     {user.name}
                     <UserBadges user={user} />
                   </span>
