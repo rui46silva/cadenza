@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useDismiss } from "@/lib/useDismiss";
 import { ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tagCategories";
 
@@ -14,15 +15,7 @@ export default function CategoryDropdown({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   const label = value ? CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] : "Categorias";
 

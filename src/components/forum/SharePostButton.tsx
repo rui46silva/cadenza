@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Share2, Link2, Check } from "lucide-react";
+import { useDismiss } from "@/lib/useDismiss";
+import { useToast } from "@/components/ToastProvider";
 
 export default function SharePostButton({
   postId,
@@ -14,16 +16,9 @@ export default function SharePostButton({
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState(title);
   const ref = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   function getUrl() {
     return `${window.location.origin}/posts/${postId}`;
@@ -35,6 +30,7 @@ export default function SharePostButton({
     const text = message.trim() || title;
     await navigator.clipboard.writeText(`${text}\n${getUrl()}`).catch(() => null);
     setCopied(true);
+    toast("Link copiado");
     setTimeout(() => setCopied(false), 1500);
   }
 

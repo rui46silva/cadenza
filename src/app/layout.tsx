@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 import { ConsentProvider } from "@/components/ConsentProvider";
+import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
 import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
@@ -156,10 +157,12 @@ export default async function RootLayout({
         <ThemeProvider>
           <Providers>
             <ConsentProvider>
-              {!hideChrome && <Navbar />}
-              <main className="flex-1">{children}</main>
-              {!hideChrome && <Footer />}
-              <CookieConsent />
+              <ToastProvider>
+                {!hideChrome && <Navbar />}
+                <main className="flex-1">{children}</main>
+                {!hideChrome && <Footer />}
+                <CookieConsent />
+              </ToastProvider>
             </ConsentProvider>
           </Providers>
         </ThemeProvider>

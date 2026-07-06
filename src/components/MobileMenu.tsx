@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { useDismiss } from "@/lib/useDismiss";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
@@ -15,15 +16,7 @@ export default function MobileMenu({ children }: { children: ReactNode }) {
     setOpen(false);
   }
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   return (
     <div ref={ref} className="lg:hidden">

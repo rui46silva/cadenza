@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pin } from "lucide-react";
+import { useToast } from "@/components/ToastProvider";
 
 export default function BestAnswerToggle({
   postId,
@@ -16,22 +17,40 @@ export default function BestAnswerToggle({
   canManage: boolean;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  // Estado otimista: assume que a alteração vai resultar e reverte se falhar.
+  // Ressincroniza com o servidor quando a prop muda (ex: outro comentário fixado).
+  const [pinned, setPinned] = useState(isBestAnswer);
+  const [lastProp, setLastProp] = useState(isBestAnswer);
+  if (isBestAnswer !== lastProp) {
+    setLastProp(isBestAnswer);
+    setPinned(isBestAnswer);
+  }
 
   async function toggle() {
-    setLoading(true);
-    await fetch(`/api/posts/${postId}/best-answer`, {
-      method: isBestAnswer ? "DELETE" : "PATCH",
+    const next = !pinned;
+    setPinned(next);
+
+    const res = await fetch(`/api/posts/${postId}/best-answer`, {
+      method: next ? "PATCH" : "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: isBestAnswer ? undefined : JSON.stringify({ commentId }),
+      body: next ? JSON.stringify({ commentId }) : undefined,
     });
-    setLoading(false);
+
+    if (!res.ok) {
+      setPinned(!next);
+      const data = await res.json().catch(() => null);
+      toast(data?.error ?? "Não foi possível atualizar a resposta.", "error");
+      return;
+    }
+
+    if (next) toast("Resposta fixada — quem respondeu ganhou pontos!");
     router.refresh();
   }
 
-  if (!canManage && !isBestAnswer) return null;
+  if (!canManage && !pinned) return null;
 
-  if (isBestAnswer) {
+  if (pinned) {
     return (
       <span className="flex items-center gap-2 text-xs">
         <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 dark:text-emerald-400">
@@ -42,8 +61,7 @@ export default function BestAnswerToggle({
           <button
             type="button"
             onClick={toggle}
-            disabled={loading}
-            className="text-black/40 dark:text-white/40 hover:underline disabled:opacity-50"
+            className="text-black/40 dark:text-white/40 hover:underline"
           >
             Remover
           </button>
@@ -56,8 +74,7 @@ export default function BestAnswerToggle({
     <button
       type="button"
       onClick={toggle}
-      disabled={loading}
-      className="text-black/50 dark:text-white/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline disabled:opacity-50"
+      className="text-black/50 dark:text-white/50 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline"
     >
       Fixar resposta
     </button>

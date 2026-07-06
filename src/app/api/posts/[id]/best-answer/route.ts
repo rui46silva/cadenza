@@ -48,6 +48,16 @@ export async function PATCH(
   // permitir farmar pontos a alternar a melhor resposta.
   if (!post.bestAnswerId && comment.authorId !== session.user.id) {
     await awardPoints(comment.authorId, POINTS.BEST_ANSWER);
+    // commentId fica vazio: já existe uma notificação COMMENT/REPLY ligada a
+    // este comentário e a coluna é única.
+    await prisma.notification.create({
+      data: {
+        type: "BEST_ANSWER",
+        userId: comment.authorId,
+        fromUserId: session.user.id,
+        postId: id,
+      },
+    });
   }
 
   return NextResponse.json({ post: updated });

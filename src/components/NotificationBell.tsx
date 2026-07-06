@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell } from "lucide-react";
+import { useDismiss } from "@/lib/useDismiss";
 
 type Notification = {
   id: string;
-  type: "COMMENT" | "REPLY" | "QUESTION";
+  type: "COMMENT" | "REPLY" | "QUESTION" | "BEST_ANSWER";
   read: boolean;
   createdAt: string;
   fromUser: { name: string };
@@ -41,15 +42,7 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   useEffect(() => {
     const activeTimers = timers.current;
@@ -120,7 +113,9 @@ export default function NotificationBell() {
               >
                 <span>
                   <strong>{n.fromUser.name}</strong>{" "}
-                  {n.type === "QUESTION"
+                  {n.type === "BEST_ANSWER"
+                    ? "fixou a tua resposta — ganhaste 15 pontos!"
+                    : n.type === "QUESTION"
                     ? "publicou uma dúvida para ti"
                     : n.type === "REPLY"
                     ? "respondeu ao teu comentário"

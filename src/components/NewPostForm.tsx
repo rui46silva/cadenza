@@ -6,6 +6,7 @@ import { FileText, Video, HelpCircle, X } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
 import TagPicker from "@/components/TagPicker";
+import { useToast } from "@/components/ToastProvider";
 
 export default function NewPostForm({
   initialQuestion = false,
@@ -15,6 +16,7 @@ export default function NewPostForm({
   directedTo?: { id: string; name: string } | null;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [type, setType] = useState<"TEXT" | "VIDEO">("TEXT");
   const [isQuestion, setIsQuestion] = useState(initialQuestion);
   const [directed, setDirected] = useState(directedTo);
@@ -59,6 +61,13 @@ export default function NewPostForm({
 
     const { post } = await res.json();
     event("create_post", { post_type: type, is_question: isQuestion });
+    toast(
+      isQuestion
+        ? directed
+          ? `Dúvida enviada a ${directed.name}`
+          : "Dúvida publicada — os professores foram notificados"
+        : "Post publicado"
+    );
     router.push(`/posts/${post.id}`);
   }
 

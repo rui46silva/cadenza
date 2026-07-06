@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useDismiss } from "@/lib/useDismiss";
 import { ChevronDown } from "lucide-react";
 
 export default function FilterDropdown<T extends string>({
@@ -19,15 +20,7 @@ export default function FilterDropdown<T extends string>({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   const selected = options.find((o) => o.value === value);
 
