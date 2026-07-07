@@ -6,7 +6,7 @@ import AdSlot from "@/components/AdSlot";
 const LINKS = [
   { href: "/popular", label: "Popular", icon: Flame },
   { href: "/duvidas", label: "Dúvidas", icon: HelpCircle },
-  { href: "/professores", label: "Professores", icon: GraduationCap },
+  { href: "/professores", label: "Profissionais", icon: GraduationCap },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
   { href: "/explorar", label: "Explorar", icon: Compass },
   { href: "/categorias", label: "Categorias", icon: LayoutGrid },
