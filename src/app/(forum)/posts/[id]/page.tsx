@@ -18,6 +18,7 @@ import { isStaff } from "@/lib/moderation";
 import { formatRelativeTime } from "@/lib/time";
 import { getVideoEmbedUrl } from "@/lib/video";
 import { getMostPopularPostId } from "@/lib/popular";
+import { ESCALATION_DAYS } from "@/lib/escalateQuestions";
 
 function buildCommentTree(
   comments: {
@@ -256,6 +257,12 @@ export default async function PostPage({
             >
               {post.directedTo.name}
             </Link>
+            {!post.bestAnswerId && (
+              <span className="text-black/40 dark:text-white/40">
+                {" "}
+                · se não responder em {ESCALATION_DAYS} dias, abre à comunidade
+              </span>
+            )}
           </p>
         )}
         <div className="flex flex-wrap items-center gap-2 text-sm">
