@@ -4,6 +4,7 @@ import ChallengeBanner from "@/components/forum/ChallengeBanner";
 import ForumFilters from "@/components/forum/ForumFilters";
 import ForumFeedList from "@/components/forum/ForumFeedList";
 import { getForumFeed } from "@/lib/forumFeed";
+import { getMostPopularPostId } from "@/lib/popular";
 import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
 import { auth } from "@/lib/auth";
@@ -53,14 +54,10 @@ export default async function HomePage({
     take: FORUM_PAGE_SIZE,
   });
 
-  // Destaca o post com mais votos nesta página (fora de pesquisas), desde que
-  // tenha tração real, com um realce subtil "Mais popular".
-  const mostPopularId =
-    !q && posts.length > 0
-      ? posts.reduce((top, p) => (p.score > top.score ? p : top)).id
-      : undefined;
-  const mostPopularScore = posts.find((p) => p.id === mostPopularId)?.score ?? 0;
-  const highlightId = mostPopularScore >= 3 ? mostPopularId : undefined;
+  // Destaca o post mais popular do fórum (o mais votado de todos) sempre que
+  // ele apareça nesta lista, fora de pesquisas.
+  const mostPopular = q ? null : await getMostPopularPostId();
+  const highlightId = mostPopular?.id;
 
   return (
     <div className="flex flex-col gap-6">

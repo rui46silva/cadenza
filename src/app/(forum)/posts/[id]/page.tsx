@@ -17,6 +17,7 @@ import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";
 import { formatRelativeTime } from "@/lib/time";
 import { getVideoEmbedUrl } from "@/lib/video";
+import { getMostPopularPostId } from "@/lib/popular";
 
 function buildCommentTree(
   comments: {
@@ -154,22 +155,9 @@ export default async function PostPage({
     ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
     : null;
 
-  // É este o post mais popular do fórum? Só vale a pena procurar se já tiver
-  // tração (score >= 3), o que evita a varredura na esmagadora maioria das visitas.
-  let isMostPopular = false;
-  if (score >= 3) {
-    const candidates = await prisma.post.findMany({
-      select: { id: true, votes: { select: { value: true } } },
-      take: 200,
-    });
-    const topId = candidates
-      .map((c) => ({
-        id: c.id,
-        s: c.votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
-      }))
-      .reduce((top, c) => (c.s > top.s ? c : top)).id;
-    isMostPopular = topId === post.id;
-  }
+  // É este o post mais popular do fórum? Comparado com todos os posts.
+  const mostPopular = await getMostPopularPostId();
+  const isMostPopular = mostPopular?.id === post.id;
 
   const commentTree = buildCommentTree(post.comments);
 
@@ -193,35 +181,40 @@ export default async function PostPage({
   };
 
   return (
-    <article className="flex flex-col gap-5">
+    <article
+      className={`flex flex-col gap-5 ${
+        isMostPopular
+          ? "rounded-2xl border-2 border-orange-500/40 bg-gradient-to-b from-orange-500/[0.06] to-transparent p-4 sm:p-6 shadow-[0_0_0_1px_rgba(249,115,22,0.05)]"
+          : ""
+      }`}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       {isMostPopular && (
-        <div className="flex items-center gap-3 rounded-xl border border-orange-500/40 bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent px-4 py-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm">
-            <Flame className="h-5 w-5" />
+        <div className="-mx-4 -mt-4 flex items-center gap-4 rounded-t-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-4 text-white sm:-mx-6 sm:-mt-6">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 ring-2 ring-white/40">
+            <Flame className="h-6 w-6" />
           </span>
-          <span className="flex flex-col leading-tight">
-            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
-              Post mais popular do fórum
+          <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
+              🔥 Em destaque
             </span>
-            <span className="text-xs text-black/50 dark:text-white/50">
+            <span className="text-lg font-bold">Post mais popular do fórum</span>
+            <span className="text-xs text-white/85">
               O post com mais votos da comunidade neste momento.
             </span>
+          </div>
+          <span className="flex shrink-0 flex-col items-center rounded-xl bg-white/15 px-3 py-1.5 ring-1 ring-white/30">
+            <span className="text-xl font-bold tabular-nums">{score}</span>
+            <span className="text-[10px] uppercase tracking-wide text-white/80">votos</span>
           </span>
         </div>
       )}
 
-      <header
-        className={`flex flex-col gap-2 ${
-          isMostPopular
-            ? "rounded-xl border border-orange-500/30 bg-orange-500/[0.04] p-4"
-            : ""
-        }`}
-      >
+      <header className="flex flex-col gap-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
             <Video className="h-5 w-5 text-accent shrink-0" />
