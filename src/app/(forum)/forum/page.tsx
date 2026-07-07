@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
 import ChallengeBanner from "@/components/forum/ChallengeBanner";
+import PostComposer from "@/components/forum/PostComposer";
 import ForumFilters from "@/components/forum/ForumFilters";
 import ForumFeedList from "@/components/forum/ForumFeedList";
 import { getForumFeed } from "@/lib/forumFeed";
@@ -37,6 +38,12 @@ export default async function HomePage({
     : "recentes";
 
   const session = await auth();
+  const viewer = session?.user
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, avatarUrl: true },
+      })
+    : null;
   const hasFollows = session?.user
     ? (await prisma.tagFollow.count({ where: { userId: session.user.id } })) > 0
     : false;
@@ -60,17 +67,20 @@ export default async function HomePage({
   const highlightId = mostPopular?.id;
 
   return (
-    <div className="flex flex-col gap-6">
-      <section>
-        <h1 className="text-2xl font-bold">Fórum Cadenza</h1>
-        <p className="text-black/60 dark:text-white/60">
-          {q
-            ? `Resultados para "${q}"`
-            : "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer."}
-        </p>
-      </section>
-
-      {!q && <ChallengeBanner />}
+    <div className="flex flex-col gap-4">
+      {q ? (
+        <section>
+          <h1 className="text-2xl font-bold">Resultados</h1>
+          <p className="text-black/60 dark:text-white/60">
+            Para &ldquo;{q}&rdquo;
+          </p>
+        </section>
+      ) : (
+        <>
+          {viewer && <PostComposer name={viewer.name} avatarUrl={viewer.avatarUrl} />}
+          <ChallengeBanner />
+        </>
+      )}
 
       <ForumFilters
         category={categoryFilter}

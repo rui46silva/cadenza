@@ -122,8 +122,13 @@ export default async function Navbar() {
                     {user.role === "ADMIN" ? "Admin" : "Moderação"}
                   </Link>
                 )}
-                <Link href="/posts/new" className={buttonPrimarySm}>
-                  Novo post
+                <Link
+                  href="/posts/new"
+                  title="Criar post"
+                  aria-label="Criar post"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-sm transition-all hover:shadow-md hover:brightness-110"
+                >
+                  <PlusCircle className="h-4.5 w-4.5" />
                 </Link>
                 {signOutForm}
               </>
