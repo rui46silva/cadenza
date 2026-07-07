@@ -5,6 +5,7 @@ import { Search, X } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import { roleLabel } from "@/components/RoleBadge";
 import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
 
 export type Expert = {
   id: string;
@@ -99,7 +100,7 @@ export default function ExpertPicker({
         />
       </div>
       {open && (
-        <div className="absolute left-0 right-0 z-20 mt-1 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <div className={`absolute left-0 right-0 mt-1 ${dropdownPanel}`}>
           {loading && results.length === 0 ? (
             <p className="px-3 py-2 text-sm text-black/40 dark:text-white/40">
               A procurar...

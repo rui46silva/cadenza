@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CommentForm from "@/components/CommentForm";
+import { useToast } from "@/components/ToastProvider";
 import UserBadges from "@/components/UserBadges";
 import { roleLabel } from "@/components/RoleBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -40,12 +41,16 @@ export default function CommentItem({
   currentUserRole?: string;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [replying, setReplying] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Otimista: marca já como eliminado assim que o servidor confirma.
+  const [locallyDeleted, setLocallyDeleted] = useState(false);
+  const isDeleted = comment.isDeleted || locallyDeleted;
 
   const canDelete =
-    !comment.isDeleted &&
+    !isDeleted &&
     (comment.authorId === currentUserId ||
       currentUserRole === "ADMIN" ||
       currentUserRole === "MODERATOR");
@@ -54,9 +59,15 @@ export default function CommentItem({
 
   async function handleDelete() {
     setDeleting(true);
-    await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/comments/${comment.id}`, { method: "DELETE" });
     setDeleting(false);
     setConfirmOpen(false);
+    if (!res.ok) {
+      toast("Não foi possível eliminar o comentário.", "error");
+      return;
+    }
+    setLocallyDeleted(true);
+    toast("Comentário eliminado");
     router.refresh();
   }
 
@@ -70,7 +81,7 @@ export default function CommentItem({
           : "border-black/10 dark:border-white/10"
       }`}
     >
-      {comment.isDeleted ? (
+      {isDeleted ? (
         <p className="text-sm italic text-black/40 dark:text-white/40">
           [comentário eliminado]
         </p>

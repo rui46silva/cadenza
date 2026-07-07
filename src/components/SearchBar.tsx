@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import CategoryDropdown from "@/components/CategoryDropdown";
+import { dropdownPanel } from "@/lib/ui";
 
 type TrendingTag = { id: string; name: string; postCount: number };
 
@@ -64,7 +65,7 @@ export default function SearchBar({
           className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-1.5 text-sm"
         />
         {open && !value && trending && trending.length > 0 && (
-          <div className="absolute left-0 right-0 z-20 mt-1 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+          <div className={`absolute left-0 right-0 mt-1 ${dropdownPanel}`}>
             <p className="flex items-center gap-1.5 px-3 pt-2 text-xs font-medium text-black/40 dark:text-white/40">
               <TrendingUp className="h-3.5 w-3.5" />
               Tópicos e comunidades em alta

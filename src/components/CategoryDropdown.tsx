@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
 import { ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/tagCategories";
 
@@ -36,7 +37,7 @@ export default function CategoryDropdown({
         />
       </button>
       {open && (
-        <ul className="absolute right-0 z-10 mt-1 w-44 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <ul className={`absolute right-0 mt-1 w-44 ${dropdownPanel}`}>
           <li>
             <button
               type="button"

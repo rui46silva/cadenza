@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, X, CheckCheck } from "lucide-react";
 import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
 import { useToast } from "@/components/ToastProvider";
 
 type Notification = {
@@ -110,7 +111,7 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 z-10 mt-1 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <div className={`absolute right-0 mt-1 w-80 max-w-[calc(100vw-2rem)] ${dropdownPanel}`}>
           <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 px-3 py-2">
             <span className="text-sm font-semibold">Notificações</span>
             {unreadCount > 0 && (
