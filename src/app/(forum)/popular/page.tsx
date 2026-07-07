@@ -68,14 +68,14 @@ export default async function PopularPage() {
           <li
             className={`rounded-lg border p-4 transition-colors flex flex-col gap-1.5 ${
               isTop
-                ? "border-red-500/50 bg-gradient-to-br from-red-500/10 to-transparent shadow-sm hover:border-red-500"
+                ? "border-orange-500/50 bg-gradient-to-br from-orange-500/10 to-transparent shadow-sm hover:border-orange-500"
                 : trending
                 ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
                 : "border-black/10 dark:border-white/10 hover:border-accent/60"
             }`}
           >
             {isTop && (
-              <span className="flex w-fit items-center gap-1 rounded-full bg-red-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
+              <span className="flex w-fit items-center gap-1 rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
                 <Flame className="h-3 w-3" />
                 Mais popular
               </span>
@@ -86,7 +86,7 @@ export default async function PopularPage() {
             >
               <span
                 className={`shrink-0 text-center font-bold tabular-nums ${
-                  isTop ? "text-red-500" : "w-5 text-black/30 dark:text-white/30"
+                  isTop ? "text-orange-500" : "w-5 text-black/30 dark:text-white/30"
                 }`}
               >
                 {isTop ? "" : index + 1}
@@ -110,7 +110,7 @@ export default async function PopularPage() {
               >
                 {post.author.name}
               </Link>{" "}
-              · <strong className={isTop ? "text-red-500" : ""}>{post.score} votos</strong> ·{" "}
+              · <strong className={isTop ? "text-orange-500" : ""}>{post.score} votos</strong> ·{" "}
               {post._count.comments} comentários · {formatRelativeTime(post.createdAt)}
             </span>
             {post.tags.length > 0 && (

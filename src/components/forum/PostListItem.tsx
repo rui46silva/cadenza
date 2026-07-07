@@ -48,23 +48,29 @@ export default function PostListItem({
   post,
   className = "",
   currentUserId,
+  isMostPopular = false,
 }: {
   post: PostListItemData;
   className?: string;
   currentUserId?: string;
+  isMostPopular?: boolean;
 }) {
   const Icon = TYPE_ICON[post.type];
   const createdAt =
     post.createdAt instanceof Date ? post.createdAt : new Date(post.createdAt);
-  const trending = isTrending({
-    score: post.score,
-    createdAt,
-    commentCount: post._count.comments,
-  });
+  // "Mais popular" tem prioridade sobre "Em alta" (é um sinal mais forte).
+  const trending =
+    !isMostPopular &&
+    isTrending({
+      score: post.score,
+      createdAt,
+      commentCount: post._count.comments,
+    });
   const primaryTag = post.tags[0]?.tag;
   const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
   const hasBadges =
+    isMostPopular ||
     trending ||
     post.isQuestion ||
     post.questionStatus ||
@@ -74,15 +80,25 @@ export default function PostListItem({
   return (
     <li
       className={`rounded-lg border p-4 transition-colors flex flex-col gap-1 ${
-        trending
-          ? "border-orange-500/40 bg-gradient-to-br from-orange-500/10 to-transparent hover:border-orange-500/70"
+        isMostPopular
+          ? "border-orange-500/40 bg-gradient-to-br from-orange-500/[0.07] to-transparent hover:border-orange-500/60"
+          : trending
+          ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
       } ${
-        ambassadorAuthor && !trending ? "border-l-2 border-l-fuchsia-500/60" : ""
+        ambassadorAuthor && !trending && !isMostPopular
+          ? "border-l-2 border-l-fuchsia-500/60"
+          : ""
       } ${className}`}
     >
       {hasBadges && (
         <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+          {isMostPopular && (
+            <span className="flex items-center gap-1 rounded-full border border-orange-500/40 bg-orange-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
+              <Flame className="h-3 w-3" />
+              Mais popular
+            </span>
+          )}
           {trending && (
             <span className="flex items-center gap-1 rounded-full bg-orange-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm">
               <Flame className="h-3 w-3" />
@@ -125,7 +141,12 @@ export default function PostListItem({
           )}
         </div>
       )}
-      <Link href={`/posts/${post.id}`} className="flex items-center gap-2 font-medium">
+      <Link
+        href={`/posts/${post.id}`}
+        className={`flex items-center gap-2 font-medium ${
+          isMostPopular ? "text-[15px] font-semibold" : ""
+        }`}
+      >
         <Icon className="h-4 w-4 text-accent shrink-0" />
         {post.title}
         {post.pinned && <Pin className="h-3.5 w-3.5 text-accent shrink-0" />}

@@ -53,6 +53,15 @@ export default async function HomePage({
     take: FORUM_PAGE_SIZE,
   });
 
+  // Destaca o post com mais votos nesta página (fora de pesquisas), desde que
+  // tenha tração real, com um realce subtil "Mais popular".
+  const mostPopularId =
+    !q && posts.length > 0
+      ? posts.reduce((top, p) => (p.score > top.score ? p : top)).id
+      : undefined;
+  const mostPopularScore = posts.find((p) => p.id === mostPopularId)?.score ?? 0;
+  const highlightId = mostPopularScore >= 3 ? mostPopularId : undefined;
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -86,6 +95,7 @@ export default async function HomePage({
         following={followingOnly}
         adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FEED}
         currentUserId={session?.user?.id}
+        mostPopularId={highlightId}
       />
 
       <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
