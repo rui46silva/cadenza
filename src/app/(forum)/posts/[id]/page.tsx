@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle, Music } from "lucide-react";
+import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle, Music, Flame } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -154,6 +154,23 @@ export default async function PostPage({
     ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
     : null;
 
+  // É este o post mais popular do fórum? Só vale a pena procurar se já tiver
+  // tração (score >= 3), o que evita a varredura na esmagadora maioria das visitas.
+  let isMostPopular = false;
+  if (score >= 3) {
+    const candidates = await prisma.post.findMany({
+      select: { id: true, votes: { select: { value: true } } },
+      take: 200,
+    });
+    const topId = candidates
+      .map((c) => ({
+        id: c.id,
+        s: c.votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
+      }))
+      .reduce((top, c) => (c.s > top.s ? c : top)).id;
+    isMostPopular = topId === post.id;
+  }
+
   const commentTree = buildCommentTree(post.comments);
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -181,7 +198,30 @@ export default async function PostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="flex flex-col gap-2">
+
+      {isMostPopular && (
+        <div className="flex items-center gap-3 rounded-xl border border-orange-500/40 bg-gradient-to-r from-orange-500/15 via-orange-500/5 to-transparent px-4 py-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm">
+            <Flame className="h-5 w-5" />
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+              Post mais popular do fórum
+            </span>
+            <span className="text-xs text-black/50 dark:text-white/50">
+              O post com mais votos da comunidade neste momento.
+            </span>
+          </span>
+        </div>
+      )}
+
+      <header
+        className={`flex flex-col gap-2 ${
+          isMostPopular
+            ? "rounded-xl border border-orange-500/30 bg-orange-500/[0.04] p-4"
+            : ""
+        }`}
+      >
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
             <Video className="h-5 w-5 text-accent shrink-0" />
