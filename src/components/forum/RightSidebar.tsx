@@ -27,12 +27,27 @@ export default async function RightSidebar() {
   });
 
   const period = currentPeriod();
-  const topUsers = await prisma.user.findMany({
+  const monthlyTop = await prisma.user.findMany({
     where: { monthlyPeriod: period, monthlyPoints: { gt: 0 } },
     orderBy: { monthlyPoints: "desc" },
     take: 5,
     select: { id: true, name: true, monthlyPoints: true },
   });
+
+  // Se ainda ninguém pontuou este mês, mostra o ranking de sempre para a
+  // secção nunca desaparecer.
+  const usingMonthly = monthlyTop.length > 0;
+  const allTimeTop = usingMonthly
+    ? []
+    : await prisma.user.findMany({
+        where: { points: { gt: 0 } },
+        orderBy: { points: "desc" },
+        take: 5,
+        select: { id: true, name: true, points: true },
+      });
+  const topUsers = usingMonthly
+    ? monthlyTop.map((u) => ({ id: u.id, name: u.name, value: u.monthlyPoints }))
+    : allTimeTop.map((u) => ({ id: u.id, name: u.name, value: u.points }));
   const monthName = MONTH_NAMES[new Date().getMonth()];
 
   return (
@@ -42,7 +57,7 @@ export default async function RightSidebar() {
           <div className="mb-2 flex items-center justify-between">
             <h2 className="flex items-center gap-1.5 font-semibold text-black/70 dark:text-white/70">
               <Trophy className="h-4 w-4 text-accent" />
-              Top de {monthName}
+              {usingMonthly ? `Top de ${monthName}` : "Top da comunidade"}
             </h2>
             <Link href="/ranking" className="text-xs text-accent hover:underline">
               Ver tudo
@@ -62,7 +77,7 @@ export default async function RightSidebar() {
                     <span className="truncate">{u.name}</span>
                   </span>
                   <span className="text-black/40 dark:text-white/40 text-xs shrink-0">
-                    {u.monthlyPoints} pts
+                    {u.value} pts
                   </span>
                 </Link>
               </li>

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Flame, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isDemoHost } from "@/lib/demoHost";
 import UserBadges from "@/components/UserBadges";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -40,7 +42,8 @@ export default async function Navbar() {
     : null;
 
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
-  const isDemo = user?.email === "demo@cadenza.app";
+  const host = (await headers()).get("host");
+  const isDemo = user?.email === "demo@cadenza.app" || isDemoHost(host);
   const year = new Date().getFullYear();
 
   const signOutForm = (
@@ -63,8 +66,11 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
       {isDemo && (
-        <div className="flex items-center justify-center gap-2 bg-accent/10 px-4 py-1.5 text-xs text-accent">
-          Estás em modo demo — os dados podem ser reiniciados a qualquer momento.
+        <div className="flex items-center justify-center gap-2 bg-accent px-4 py-1.5 text-center text-xs font-medium text-accent-foreground">
+          <span className="inline-flex h-4 items-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold uppercase tracking-wide">
+            Demo
+          </span>
+          Estás a ver uma conta de demonstração — explora à vontade, os dados podem ser reiniciados.
         </div>
       )}
       <nav className="mx-auto max-w-7xl px-4 py-3">
