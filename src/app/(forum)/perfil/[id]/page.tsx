@@ -52,6 +52,7 @@ export default async function ProfilePage({
       name: true,
       role: true,
       instrument: true,
+      gender: true,
       verificationStatus: true,
       avatarUrl: true,
       bio: true,

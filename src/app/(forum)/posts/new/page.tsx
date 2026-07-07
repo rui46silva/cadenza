@@ -19,6 +19,7 @@ export default async function NewPostPage({
           name: true,
           role: true,
           instrument: true,
+          gender: true,
           avatarUrl: true,
           verificationStatus: true,
           isAmbassador: true,

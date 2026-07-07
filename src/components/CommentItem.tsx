@@ -17,6 +17,7 @@ export type CommentNode = {
     name: string;
     role: string;
     instrument: string | null;
+    gender: string | null;
     verificationStatus: string | null;
     isAmbassador: boolean;
   };

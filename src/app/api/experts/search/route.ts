@@ -31,6 +31,7 @@ export async function GET(req: Request) {
       name: true,
       role: true,
       instrument: true,
+      gender: true,
       avatarUrl: true,
       verificationStatus: true,
       isAmbassador: true,

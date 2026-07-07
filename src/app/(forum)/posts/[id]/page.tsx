@@ -29,6 +29,7 @@ function buildCommentTree(
       name: string;
       role: string;
       instrument: string | null;
+      gender: string | null;
       verificationStatus: string | null;
       isAmbassador: boolean;
     };
@@ -114,6 +115,7 @@ export default async function PostPage({
           name: true,
           role: true,
           instrument: true,
+          gender: true,
           verificationStatus: true,
           avatarUrl: true,
           isAmbassador: true,
@@ -129,6 +131,7 @@ export default async function PostPage({
               name: true,
               role: true,
               instrument: true,
+              gender: true,
               verificationStatus: true,
               isAmbassador: true,
             },

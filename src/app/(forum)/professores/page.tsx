@@ -28,6 +28,7 @@ export default async function ProfessoresPage() {
       name: true,
       role: true,
       instrument: true,
+      gender: true,
       bio: true,
       avatarUrl: true,
       isAmbassador: true,
@@ -85,9 +86,13 @@ export default async function ProfessoresPage() {
                     {user._count.comments}
                   </span>
                 </div>
-                {session?.user && session.user.id !== user.id && (
+                {session?.user?.id === user.id ? (
+                  <span className="text-xs text-black/40 dark:text-white/40">
+                    A tua conta
+                  </span>
+                ) : session?.user ? (
                   <AskQuestionButton expertId={user.id} />
-                )}
+                ) : null}
               </div>
             </div>
           ))}

@@ -11,6 +11,7 @@ export type Expert = {
   name: string;
   role: string;
   instrument: string | null;
+  gender?: string | null;
   avatarUrl: string | null;
   verificationStatus?: string | null;
   isAmbassador?: boolean | null;

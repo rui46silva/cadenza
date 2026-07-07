@@ -8,6 +8,11 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Gender {
+  MASCULINO
+  FEMININO
+}
+
 enum Role {
   ADMIN
   MODERATOR
@@ -66,6 +71,7 @@ model User {
   verifiedBy         User?     @relation("VerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
   bio           String?
   instrument    String?
+  gender        Gender?
   avatarUrl     String?
   instagramHandle String?
   points        Int       @default(0)

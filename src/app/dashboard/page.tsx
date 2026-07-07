@@ -21,6 +21,7 @@ export default async function DashboardPage() {
       email: true,
       role: true,
       instrument: true,
+      gender: true,
       bio: true,
       avatarUrl: true,
       instagramHandle: true,
@@ -93,7 +94,7 @@ export default async function DashboardPage() {
     : null;
 
   return (
-    <div className="mx-auto w-full max-w-md flex flex-col gap-6 px-4 py-6">
+    <div className="mx-auto w-full max-w-3xl flex flex-col gap-6 px-4 py-6">
       <div>
         <h1 className="text-2xl font-bold">O meu perfil</h1>
         <p className="text-sm text-black/50 dark:text-white/50">{user.email}</p>
@@ -155,7 +156,10 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <ProfileForm profile={user} />
+      <div className="rounded-xl border border-black/10 dark:border-white/10 p-5">
+        <h2 className="font-semibold mb-4">Editar perfil</h2>
+        <ProfileForm profile={user} />
+      </div>
 
       <div>
         <h2 className="font-semibold mb-1">Tópicos que sigo</h2>
