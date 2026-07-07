@@ -18,3 +18,11 @@ export const pillActive =
 
 export const card =
   "rounded-lg border border-black/10 dark:border-white/10 p-5 transition-colors hover:border-accent/60";
+
+/**
+ * Estilo visual único para todos os menus/popovers da plataforma.
+ * Combina com as classes de posição (absolute, left/right, mt, w-*) no local de
+ * uso. z-30 garante que ficam acima da navbar fixa (z-10).
+ */
+export const dropdownPanel =
+  "z-30 overflow-hidden rounded-lg border border-black/10 dark:border-white/15 bg-white dark:bg-black shadow-lg";

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle } from "lucide-react";
+import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle, Music, Flame } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -17,6 +17,7 @@ import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";
 import { formatRelativeTime } from "@/lib/time";
 import { getVideoEmbedUrl } from "@/lib/video";
+import { getMostPopularPostId } from "@/lib/popular";
 
 function buildCommentTree(
   comments: {
@@ -29,6 +30,7 @@ function buildCommentTree(
       name: string;
       role: string;
       instrument: string | null;
+      gender: string | null;
       verificationStatus: string | null;
       isAmbassador: boolean;
     };
@@ -114,6 +116,7 @@ export default async function PostPage({
           name: true,
           role: true,
           instrument: true,
+          gender: true,
           verificationStatus: true,
           avatarUrl: true,
           isAmbassador: true,
@@ -129,6 +132,7 @@ export default async function PostPage({
               name: true,
               role: true,
               instrument: true,
+              gender: true,
               verificationStatus: true,
               isAmbassador: true,
             },
@@ -150,6 +154,10 @@ export default async function PostPage({
   const currentUserVote = session?.user
     ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
     : null;
+
+  // É este o post mais popular do fórum? Comparado com todos os posts.
+  const mostPopular = await getMostPopularPostId();
+  const isMostPopular = mostPopular?.id === post.id;
 
   const commentTree = buildCommentTree(post.comments);
 
@@ -173,11 +181,39 @@ export default async function PostPage({
   };
 
   return (
-    <article className="flex flex-col gap-5">
+    <article
+      className={`flex flex-col gap-5 ${
+        isMostPopular
+          ? "rounded-2xl border-2 border-orange-500/40 bg-gradient-to-b from-orange-500/[0.06] to-transparent p-4 sm:p-6 shadow-[0_0_0_1px_rgba(249,115,22,0.05)]"
+          : ""
+      }`}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      {isMostPopular && (
+        <div className="-mx-4 -mt-4 flex items-center gap-4 rounded-t-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-4 text-white sm:-mx-6 sm:-mt-6">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 ring-2 ring-white/40">
+            <Flame className="h-6 w-6" />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-white/80">
+              🔥 Em destaque
+            </span>
+            <span className="text-lg font-bold">Post mais popular do fórum</span>
+            <span className="text-xs text-white/85">
+              O post com mais votos da comunidade neste momento.
+            </span>
+          </div>
+          <span className="flex shrink-0 flex-col items-center rounded-xl bg-white/15 px-3 py-1.5 ring-1 ring-white/30">
+            <span className="text-xl font-bold tabular-nums">{score}</span>
+            <span className="text-[10px] uppercase tracking-wide text-white/80">votos</span>
+          </span>
+        </div>
+      )}
+
       <header className="flex flex-col gap-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
@@ -193,6 +229,12 @@ export default async function PostPage({
               Dúvida
             </span>
           )}
+          {post.feedbackRequest && (
+            <span className="flex items-center gap-1 rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-xs font-medium text-fuchsia-600 dark:text-fuchsia-400">
+              <Music className="h-3.5 w-3.5" />
+              Pedido de feedback
+            </span>
+          )}
           {post.bestAnswerId && (
             <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -200,6 +242,11 @@ export default async function PostPage({
             </span>
           )}
         </h1>
+        {post.feedbackRequest && post.feedbackFocus && (
+          <p className="rounded-md bg-fuchsia-500/10 px-3 py-2 text-sm text-fuchsia-700 dark:text-fuchsia-300">
+            <span className="font-medium">Feedback pedido:</span> {post.feedbackFocus}
+          </p>
+        )}
         {post.directedTo && (
           <p className="text-sm text-black/50 dark:text-white/50">
             Dúvida dirigida a{" "}

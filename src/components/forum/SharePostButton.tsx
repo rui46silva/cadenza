@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Share2, Link2, Check } from "lucide-react";
+import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
+import { useToast } from "@/components/ToastProvider";
 
 export default function SharePostButton({
   postId,
@@ -14,16 +17,9 @@ export default function SharePostButton({
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState(title);
   const ref = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   function getUrl() {
     return `${window.location.origin}/posts/${postId}`;
@@ -35,6 +31,7 @@ export default function SharePostButton({
     const text = message.trim() || title;
     await navigator.clipboard.writeText(`${text}\n${getUrl()}`).catch(() => null);
     setCopied(true);
+    toast("Link copiado");
     setTimeout(() => setCopied(false), 1500);
   }
 
@@ -64,7 +61,7 @@ export default function SharePostButton({
       {open && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute left-0 z-20 mt-1 w-64 overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-2 shadow-md text-sm"
+          className={`absolute left-0 mt-1 w-64 p-2 text-sm ${dropdownPanel}`}
         >
           <label className="block px-1 pb-1 text-xs text-black/50 dark:text-white/50">
             Mensagem

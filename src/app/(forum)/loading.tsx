@@ -1,5 +1,5 @@
-import PageLoading from "@/components/PageLoading";
+import FeedSkeleton from "@/components/forum/FeedSkeleton";
 
 export default function Loading() {
-  return <PageLoading />;
+  return <FeedSkeleton />;
 }

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { HelpCircle, PlusCircle } from "lucide-react";
+import { HelpCircle, PlusCircle, Inbox } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
-import { buttonPrimarySm, pill, pillActive } from "@/lib/ui";
+import { buttonPrimarySm, buttonOutlineSm, pill, pillActive } from "@/lib/ui";
 import PostListItem from "@/components/forum/PostListItem";
 
 export const metadata: Metadata = {
@@ -34,6 +34,17 @@ export default async function DuvidasPage({
 
   const session = await auth();
   const viewerId = session?.user?.id;
+
+  const viewer = viewerId
+    ? await prisma.user.findUnique({
+        where: { id: viewerId },
+        select: { role: true, verificationStatus: true },
+      })
+    : null;
+  const isVerifiedPro =
+    viewer &&
+    (VERIFIABLE_ROLES as readonly string[]).includes(viewer.role) &&
+    viewer.verificationStatus === "APPROVED";
 
   const questions = await prisma.post.findMany({
     where: {
@@ -98,15 +109,26 @@ export default async function DuvidasPage({
             músicos profissionais verificados.
           </p>
         </div>
-        {session?.user && (
-          <Link
-            href="/posts/new?duvida=1"
-            className={`${buttonPrimarySm} flex items-center gap-1.5 shrink-0`}
-          >
-            <PlusCircle className="h-4 w-4" />
-            Tirar dúvida
-          </Link>
-        )}
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {isVerifiedPro && (
+            <Link
+              href="/duvidas/responder"
+              className={`${buttonOutlineSm} flex items-center gap-1.5`}
+            >
+              <Inbox className="h-4 w-4" />
+              Responder a dúvidas
+            </Link>
+          )}
+          {session?.user && (
+            <Link
+              href="/posts/new?duvida=1"
+              className={`${buttonPrimarySm} flex items-center gap-1.5`}
+            >
+              <PlusCircle className="h-4 w-4" />
+              Tirar dúvida
+            </Link>
+          )}
+        </div>
       </section>
 
       <div className="flex flex-wrap gap-2">

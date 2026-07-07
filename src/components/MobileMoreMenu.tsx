@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
 import { MoreVertical, Palette } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import CookiePreferencesButton from "@/components/CookiePreferencesButton";
@@ -9,15 +11,7 @@ export default function MobileMoreMenu({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   return (
     <div ref={ref} className="relative">
@@ -30,7 +24,7 @@ export default function MobileMoreMenu({ children }: { children?: ReactNode }) {
         <MoreVertical className="h-5 w-5" />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-1 w-56 rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black p-2 shadow-md flex flex-col gap-1 text-sm">
+        <div className={`absolute right-0 mt-1 w-56 p-2 flex flex-col gap-1 text-sm ${dropdownPanel}`}>
           {children}
           <div className="flex items-center justify-between rounded-md px-2 py-1.5">
             <span className="flex items-center gap-2">

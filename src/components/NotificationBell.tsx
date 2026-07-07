@@ -1,36 +1,64 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Bell } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, X, CheckCheck } from "lucide-react";
+import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
+import { useToast } from "@/components/ToastProvider";
 
 type Notification = {
   id: string;
-  type: "COMMENT" | "REPLY" | "QUESTION";
+  type: "COMMENT" | "REPLY" | "QUESTION" | "BEST_ANSWER";
   read: boolean;
   createdAt: string;
   fromUser: { name: string };
   post: { id: string; title: string } | null;
 };
 
-const FADE_AFTER_MS = 2500;
-const REMOVE_AFTER_MS = 5000;
+function notificationAction(type: Notification["type"]): string {
+  switch (type) {
+    case "BEST_ANSWER":
+      return "fixou a tua resposta — ganhaste 15 pontos!";
+    case "QUESTION":
+      return "publicou uma dúvida para ti";
+    case "REPLY":
+      return "respondeu ao teu comentário";
+    default:
+      return "comentou no teu post";
+  }
+}
 
 export default function NotificationBell() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
   const ref = useRef<HTMLDivElement>(null);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // IDs já vistos, para só notificar via toast as que chegam depois do 1º load.
+  const seenIds = useRef<Set<string> | null>(null);
 
   function load() {
     fetch("/api/notifications")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data) return;
-        setNotifications(data.notifications ?? []);
-        setUnreadCount(data.unreadCount ?? 0);
+        const next: Notification[] = data.notifications ?? [];
+
+        if (seenIds.current === null) {
+          // Primeiro carregamento: regista o estado atual sem notificar.
+          seenIds.current = new Set(next.map((n) => n.id));
+        } else {
+          const fresh = next.filter(
+            (n) => !n.read && !seenIds.current!.has(n.id)
+          );
+          for (const n of fresh) {
+            toast(`${n.fromUser.name} ${notificationAction(n.type)}`);
+          }
+          next.forEach((n) => seenIds.current!.add(n.id));
+        }
+
+        setNotifications(next);
       })
       .catch(() => {});
   }
@@ -39,57 +67,40 @@ export default function NotificationBell() {
     load();
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+  useDismiss(ref, () => setOpen(false), open);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  async function openNotification(n: Notification) {
+    setOpen(false);
+    if (!n.read) {
+      setNotifications((prev) =>
+        prev.map((x) => (x.id === n.id ? { ...x, read: true } : x))
+      );
+      fetch(`/api/notifications/${n.id}`, { method: "PATCH" }).catch(() => {});
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  useEffect(() => {
-    const activeTimers = timers.current;
-    return () => {
-      activeTimers.forEach(clearTimeout);
-    };
-  }, []);
-
-  function scheduleClear(ids: string[]) {
-    const fadeTimer = setTimeout(() => {
-      setFadingIds((prev) => new Set([...prev, ...ids]));
-    }, FADE_AFTER_MS);
-    const removeTimer = setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => !ids.includes(n.id)));
-      setFadingIds((prev) => {
-        const next = new Set(prev);
-        ids.forEach((id) => next.delete(id));
-        return next;
-      });
-    }, REMOVE_AFTER_MS);
-    timers.current.push(fadeTimer, removeTimer);
+    if (n.post) router.push(`/posts/${n.post.id}`);
   }
 
-  async function toggleOpen() {
-    const next = !open;
-    setOpen(next);
-    if (next && unreadCount > 0) {
-      const idsToClear = notifications.filter((n) => !n.read).map((n) => n.id);
-      await fetch("/api/notifications", { method: "PATCH" });
-      setUnreadCount(0);
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      scheduleClear(idsToClear);
-    }
+  async function remove(id: string) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    fetch(`/api/notifications/${id}`, { method: "DELETE" }).catch(() => {});
+  }
+
+  async function markAllRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    fetch("/api/notifications", { method: "PATCH" }).catch(() => {});
   }
 
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={toggleOpen}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Notificações"
         className="relative flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10"
       >
         <Bell className="h-4.5 w-4.5" />
@@ -100,37 +111,58 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <ul className="absolute right-0 z-10 mt-1 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
-          {notifications.length === 0 && (
-            <li className="px-3 py-4 text-center text-sm text-black/50 dark:text-white/50">
-              Sem notificações.
-            </li>
-          )}
-          {notifications.map((n) => (
-            <li
-              key={n.id}
-              className={`transition-opacity duration-1000 ${
-                !n.read ? "bg-accent/5" : ""
-              } ${fadingIds.has(n.id) ? "opacity-30" : "opacity-100"}`}
-            >
-              <Link
-                href={n.post ? `/posts/${n.post.id}` : "#"}
-                onClick={() => setOpen(false)}
-                className="flex flex-col gap-0.5 px-3 py-2 text-sm hover:bg-accent/10"
+        <div className={`absolute right-0 mt-1 w-80 max-w-[calc(100vw-2rem)] ${dropdownPanel}`}>
+          <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 px-3 py-2">
+            <span className="text-sm font-semibold">Notificações</span>
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="flex items-center gap-1 text-xs text-black/50 dark:text-white/50 hover:text-accent"
               >
-                <span>
-                  <strong>{n.fromUser.name}</strong>{" "}
-                  {n.type === "QUESTION"
-                    ? "publicou uma dúvida para ti"
-                    : n.type === "REPLY"
-                    ? "respondeu ao teu comentário"
-                    : "comentou no teu post"}
-                  {n.post && <> em &ldquo;{n.post.title}&rdquo;</>}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <CheckCheck className="h-3.5 w-3.5" />
+                Marcar todas como lidas
+              </button>
+            )}
+          </div>
+          <ul className="max-h-96 overflow-y-auto">
+            {notifications.length === 0 && (
+              <li className="px-3 py-6 text-center text-sm text-black/50 dark:text-white/50">
+                Sem notificações.
+              </li>
+            )}
+            {notifications.map((n) => (
+              <li
+                key={n.id}
+                className={`flex items-start gap-1 border-b border-black/5 last:border-0 dark:border-white/5 ${
+                  !n.read ? "bg-accent/5" : ""
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => openNotification(n)}
+                  className="flex flex-1 items-start gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10"
+                >
+                  {!n.read && (
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" />
+                  )}
+                  <span className={n.read ? "text-black/60 dark:text-white/60" : ""}>
+                    <strong>{n.fromUser.name}</strong> {notificationAction(n.type)}
+                    {n.post && <> em &ldquo;{n.post.title}&rdquo;</>}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(n.id)}
+                  aria-label="Eliminar notificação"
+                  className="mt-1.5 mr-1 shrink-0 rounded-full p-1 text-black/30 hover:bg-black/5 hover:text-rose-500 dark:text-white/30 dark:hover:bg-white/10"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { GraduationCap, FileText, MessageSquare, HelpCircle } from "lucide-react";
+import { GraduationCap, FileText, MessageSquare } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
-import { buttonPrimarySm } from "@/lib/ui";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
+import AskQuestionButton from "@/components/AskQuestionButton";
 
 export const metadata: Metadata = {
   title: "Professores e profissionais",
@@ -28,6 +28,7 @@ export default async function ProfessoresPage() {
       name: true,
       role: true,
       instrument: true,
+      gender: true,
       bio: true,
       avatarUrl: true,
       isAmbassador: true,
@@ -85,15 +86,13 @@ export default async function ProfessoresPage() {
                     {user._count.comments}
                   </span>
                 </div>
-                {session?.user && session.user.id !== user.id && (
-                  <Link
-                    href={`/posts/new?duvida=1&para=${user.id}`}
-                    className={`${buttonPrimarySm} flex items-center gap-1.5`}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                    Tirar dúvida
-                  </Link>
-                )}
+                {session?.user?.id === user.id ? (
+                  <span className="text-xs text-black/40 dark:text-white/40">
+                    A tua conta
+                  </span>
+                ) : session?.user ? (
+                  <AskQuestionButton expertId={user.id} />
+                ) : null}
               </div>
             </div>
           ))}

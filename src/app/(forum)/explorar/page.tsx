@@ -69,7 +69,7 @@ export default async function ExplorarPage() {
         </Link>
         <Link href="/professores" className={card}>
           <GraduationCap className="h-6 w-6 text-accent" />
-          <h2 className="font-semibold mt-1">Professores</h2>
+          <h2 className="font-semibold mt-1">Profissionais</h2>
           <p className="text-sm text-black/60 dark:text-white/60">
             Diretório de contas verificadas — tira dúvidas diretamente com quem sabe.
           </p>

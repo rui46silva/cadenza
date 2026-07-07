@@ -1,24 +1,34 @@
 import type { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { currentPeriod } from "@/lib/points";
+import { currentChallenge } from "@/lib/challenges";
 
 const DEMO_EMAIL = "demo@cadenza.app";
 
+// Sobe sempre que os dados de demonstração mudam, para forçar a atualização da
+// demo já existente (ver o bloco de "refresh" no fim). Assim as novidades da
+// plataforma ficam também visíveis na conta demo.
+const SEED_VERSION = "2";
+const SEED_VERSION_KEY = "demo-seed-version";
+
 /**
- * Cria (de forma idempotente) um conjunto de dados de demonstração — utilizadores,
- * posts, comentários, notícias e vagas — incluindo a conta demo@cadenza.app usada
- * pelo botão "Experimentar em modo demo" no login. Seguro a chamar várias vezes:
- * a partir da segunda chamada só faz uma leitura rápida, sem repetir o seed todo.
+ * Prepara os dados de demonstração — utilizadores, posts, comentários, notícias
+ * e vagas — incluindo a conta demo@cadenza.app usada pelo botão "Experimentar em
+ * modo demo". Idempotente: só corre o trabalho todo quando a versão do seed muda;
+ * caso contrário faz uma leitura rápida e sai.
  */
 export async function ensureDemoSeed(prisma: PrismaClient) {
-  const existingDemo = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
-  if (existingDemo) {
-    return { demo: existingDemo.email };
+  const meta = await prisma.appMeta.findUnique({ where: { key: SEED_VERSION_KEY } });
+  if (meta?.value === SEED_VERSION) {
+    return { demo: DEMO_EMAIL };
   }
 
   const passwordHash = await bcrypt.hash("password123", 10);
   const demoPasswordHash = await bcrypt.hash("demo1234", 10);
   const now = new Date();
   const daysAgo = (n: number) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
+  const period = currentPeriod(now);
+  const challenge = currentChallenge(now);
 
   const tagDefs: { name: string; category: "INSTRUMENT" | "GENRE" | "LEVEL" | "OTHER" }[] = [
     { name: "piano", category: "INSTRUMENT" },
@@ -53,18 +63,21 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
     }),
     prisma.user.upsert({
       where: { email: "professor@cadenza.app" },
-      update: {},
+      update: { gender: "FEMININO" },
       create: {
         name: "Maria Costa",
         email: "professor@cadenza.app",
         passwordHash,
         role: "PROFESSOR",
+        gender: "FEMININO",
         bio: "Professora de piano clássico, 15 anos de experiência. Adoro ajudar alunos a perder o medo do palco.",
         instrument: "Piano",
         verificationStatus: "APPROVED",
         emailVerified: now,
         onboardedAt: now,
         points: 340,
+        monthlyPoints: 180,
+        monthlyPeriod: period,
         currentStreak: 4,
         longestStreak: 12,
         lastActiveAt: now,
@@ -78,11 +91,14 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         email: "aluno@cadenza.app",
         passwordHash,
         role: "ALUNO",
+        gender: "MASCULINO",
         bio: "A aprender saxofone, adoro jazz.",
         instrument: "Saxofone",
         emailVerified: now,
         onboardedAt: now,
         points: 85,
+        monthlyPoints: 60,
+        monthlyPeriod: period,
         currentStreak: 2,
         longestStreak: 6,
         lastActiveAt: now,
@@ -90,18 +106,21 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
     }),
     prisma.user.upsert({
       where: { email: "mariana@cadenza.app" },
-      update: { isAmbassador: true },
+      update: { isAmbassador: true, gender: "FEMININO" },
       create: {
         name: "Mariana Ferreira",
         email: "mariana@cadenza.app",
         passwordHash,
         role: "MUSICO_PROFISSIONAL",
+        gender: "FEMININO",
         bio: "Violinista na Orquestra Sinfónica Metropolitana. Aberta a dar dicas de técnica e postura.",
         instrument: "Violino",
         verificationStatus: "APPROVED",
         emailVerified: now,
         onboardedAt: now,
         points: 510,
+        monthlyPoints: 240,
+        monthlyPeriod: period,
         currentStreak: 9,
         longestStreak: 31,
         lastActiveAt: now,
@@ -116,11 +135,14 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         email: "tiago@cadenza.app",
         passwordHash,
         role: "ALUNO",
+        gender: "MASCULINO",
         bio: "Guitarrista autodidata, à procura de banda.",
         instrument: "Guitarra elétrica",
         emailVerified: now,
         onboardedAt: now,
         points: 40,
+        monthlyPoints: 25,
+        monthlyPeriod: period,
         currentStreak: 1,
         longestStreak: 3,
         lastActiveAt: now,
@@ -128,18 +150,21 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
     }),
     prisma.user.upsert({
       where: { email: "sofia@cadenza.app" },
-      update: {},
+      update: { gender: "FEMININO" },
       create: {
         name: "Sofia Marques",
         email: "sofia@cadenza.app",
         passwordHash,
         role: "PROFESSOR",
+        gender: "FEMININO",
         bio: "Professora de canto e técnica vocal. Especialista em jazz e soul.",
         instrument: "Voz",
         verificationStatus: "APPROVED",
         emailVerified: now,
         onboardedAt: now,
         points: 220,
+        monthlyPoints: 130,
+        monthlyPeriod: period,
         currentStreak: 3,
         longestStreak: 15,
         lastActiveAt: now,
@@ -158,6 +183,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 65,
+        monthlyPoints: 45,
+        monthlyPeriod: period,
         currentStreak: 5,
         longestStreak: 8,
         lastActiveAt: now,
@@ -196,6 +223,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
           authorId: aluno.id,
           pinned: true,
           views: 142,
+          feedbackRequest: true,
+          feedbackFocus: "Feedback à afinação e ao rubato na secção B, sobretudo nas passagens rápidas.",
           createdAt: daysAgo(9),
           tags: { create: [{ tagId: byName("piano").id }, { tagId: byName("clássica").id }] },
         },
@@ -270,6 +299,7 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
           videoUrl: "https://www.youtube.com/watch?v=8OxaJfTNKW8",
           authorId: sofia.id,
           views: 176,
+          challengeId: challenge.id,
           createdAt: daysAgo(3),
           tags: { create: [{ tagId: byName("voz").id }, { tagId: byName("jazz").id }] },
         },
@@ -491,6 +521,59 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
       skipDuplicates: true,
     }),
   ]);
+
+  // Refresh idempotente: garante que uma demo já existente (criada antes destes
+  // campos) fica com os dados atuais. Acrescenta aqui sempre que uma novidade
+  // precisar de aparecer na demo, e sobe SEED_VERSION.
+  await Promise.all([
+    prisma.user.update({
+      where: { email: "professor@cadenza.app" },
+      data: { gender: "FEMININO", monthlyPoints: 180, monthlyPeriod: period },
+    }),
+    prisma.user.update({
+      where: { email: "aluno@cadenza.app" },
+      data: { gender: "MASCULINO", monthlyPoints: 60, monthlyPeriod: period },
+    }),
+    prisma.user.update({
+      where: { email: "mariana@cadenza.app" },
+      data: {
+        gender: "FEMININO",
+        isAmbassador: true,
+        monthlyPoints: 240,
+        monthlyPeriod: period,
+      },
+    }),
+    prisma.user.update({
+      where: { email: "tiago@cadenza.app" },
+      data: { gender: "MASCULINO", monthlyPoints: 25, monthlyPeriod: period },
+    }),
+    prisma.user.update({
+      where: { email: "sofia@cadenza.app" },
+      data: { gender: "FEMININO", monthlyPoints: 130, monthlyPeriod: period },
+    }),
+    prisma.user.update({
+      where: { email: DEMO_EMAIL },
+      data: { monthlyPoints: 45, monthlyPeriod: period },
+    }),
+    prisma.post.update({
+      where: { id: "seed-post-1" },
+      data: {
+        feedbackRequest: true,
+        feedbackFocus:
+          "Feedback à afinação e ao rubato na secção B, sobretudo nas passagens rápidas.",
+      },
+    }),
+    prisma.post.update({
+      where: { id: "seed-post-6" },
+      data: { challengeId: challenge.id },
+    }),
+  ]);
+
+  await prisma.appMeta.upsert({
+    where: { key: SEED_VERSION_KEY },
+    update: { value: SEED_VERSION },
+    create: { key: SEED_VERSION_KEY, value: SEED_VERSION },
+  });
 
   return {
     admin: admin.email,

@@ -8,7 +8,7 @@ import BanControls from "@/components/BanControls";
 import ModeratorToggle from "@/components/ModeratorToggle";
 import AmbassadorToggle from "@/components/AmbassadorToggle";
 import ReportActions from "@/components/ReportActions";
-import DeleteWaitlistEntry from "@/components/DeleteWaitlistEntry";
+import WaitlistList from "@/components/WaitlistList";
 import DeleteUserButton from "@/components/DeleteUserButton";
 import TagCategoryManager from "@/components/admin/TagCategoryManager";
 import { isStaff, INFRACTION_LABELS } from "@/lib/moderation";
@@ -226,29 +226,14 @@ export default async function AdminPage() {
       )}
 
       {isAdmin && (
-        <section>
-          <h2 className="font-semibold mb-3">Lista de espera ({waitlistSignups.length})</h2>
-          <ul className="flex flex-col gap-2">
-            {waitlistSignups.length === 0 && (
-              <p className="text-black/50 dark:text-white/50">Ainda não há inscritos.</p>
-            )}
-            {waitlistSignups.map((w) => (
-              <li
-                key={w.id}
-                className="rounded-lg border border-black/10 dark:border-white/10 p-3 flex items-center justify-between gap-4 flex-wrap"
-              >
-                <div>
-                  <p className="font-medium text-sm">{w.email}</p>
-                  <p className="text-xs text-black/50 dark:text-white/50">
-                    {w.instrument ?? "Sem instrumento"} ·{" "}
-                    {w.createdAt.toLocaleDateString("pt-PT")}
-                  </p>
-                </div>
-                <DeleteWaitlistEntry id={w.id} />
-              </li>
-            ))}
-          </ul>
-        </section>
+        <WaitlistList
+          entries={waitlistSignups.map((w) => ({
+            id: w.id,
+            email: w.email,
+            instrument: w.instrument,
+            date: w.createdAt.toLocaleDateString("pt-PT"),
+          }))}
+        />
       )}
 
       <section>

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { Flame, ShieldCheck, LogOut, PlusCircle, LogIn, UserPlus } from "lucide-react";
 import Logo from "@/components/Logo";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isDemoHost } from "@/lib/demoHost";
 import UserBadges from "@/components/UserBadges";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -40,7 +42,8 @@ export default async function Navbar() {
     : null;
 
   const streak = session?.user ? await touchStreak(session.user.id) : 0;
-  const isDemo = user?.email === "demo@cadenza.app";
+  const host = (await headers()).get("host");
+  const isDemo = user?.email === "demo@cadenza.app" || isDemoHost(host);
   const year = new Date().getFullYear();
 
   const signOutForm = (
@@ -63,20 +66,23 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-10 border-b border-black/10 dark:border-white/10 bg-white/90 backdrop-blur dark:bg-black/90">
       {isDemo && (
-        <div className="flex items-center justify-center gap-2 bg-accent/10 px-4 py-1.5 text-xs text-accent">
-          Estás em modo demo — os dados podem ser reiniciados a qualquer momento.
+        <div className="flex items-center justify-center gap-2 bg-accent px-4 py-1.5 text-center text-xs font-medium text-accent-foreground">
+          <span className="inline-flex h-4 items-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold uppercase tracking-wide">
+            Demo
+          </span>
+          Estás a ver uma conta de demonstração — explora à vontade, os dados podem ser reiniciados.
         </div>
       )}
       <nav className="mx-auto max-w-7xl px-4 py-3">
-        {/* Ecrãs grandes: tudo numa linha, pesquisa centrada */}
-        <div className="hidden items-center gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
-          <Link href="/" className="flex w-fit shrink-0 items-center justify-self-start text-black dark:text-white">
+        {/* Ecrãs grandes: logo e ações a tamanho de conteúdo, pesquisa a ocupar o meio */}
+        <div className="hidden items-center gap-6 lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+          <Link href="/" className="flex w-fit shrink-0 items-center text-black dark:text-white">
             <Logo className="h-7 w-auto" />
           </Link>
-          <div className="w-full max-w-md justify-self-center">
+          <div className="mx-auto w-full max-w-xl">
             <SearchBar className="flex w-full items-center gap-2" />
           </div>
-          <div className="flex shrink-0 items-center justify-self-end gap-3 text-sm md:gap-4">
+          <div className="flex shrink-0 items-center gap-3 text-sm">
             <Link href="/forum" className="hover:underline">
               Fórum
             </Link>
@@ -106,7 +112,7 @@ export default async function Navbar() {
                       {user.name.charAt(0).toUpperCase()}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 text-black/60 dark:text-white/60">
+                  <span className="hidden items-center gap-1 text-black/60 dark:text-white/60 xl:inline-flex">
                     {user.name}
                     <UserBadges user={user} />
                   </span>
@@ -116,8 +122,13 @@ export default async function Navbar() {
                     {user.role === "ADMIN" ? "Admin" : "Moderação"}
                   </Link>
                 )}
-                <Link href="/posts/new" className={buttonPrimarySm}>
-                  Novo post
+                <Link
+                  href="/posts/new"
+                  title="Criar post"
+                  aria-label="Criar post"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-sm transition-all hover:shadow-md hover:brightness-110"
+                >
+                  <PlusCircle className="h-4.5 w-4.5" />
                 </Link>
                 {signOutForm}
               </>

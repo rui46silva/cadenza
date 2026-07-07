@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Sparkles, FileText, MessageSquare } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
 import { AmbassadorBadge, roleLabel } from "@/components/RoleBadge";
+import AskQuestionButton from "@/components/AskQuestionButton";
 
 export const metadata: Metadata = {
   title: "Embaixadores",
@@ -13,6 +15,8 @@ export const metadata: Metadata = {
 };
 
 export default async function EmbaixadoresPage() {
+  const session = await auth();
+
   const ambassadors = await prisma.user.findMany({
     where: { isAmbassador: true },
     select: {
@@ -20,6 +24,7 @@ export default async function EmbaixadoresPage() {
       name: true,
       role: true,
       instrument: true,
+      gender: true,
       bio: true,
       avatarUrl: true,
       points: true,
@@ -48,12 +53,11 @@ export default async function EmbaixadoresPage() {
       ) : (
         <section className="grid gap-4 sm:grid-cols-2">
           {ambassadors.map((user) => (
-            <Link
+            <div
               key={user.id}
-              href={`/perfil/${user.id}`}
               className="flex flex-col gap-3 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 p-4 transition-colors hover:border-fuchsia-500/60"
             >
-              <div className="flex items-start gap-3">
+              <Link href={`/perfil/${user.id}`} className="flex items-start gap-3">
                 <Avatar name={user.name} avatarUrl={user.avatarUrl} size={48} />
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="font-semibold">{user.name}</span>
@@ -62,23 +66,32 @@ export default async function EmbaixadoresPage() {
                   </span>
                   <AmbassadorBadge />
                 </div>
-              </div>
+              </Link>
               {user.bio && (
                 <p className="line-clamp-2 text-sm text-black/70 dark:text-white/70">
                   {user.bio}
                 </p>
               )}
-              <div className="flex items-center gap-3 text-xs text-black/50 dark:text-white/50">
-                <span className="flex items-center gap-1">
-                  <FileText className="h-3.5 w-3.5" />
-                  {user._count.posts} posts
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  {user._count.comments} comentários
-                </span>
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-3 text-xs text-black/50 dark:text-white/50">
+                  <span className="flex items-center gap-1">
+                    <FileText className="h-3.5 w-3.5" />
+                    {user._count.posts}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    {user._count.comments}
+                  </span>
+                </div>
+                {session?.user?.id === user.id ? (
+                  <span className="text-xs text-black/40 dark:text-white/40">
+                    A tua conta
+                  </span>
+                ) : session?.user ? (
+                  <AskQuestionButton expertId={user.id} />
+                ) : null}
               </div>
-            </Link>
+            </div>
           ))}
         </section>
       )}

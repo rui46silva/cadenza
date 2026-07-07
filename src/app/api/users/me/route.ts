@@ -7,6 +7,7 @@ const updateSchema = z.object({
   name: z.string().min(2).max(80),
   bio: z.string().max(500).optional().or(z.literal("")),
   instrument: z.string().max(60).optional().or(z.literal("")),
+  gender: z.enum(["MASCULINO", "FEMININO"]).optional().or(z.literal("")),
   avatarUrl: z.string().url().optional().or(z.literal("")),
   instagramHandle: z
     .string()
@@ -32,7 +33,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const { name, bio, instrument, avatarUrl, instagramHandle } = parsed.data;
+  const { name, bio, instrument, gender, avatarUrl, instagramHandle } = parsed.data;
 
   const user = await prisma.user.update({
     where: { id: session.user.id },
@@ -40,6 +41,7 @@ export async function PATCH(req: Request) {
       name,
       bio: bio || null,
       instrument: instrument || null,
+      gender: gender || null,
       avatarUrl: avatarUrl || null,
       instagramHandle: instagramHandle || null,
     },
@@ -48,6 +50,7 @@ export async function PATCH(req: Request) {
       name: true,
       bio: true,
       instrument: true,
+      gender: true,
       avatarUrl: true,
       instagramHandle: true,
     },

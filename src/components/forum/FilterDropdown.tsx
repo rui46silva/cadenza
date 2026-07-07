@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useDismiss } from "@/lib/useDismiss";
+import { dropdownPanel } from "@/lib/ui";
 import { ChevronDown } from "lucide-react";
 
 export default function FilterDropdown<T extends string>({
@@ -19,15 +21,7 @@ export default function FilterDropdown<T extends string>({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  useDismiss(ref, () => setOpen(false), open);
 
   const selected = options.find((o) => o.value === value);
 
@@ -48,7 +42,7 @@ export default function FilterDropdown<T extends string>({
         />
       </button>
       {open && (
-        <ul className="absolute left-0 z-10 mt-1 w-44 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-black/15 dark:border-white/20 bg-white dark:bg-black shadow-md">
+        <ul className={`absolute left-0 mt-1 w-44 max-w-[calc(100vw-2rem)] ${dropdownPanel}`}>
           {allowClear && (
             <li>
               <button
