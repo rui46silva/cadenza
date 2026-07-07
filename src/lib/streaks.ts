@@ -1,4 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { awardPoints } from "@/lib/points";
+
+// Marcos de streak e o bónus de pontos que dão à primeira vez que se atingem.
+export const STREAK_MILESTONES: { days: number; bonus: number }[] = [
+  { days: 3, bonus: 5 },
+  { days: 7, bonus: 15 },
+  { days: 30, bonus: 50 },
+];
 
 function isSameDay(a: Date, b: Date) {
   return (
@@ -21,7 +29,12 @@ function isYesterday(a: Date, today: Date) {
 export async function touchStreak(userId: string): Promise<number> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { currentStreak: true, longestStreak: true, lastActiveAt: true },
+    select: {
+      currentStreak: true,
+      longestStreak: true,
+      lastActiveAt: true,
+      lastStreakMilestone: true,
+    },
   });
   if (!user) return 0;
 
@@ -33,14 +46,26 @@ export async function touchStreak(userId: string): Promise<number> {
   const nextStreak =
     user.lastActiveAt && isYesterday(user.lastActiveAt, now) ? user.currentStreak + 1 : 1;
 
+  // Novo marco atingido (e ainda não recompensado)?
+  const reached = STREAK_MILESTONES.filter(
+    (m) => nextStreak >= m.days && m.days > user.lastStreakMilestone
+  );
+  const newMilestone = reached.length
+    ? Math.max(...reached.map((m) => m.days))
+    : user.lastStreakMilestone;
+
   await prisma.user.update({
     where: { id: userId },
     data: {
       currentStreak: nextStreak,
       longestStreak: Math.max(nextStreak, user.longestStreak),
       lastActiveAt: now,
+      lastStreakMilestone: newMilestone,
     },
   });
+
+  const bonus = reached.reduce((sum, m) => sum + m.bonus, 0);
+  if (bonus > 0) await awardPoints(userId, bonus);
 
   return nextStreak;
 }

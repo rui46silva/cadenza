@@ -8,6 +8,7 @@ import RoleBadge from "@/components/RoleBadge";
 import InstagramIcon from "@/components/InstagramIcon";
 import LevelBadge from "@/components/LevelBadge";
 import PostListItem from "@/components/forum/PostListItem";
+import LevelProgress from "@/components/LevelProgress";
 import ProfileTabs from "@/components/ProfileTabs";
 import AskQuestionButton from "@/components/AskQuestionButton";
 import { getUserBadges } from "@/lib/badges";
@@ -71,9 +72,10 @@ export default async function ProfilePage({
   const viewerId = session?.user?.id;
 
   const expert = isExpert(user);
-  const bestAnswersGiven = await prisma.post.count({
-    where: { bestAnswer: { authorId: user.id } },
-  });
+  const [bestAnswersGiven, challengesEntered] = await Promise.all([
+    prisma.post.count({ where: { bestAnswer: { authorId: user.id } } }),
+    prisma.post.count({ where: { authorId: user.id, challengeId: { not: null } } }),
+  ]);
 
   const posts = await prisma.post.findMany({
     where: { authorId: user.id },
@@ -130,6 +132,7 @@ export default async function ProfilePage({
     verificationStatus: user.verificationStatus,
     createdAt: user.createdAt,
     longestStreak: user.longestStreak,
+    challengesEntered,
   });
 
   const memberSince = user.createdAt.toLocaleDateString("pt-PT", {
@@ -203,6 +206,8 @@ export default async function ProfilePage({
           </div>
         ))}
       </section>
+
+      <LevelProgress points={user.points} />
 
       {badges.length > 0 && (
         <section>

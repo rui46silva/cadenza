@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { currentPeriod } from "@/lib/points";
 import AdSlot from "@/components/AdSlot";
 import CookiePreferencesButton from "@/components/CookiePreferencesButton";
+
+const MONTH_NAMES = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
 
 const SITEMAP_LINKS = [
   { href: "/forum", label: "Fórum" },
@@ -20,21 +26,28 @@ export default async function RightSidebar() {
     take: 8,
   });
 
+  const period = currentPeriod();
   const topUsers = await prisma.user.findMany({
-    where: { points: { gt: 0 } },
-    orderBy: { points: "desc" },
+    where: { monthlyPeriod: period, monthlyPoints: { gt: 0 } },
+    orderBy: { monthlyPoints: "desc" },
     take: 5,
-    select: { id: true, name: true, points: true },
+    select: { id: true, name: true, monthlyPoints: true },
   });
+  const monthName = MONTH_NAMES[new Date().getMonth()];
 
   return (
     <div className="flex min-w-0 flex-col gap-6 text-sm">
       {topUsers.length > 0 && (
         <section>
-          <h2 className="mb-2 flex items-center gap-1.5 font-semibold text-black/70 dark:text-white/70">
-            <Trophy className="h-4 w-4 text-accent" />
-            Top da comunidade
-          </h2>
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 font-semibold text-black/70 dark:text-white/70">
+              <Trophy className="h-4 w-4 text-accent" />
+              Top de {monthName}
+            </h2>
+            <Link href="/ranking" className="text-xs text-accent hover:underline">
+              Ver tudo
+            </Link>
+          </div>
           <ul className="flex flex-col gap-1">
             {topUsers.map((u, i) => (
               <li key={u.id}>
@@ -49,7 +62,7 @@ export default async function RightSidebar() {
                     <span className="truncate">{u.name}</span>
                   </span>
                   <span className="text-black/40 dark:text-white/40 text-xs shrink-0">
-                    {u.points} pts
+                    {u.monthlyPoints} pts
                   </span>
                 </Link>
               </li>

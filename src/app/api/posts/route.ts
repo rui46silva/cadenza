@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { awardPoints, POINTS } from "@/lib/points";
 import { COMMON_INSTRUMENTS } from "@/lib/instruments";
 import { expertWhere } from "@/lib/experts";
+import { currentChallenge } from "@/lib/challenges";
 
 const INSTRUMENT_NAMES = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
@@ -33,6 +34,9 @@ const postSchema = z.object({
   tagNames: z.array(z.string()).max(8).default([]),
   isQuestion: z.boolean().default(false),
   directedToId: z.string().optional(),
+  feedbackRequest: z.boolean().default(false),
+  feedbackFocus: z.string().max(300).optional(),
+  joinChallenge: z.boolean().default(false),
 });
 
 export async function POST(req: Request) {
@@ -50,7 +54,26 @@ export async function POST(req: Request) {
     );
   }
 
-  const { title, type, content, videoUrl, tagNames, isQuestion, directedToId } = parsed.data;
+  const {
+    title,
+    type,
+    content,
+    videoUrl,
+    tagNames,
+    isQuestion,
+    directedToId,
+    feedbackRequest,
+    feedbackFocus,
+    joinChallenge,
+  } = parsed.data;
+
+  // Feedback só faz sentido em vídeo. Se aderir ao desafio da semana, marca o
+  // post com o id da semana atual e garante a tag do desafio.
+  const wantsFeedback = feedbackRequest && type === "VIDEO";
+  const challenge = joinChallenge ? currentChallenge() : null;
+  const finalTagNames = challenge
+    ? Array.from(new Set([...tagNames, challenge.tag]))
+    : tagNames;
 
   // Uma dúvida só pode ser dirigida a um especialista (professor/profissional
   // verificado ou embaixador).
@@ -89,10 +112,13 @@ export async function POST(req: Request) {
       videoUrl,
       isQuestion,
       directedToId: directedTo?.id,
+      feedbackRequest: wantsFeedback,
+      feedbackFocus: wantsFeedback ? feedbackFocus || null : null,
+      challengeId: challenge?.id ?? null,
       authorId: session.user.id,
       tags: {
         create: await Promise.all(
-          tagNames.map(async (name) => {
+          finalTagNames.map(async (name) => {
             const category = INSTRUMENT_NAMES.has(name.toLowerCase())
               ? "INSTRUMENT"
               : "OTHER";

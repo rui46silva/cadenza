@@ -80,6 +80,9 @@ model User {
   lastActiveAt  DateTime?
   onboardedAt   DateTime?
   isAmbassador  Boolean   @default(false)
+  monthlyPoints Int       @default(0)
+  monthlyPeriod String?
+  lastStreakMilestone Int  @default(0)
   instruments   Instrument[] @relation("UserInstruments")
   tagFollows    TagFollow[]
   createdAt     DateTime  @default(now())
@@ -183,6 +186,9 @@ model Post {
   videoUrl    String?
   pinned      Boolean    @default(false)
   isQuestion  Boolean    @default(false)
+  feedbackRequest Boolean @default(false)
+  feedbackFocus String?
+  challengeId String?
   views       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String

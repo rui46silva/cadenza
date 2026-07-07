@@ -1,5 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { currentPeriod } from "@/lib/points";
+import { currentChallenge } from "@/lib/challenges";
 
 const DEMO_EMAIL = "demo@cadenza.app";
 
@@ -19,6 +21,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
   const demoPasswordHash = await bcrypt.hash("demo1234", 10);
   const now = new Date();
   const daysAgo = (n: number) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
+  const period = currentPeriod(now);
+  const challenge = currentChallenge(now);
 
   const tagDefs: { name: string; category: "INSTRUMENT" | "GENRE" | "LEVEL" | "OTHER" }[] = [
     { name: "piano", category: "INSTRUMENT" },
@@ -66,6 +70,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 340,
+        monthlyPoints: 180,
+        monthlyPeriod: period,
         currentStreak: 4,
         longestStreak: 12,
         lastActiveAt: now,
@@ -85,6 +91,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 85,
+        monthlyPoints: 60,
+        monthlyPeriod: period,
         currentStreak: 2,
         longestStreak: 6,
         lastActiveAt: now,
@@ -105,6 +113,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 510,
+        monthlyPoints: 240,
+        monthlyPeriod: period,
         currentStreak: 9,
         longestStreak: 31,
         lastActiveAt: now,
@@ -125,6 +135,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 40,
+        monthlyPoints: 25,
+        monthlyPeriod: period,
         currentStreak: 1,
         longestStreak: 3,
         lastActiveAt: now,
@@ -145,6 +157,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 220,
+        monthlyPoints: 130,
+        monthlyPeriod: period,
         currentStreak: 3,
         longestStreak: 15,
         lastActiveAt: now,
@@ -163,6 +177,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
         emailVerified: now,
         onboardedAt: now,
         points: 65,
+        monthlyPoints: 45,
+        monthlyPeriod: period,
         currentStreak: 5,
         longestStreak: 8,
         lastActiveAt: now,
@@ -201,6 +217,8 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
           authorId: aluno.id,
           pinned: true,
           views: 142,
+          feedbackRequest: true,
+          feedbackFocus: "Feedback à afinação e ao rubato na secção B, sobretudo nas passagens rápidas.",
           createdAt: daysAgo(9),
           tags: { create: [{ tagId: byName("piano").id }, { tagId: byName("clássica").id }] },
         },
@@ -275,6 +293,7 @@ export async function ensureDemoSeed(prisma: PrismaClient) {
           videoUrl: "https://www.youtube.com/watch?v=8OxaJfTNKW8",
           authorId: sofia.id,
           views: 176,
+          challengeId: challenge.id,
           createdAt: daysAgo(3),
           tags: { create: [{ tagId: byName("voz").id }, { tagId: byName("jazz").id }] },
         },

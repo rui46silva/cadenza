@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare, HelpCircle } from "lucide-react";
+import { FileText, Video, Pin, CheckCircle2, Flame, MessageSquare, HelpCircle, Music } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import UserBadges from "@/components/UserBadges";
 import { formatRelativeTime } from "@/lib/time";
@@ -30,6 +30,8 @@ export type PostListItemData = {
   isQuestion?: boolean;
   questionStatus?: "unanswered" | "answered" | "resolved";
   directedTo?: { id: string; name: string } | null;
+  feedbackRequest?: boolean;
+  feedbackFocus?: string | null;
   author: {
     id: string;
     name: string;
@@ -63,7 +65,11 @@ export default function PostListItem({
   const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
   const hasBadges =
-    trending || post.isQuestion || post.questionStatus || (post.bestAnswerId && !post.questionStatus);
+    trending ||
+    post.isQuestion ||
+    post.questionStatus ||
+    post.feedbackRequest ||
+    (post.bestAnswerId && !post.questionStatus);
 
   return (
     <li
@@ -103,6 +109,12 @@ export default function PostListItem({
             <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-3 w-3" />
               Resolvida
+            </span>
+          )}
+          {post.feedbackRequest && (
+            <span className="flex items-center gap-1 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-fuchsia-600 dark:text-fuchsia-400">
+              <Music className="h-3 w-3" />
+              Pedido de feedback
             </span>
           )}
           {post.bestAnswerId && !post.questionStatus && (
@@ -151,6 +163,12 @@ export default function PostListItem({
             </Link>
           ))}
         </span>
+      )}
+
+      {post.feedbackRequest && post.feedbackFocus && (
+        <p className="mt-1 rounded-md bg-fuchsia-500/10 px-3 py-1.5 text-sm text-fuchsia-700 dark:text-fuchsia-300">
+          <span className="font-medium">Feedback pedido:</span> {post.feedbackFocus}
+        </p>
       )}
 
       {post.type === "TEXT" && post.content && (

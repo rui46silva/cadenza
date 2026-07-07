@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
+import ChallengeBanner from "@/components/forum/ChallengeBanner";
 import ForumFilters from "@/components/forum/ForumFilters";
 import ForumFeedList from "@/components/forum/ForumFeedList";
 import { getForumFeed } from "@/lib/forumFeed";
@@ -62,6 +63,8 @@ export default async function HomePage({
             : "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer."}
         </p>
       </section>
+
+      {!q && <ChallengeBanner />}
 
       <ForumFilters
         category={categoryFilter}

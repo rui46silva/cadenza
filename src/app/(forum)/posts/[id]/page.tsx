@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle } from "lucide-react";
+import { FileText, Video, Pin, Eye, CheckCircle2, HelpCircle, Music } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
@@ -196,6 +196,12 @@ export default async function PostPage({
               Dúvida
             </span>
           )}
+          {post.feedbackRequest && (
+            <span className="flex items-center gap-1 rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-xs font-medium text-fuchsia-600 dark:text-fuchsia-400">
+              <Music className="h-3.5 w-3.5" />
+              Pedido de feedback
+            </span>
+          )}
           {post.bestAnswerId && (
             <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -203,6 +209,11 @@ export default async function PostPage({
             </span>
           )}
         </h1>
+        {post.feedbackRequest && post.feedbackFocus && (
+          <p className="rounded-md bg-fuchsia-500/10 px-3 py-2 text-sm text-fuchsia-700 dark:text-fuchsia-300">
+            <span className="font-medium">Feedback pedido:</span> {post.feedbackFocus}
+          </p>
+        )}
         {post.directedTo && (
           <p className="text-sm text-black/50 dark:text-white/50">
             Dúvida dirigida a{" "}

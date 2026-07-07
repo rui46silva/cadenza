@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Eye, MessageSquare, ThumbsUp, CheckCircle2, Inbox } from "lucide-react";
+import { Eye, MessageSquare, ThumbsUp, CheckCircle2, Inbox, Flame } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
+import { STREAK_MILESTONES } from "@/lib/streaks";
 import RoleBadge from "@/components/RoleBadge";
 import ProfileForm from "@/components/ProfileForm";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import LevelBadge from "@/components/LevelBadge";
+import LevelProgress from "@/components/LevelProgress";
 import FollowedTagsManager from "@/components/FollowedTagsManager";
 
 export default async function DashboardPage() {
@@ -28,6 +30,7 @@ export default async function DashboardPage() {
       verificationStatus: true,
       emailVerified: true,
       points: true,
+      currentStreak: true,
       isAmbassador: true,
     },
   });
@@ -105,6 +108,27 @@ export default async function DashboardPage() {
       </div>
 
       {!user.emailVerified && <EmailVerificationBanner />}
+
+      <LevelProgress points={user.points} />
+
+      {user.currentStreak >= 2 &&
+        (() => {
+          const next = STREAK_MILESTONES.find((m) => m.days > user.currentStreak);
+          return (
+            <div className="flex items-center gap-3 rounded-xl border border-orange-500/40 bg-orange-500/5 p-4">
+              <Flame className="h-5 w-5 shrink-0 text-orange-500" />
+              <span className="flex-1 text-sm">
+                <strong>{user.currentStreak} dias seguidos!</strong>{" "}
+                <span className="text-black/60 dark:text-white/60">
+                  Volta amanhã para não perderes a sequência
+                  {next
+                    ? ` — aos ${next.days} dias ganhas +${next.bonus} pontos.`
+                    : "."}
+                </span>
+              </span>
+            </div>
+          );
+        })()}
 
       {isVerifiedPro && openQuestions > 0 && (
         <Link

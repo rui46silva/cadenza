@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Flame, Newspaper, Compass, LayoutGrid, Sparkles, HelpCircle, GraduationCap } from "lucide-react";
+import { Flame, Newspaper, Compass, LayoutGrid, Sparkles, HelpCircle, GraduationCap, Trophy, Music } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 import AdSlot from "@/components/AdSlot";
 
 const LINKS = [
   { href: "/popular", label: "Popular", icon: Flame },
+  { href: "/desafios", label: "Desafio da semana", icon: Trophy },
+  { href: "/feedback", label: "Feedback", icon: Music },
   { href: "/duvidas", label: "Dúvidas", icon: HelpCircle },
   { href: "/professores", label: "Profissionais", icon: GraduationCap },
   { href: "/noticias", label: "Notícias", icon: Newspaper },
