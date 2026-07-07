@@ -28,16 +28,26 @@ function getInitials(email: string) {
   return local.slice(0, 2).toUpperCase();
 }
 
+// A lista de espera pode ser desligada (ex: antes do lançamento nas redes).
+// Ativa com NEXT_PUBLIC_WAITLIST_ENABLED="true".
+const WAITLIST_ENABLED = process.env.NEXT_PUBLIC_WAITLIST_ENABLED === "true";
+
 export default async function ComingSoonPage() {
-  const count = await prisma.waitlistSignup.count();
-  const recentSignups = await prisma.waitlistSignup.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 3,
-    select: { email: true },
-  });
-  const initials = recentSignups.map((s) => getInitials(s.email));
   const launchDate = process.env.NEXT_PUBLIC_LAUNCH_DATE;
   const limit = Number(process.env.NEXT_PUBLIC_WAITLIST_LIMIT) || undefined;
+
+  // Só consulta a base de dados quando a lista de espera está ativa.
+  let count = 0;
+  let initials: string[] = [];
+  if (WAITLIST_ENABLED) {
+    count = await prisma.waitlistSignup.count();
+    const recentSignups = await prisma.waitlistSignup.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { email: true },
+    });
+    initials = recentSignups.map((s) => getInitials(s.email));
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-12 text-center">
@@ -49,19 +59,23 @@ export default async function ComingSoonPage() {
           O lugar onde os músicos <span className="text-accent">crescem juntos</span>
         </h1>
         <p className="max-w-md text-black/60 dark:text-white/60">
-          Entra na lista de espera e garante acesso antecipado ao fórum, totalmente
-          gratuito, para partilhares o teu trabalho e aprenderes com outros músicos.
+          {WAITLIST_ENABLED
+            ? "Entra na lista de espera e garante acesso antecipado ao fórum, totalmente gratuito, para partilhares o teu trabalho e aprenderes com outros músicos."
+            : "Estamos a preparar o fórum onde vais partilhar o teu trabalho, receber feedback e crescer com outros músicos. Brevemente."}
         </p>
       </div>
 
       {launchDate && <Countdown launchDate={launchDate} />}
 
-      <WaitlistForm initialCount={count} limit={limit} initials={initials} />
-
-      <p className="flex max-w-md items-center justify-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm text-accent">
-        <Gift className="h-4 w-4 shrink-0" />
-        Os primeiros inscritos ganham a 1.ª masterclass do teu instrumento sem custo.
-      </p>
+      {WAITLIST_ENABLED && (
+        <>
+          <WaitlistForm initialCount={count} limit={limit} initials={initials} />
+          <p className="flex max-w-md items-center justify-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm text-accent">
+            <Gift className="h-4 w-4 shrink-0" />
+            Os primeiros inscritos ganham a 1.ª masterclass do teu instrumento sem custo.
+          </p>
+        </>
+      )}
 
       <ul className="flex flex-col gap-3 sm:flex-row sm:gap-6">
         {FEATURES.map((f) => (
@@ -78,7 +92,9 @@ export default async function ComingSoonPage() {
       {SOCIAL_LINKS.length > 0 && (
         <div className="flex flex-col items-center gap-2">
           <p className="text-xs text-black/40 dark:text-white/40">
-            Não queres dar o teu email agora? Segue-nos:
+            {WAITLIST_ENABLED
+              ? "Não queres dar o teu email agora? Segue-nos:"
+              : "Segue-nos para não perderes o lançamento:"}
           </p>
           <div className="flex items-center gap-3">
             {SOCIAL_LINKS.map((s) => (
