@@ -3,7 +3,7 @@ export default function PrivacidadePage() {
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Política de privacidade</h1>
       <p className="text-sm text-black/60 dark:text-white/60">
-        Este documento resume, em linguagem simples, como o Cadenza trata os
+        Este documento resume, em linguagem simples, como a Cadenza trata os
         teus dados. Não substitui aconselhamento jurídico.
       </p>
 
@@ -38,7 +38,7 @@ export default function PrivacidadePage() {
         <p className="text-sm text-black/60 dark:text-white/60">
           Podes editar ou eliminar o teu perfil em qualquer momento na página
           do teu painel. Para pedidos relacionados com RGPD, contacta a
-          equipa do Cadenza.
+          equipa da Cadenza.
         </p>
       </section>
     </div>

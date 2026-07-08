@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { renderEmail } from "@/lib/emailLayout";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cadenza.pt";
 
 export { INVITE_COOKIE } from "@/lib/inviteCookie";
 

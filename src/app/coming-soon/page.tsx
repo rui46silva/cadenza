@@ -1,9 +1,10 @@
 import { MessagesSquare, GraduationCap, Trophy, Gift } from "lucide-react";
 import Logo from "@/components/Logo";
 import InstagramIcon from "@/components/InstagramIcon";
-import TikTokIcon from "@/components/TikTokIcon";
+import FacebookIcon from "@/components/FacebookIcon";
 import WaitlistForm from "@/components/WaitlistForm";
 import Countdown from "@/components/Countdown";
+import ThemeToggle from "@/components/ThemeToggle";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -17,9 +18,17 @@ const FEATURES = [
 ];
 
 const SOCIAL_LINKS = [
-  { href: process.env.NEXT_PUBLIC_INSTAGRAM_URL, icon: InstagramIcon, label: "Instagram" },
-  { href: process.env.NEXT_PUBLIC_TIKTOK_URL, icon: TikTokIcon, label: "TikTok" },
-].filter((s) => s.href);
+  {
+    href: process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://instagram.com/cadenza.pt",
+    icon: InstagramIcon,
+    label: "Instagram @cadenza.pt",
+  },
+  {
+    href: process.env.NEXT_PUBLIC_FACEBOOK_URL ?? "https://facebook.com/cadenza.pt",
+    icon: FacebookIcon,
+    label: "Facebook @cadenza.pt",
+  },
+];
 
 // Iniciais a partir do primeiro e último nome; recorre ao email se não houver nome.
 function getInitials(name: string | null, email: string) {
@@ -58,7 +67,10 @@ export default async function ComingSoonPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-12 text-center">
+    <main className="relative flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-12 text-center">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <span className="flex items-center text-black dark:text-white">
         <Logo className="h-10 w-auto" />
       </span>

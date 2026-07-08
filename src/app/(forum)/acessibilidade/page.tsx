@@ -19,7 +19,7 @@ export default function AcessibilidadePage() {
       <section className="flex flex-col gap-2">
         <h2 className="font-semibold">Encontraste um problema?</h2>
         <p className="text-sm text-black/60 dark:text-white/60">
-          Se encontraste alguma barreira de acessibilidade no Cadenza, conta-
+          Se encontraste alguma barreira de acessibilidade na Cadenza, conta-
           nos para podermos corrigir.
         </p>
       </section>

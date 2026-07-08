@@ -4,7 +4,7 @@ import { sendEmail } from "@/lib/email";
 import { renderEmail } from "@/lib/emailLayout";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cadenza.pt";
 
 export async function createAndSendVerificationEmail(user: { id: string; name: string; email: string }) {
   await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });

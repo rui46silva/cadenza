@@ -1,5 +1,7 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cadenza.pt";
 const ACCENT = "#7c5cff";
+const INSTAGRAM_URL = "https://instagram.com/cadenza.pt";
+const FACEBOOK_URL = "https://facebook.com/cadenza.pt";
 
 /**
  * Molde HTML das mensagens da Cadenza — cabeçalho com a marca, corpo e um
@@ -45,8 +47,13 @@ export function renderEmail({
       </tr>
       <tr>
         <td style="padding:18px 28px;border-top:1px solid #ececf1;">
+          <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">
+            A Cadenza — a comunidade de músicos. <a href="${siteUrl}" style="color:${ACCENT};text-decoration:none;">${siteUrl.replace(/^https?:\/\//, "")}</a>
+          </p>
           <p style="margin:0;font-size:12px;color:#9ca3af;">
-            Cadenza — a comunidade de músicos. <a href="${siteUrl}" style="color:${ACCENT};text-decoration:none;">${siteUrl.replace(/^https?:\/\//, "")}</a>
+            <a href="${INSTAGRAM_URL}" style="color:${ACCENT};text-decoration:none;">Instagram @cadenza.pt</a>
+            &nbsp;·&nbsp;
+            <a href="${FACEBOOK_URL}" style="color:${ACCENT};text-decoration:none;">Facebook @cadenza.pt</a>
           </p>
         </td>
       </tr>

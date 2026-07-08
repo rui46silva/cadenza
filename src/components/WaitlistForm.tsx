@@ -17,6 +17,7 @@ export default function WaitlistForm({
   const [instrument, setInstrument] = useState("");
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [alreadySignedUp, setAlreadySignedUp] = useState(false);
   const [count, setCount] = useState(initialCount);
   const renderedAt = useRef<number | null>(null);
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function WaitlistForm({
 
   const socialProof =
     count > 0 ? (
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
         <div className="flex items-center -space-x-2">
           {initials.map((init, i) => (
             <span
@@ -41,11 +42,12 @@ export default function WaitlistForm({
             </span>
           )}
         </div>
-        <p className="text-sm">
-          <span className="font-semibold">{count} músicos</span> já na lista de espera
+        <p className="text-sm whitespace-nowrap">
+          <span className="font-semibold">{count} músicos</span> já na lista
         </p>
-        <span className="flex items-center gap-1 text-xs text-emerald-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />A crescer agora
+        <span className="flex items-center gap-1 whitespace-nowrap text-xs text-emerald-500">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          A crescer agora
         </span>
       </div>
     ) : null;
@@ -83,6 +85,7 @@ export default function WaitlistForm({
       if (!res.ok) throw new Error();
       const data = await res.json();
       setCount(data.count);
+      setAlreadySignedUp(data.alreadySignedUp === true);
       setStatus("done");
     } catch {
       setStatus("error");
@@ -93,11 +96,23 @@ export default function WaitlistForm({
     return (
       <div className="flex w-full max-w-md flex-col items-center gap-3">
         <div className="flex flex-col items-center gap-1 rounded-xl border border-accent/30 bg-accent/10 px-6 py-4 text-center">
-          <p className="font-medium text-accent">Estás na lista! 🎉</p>
-          <p className="text-sm text-black/60 dark:text-white/60">
-            Avisamos-te por email assim que o acesso antecipado abrir
-            {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
-          </p>
+          {alreadySignedUp ? (
+            <>
+              <p className="font-medium text-accent">Já estás na lista! 👍</p>
+              <p className="text-sm text-black/60 dark:text-white/60">
+                Este email já estava inscrito. Fica atento à tua caixa de entrada
+                nos próximos dias — é por aí que te avisamos do acesso antecipado.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-accent">Estás na lista! 🎉</p>
+              <p className="text-sm text-black/60 dark:text-white/60">
+                Avisamos-te por email assim que o acesso antecipado abrir
+                {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
+              </p>
+            </>
+          )}
         </div>
         {socialProof}
         {progress}

@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/email";
 import { renderEmail } from "@/lib/emailLayout";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hora
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://cadenza.pt";
 
 /**
  * Cria um token de reposição e envia o email. Silencioso quando o email não

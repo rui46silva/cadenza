@@ -11,7 +11,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
 
   async function attemptSignIn(email: string, password: string) {
     const res = await signIn("credentials", { email, password, redirect: false });
@@ -43,24 +42,6 @@ export default function LoginPage() {
 
     setLoading(false);
     if (ok) event("login", { method: "credentials" });
-  }
-
-  async function handleDemoLogin() {
-    setError(null);
-    setDemoLoading(true);
-    try {
-      const seedRes = await fetch("/api/demo-login", { method: "POST" });
-      if (!seedRes.ok) {
-        setError("Não foi possível preparar a conta demo. Tenta novamente.");
-        return;
-      }
-      const ok = await attemptSignIn("demo@cadenza.app", "demo1234");
-      if (ok) event("login", { method: "demo" });
-    } catch {
-      setError("Não foi possível preparar a conta demo. Tenta novamente.");
-    } finally {
-      setDemoLoading(false);
-    }
   }
 
   return (
@@ -101,25 +82,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="my-5 flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
-          <span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-          ou
-          <span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          disabled={demoLoading}
-          className="w-full rounded-md border border-black/15 dark:border-white/20 px-4 py-2.5 text-sm font-medium transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
-        >
-          {demoLoading ? "A entrar..." : "Experimentar em modo demo"}
-        </button>
-        <p className="mt-1.5 text-xs text-black/40 dark:text-white/40">
-          Explora a Cadenza com uma conta de demonstração, sem precisares de te registares.
-        </p>
-
-        <p className="text-sm mt-4 text-black/60 dark:text-white/60">
+        <p className="text-sm mt-5 text-black/60 dark:text-white/60">
           Ainda não tens conta?{" "}
           <Link href="/register" className="underline">
             Cria uma
