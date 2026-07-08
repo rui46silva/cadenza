@@ -75,7 +75,14 @@ export default async function AdminPage() {
   const waitlistSignups = isAdmin
     ? await prisma.waitlistSignup.findMany({
         orderBy: { createdAt: "desc" },
-        select: { id: true, email: true, instrument: true, createdAt: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          instrument: true,
+          invitedAt: true,
+          createdAt: true,
+        },
       })
     : [];
 
@@ -230,7 +237,9 @@ export default async function AdminPage() {
           entries={waitlistSignups.map((w) => ({
             id: w.id,
             email: w.email,
+            name: w.name,
             instrument: w.instrument,
+            invited: Boolean(w.invitedAt),
             date: w.createdAt.toLocaleDateString("pt-PT"),
           }))}
         />

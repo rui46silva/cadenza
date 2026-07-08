@@ -26,6 +26,12 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [notOnWaitlist, setNotOnWaitlist] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Pré-preenche o email quando vindo de um convite (/convite/[token]).
+  const [initialEmail] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("email") ?? ""
+      : ""
+  );
 
   const strength = getPasswordStrength(password);
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
@@ -100,6 +106,7 @@ export default function RegisterPage() {
           type="email"
           placeholder="Email"
           required
+          defaultValue={initialEmail}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         />
         <div>

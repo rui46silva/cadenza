@@ -21,7 +21,15 @@ const SOCIAL_LINKS = [
   { href: process.env.NEXT_PUBLIC_TIKTOK_URL, icon: TikTokIcon, label: "TikTok" },
 ].filter((s) => s.href);
 
-function getInitials(email: string) {
+// Iniciais a partir do primeiro e último nome; recorre ao email se não houver nome.
+function getInitials(name: string | null, email: string) {
+  const clean = name?.trim();
+  if (clean) {
+    const parts = clean.split(/\s+/).filter(Boolean);
+    const first = parts[0][0];
+    const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+    return (first + last).toUpperCase();
+  }
   const local = email.split("@")[0];
   const parts = local.split(/[._-]+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -44,9 +52,9 @@ export default async function ComingSoonPage() {
     const recentSignups = await prisma.waitlistSignup.findMany({
       orderBy: { createdAt: "desc" },
       take: 3,
-      select: { email: true },
+      select: { email: true, name: true },
     });
-    initials = recentSignups.map((s) => getInitials(s.email));
+    initials = recentSignups.map((s) => getInitials(s.name, s.email));
   }
 
   return (

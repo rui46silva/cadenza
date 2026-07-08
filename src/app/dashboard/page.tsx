@@ -8,6 +8,7 @@ import { STREAK_MILESTONES } from "@/lib/streaks";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import ProfileForm from "@/components/ProfileForm";
+import ChangePasswordForm from "@/components/ChangePasswordForm";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import LevelBadge from "@/components/LevelBadge";
 import LevelProgress from "@/components/LevelProgress";
@@ -203,6 +204,10 @@ export default async function DashboardPage({
           <div className="rounded-xl border border-black/10 dark:border-white/10 p-5">
             <h2 className="font-semibold mb-4">Editar perfil</h2>
             <ProfileForm profile={user} />
+          </div>
+          <div className="rounded-xl border border-black/10 dark:border-white/10 p-5">
+            <h2 className="font-semibold mb-4">Alterar palavra-passe</h2>
+            <ChangePasswordForm />
           </div>
         </div>
       )}

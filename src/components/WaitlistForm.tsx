@@ -12,6 +12,7 @@ export default function WaitlistForm({
   limit?: number;
   initials?: string[];
 }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [instrument, setInstrument] = useState("");
   const [website, setWebsite] = useState("");
@@ -72,6 +73,7 @@ export default function WaitlistForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: name || undefined,
           email,
           instrument: instrument || undefined,
           website: website || undefined,
@@ -115,6 +117,15 @@ export default function WaitlistForm({
           autoComplete="off"
           aria-hidden="true"
           className="absolute left-[-9999px] h-0 w-0 opacity-0"
+        />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          type="text"
+          required
+          autoComplete="name"
+          placeholder="O teu nome"
+          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
         />
         <div className="flex w-full flex-col gap-2 sm:flex-row">
           <input

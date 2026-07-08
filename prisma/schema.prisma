@@ -97,6 +97,7 @@ model User {
   bansIssued    Ban[]     @relation("BansIssued")
   verifiedUsers User[]    @relation("VerifiedBy")
   emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsResolved Report[] @relation("ReportsResolved")
   newsArticles    NewsArticle[]
@@ -105,6 +106,15 @@ model User {
 }
 
 model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -281,10 +291,13 @@ model CommentVote {
 }
 
 model WaitlistSignup {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  instrument String?
-  createdAt  DateTime @default(now())
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String?
+  instrument  String?
+  invitedAt   DateTime?
+  inviteToken String?   @unique
+  createdAt   DateTime  @default(now())
 }
 
 model NewsArticle {
