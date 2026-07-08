@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Send } from "lucide-react";
+import { Check, Send, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useToast } from "@/components/ToastProvider";
 
@@ -21,8 +21,23 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
   const [loading, setLoading] = useState(false);
   const [invitingAll, setInvitingAll] = useState(false);
   const [invitingId, setInvitingId] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const pending = items.filter((e) => !e.invited).length;
+
+  async function handleClear() {
+    setClearing(true);
+    const res = await fetch("/api/admin/waitlist/clear", { method: "POST" });
+    setClearing(false);
+    setConfirmClear(false);
+    if (!res.ok) {
+      toast("Não foi possível limpar a lista.", "error");
+      return;
+    }
+    setItems([]);
+    toast("Lista de espera limpa");
+  }
 
   async function handleDelete() {
     if (!confirmId) return;
@@ -68,17 +83,29 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
     <section>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-semibold">Lista de espera ({items.length})</h2>
-        {pending > 0 && (
-          <button
-            type="button"
-            onClick={() => invite()}
-            disabled={invitingAll}
-            className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
-          >
-            <Send className="h-3.5 w-3.5" />
-            {invitingAll ? "A enviar..." : `Convidar todos (${pending})`}
-          </button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {pending > 0 && (
+            <button
+              type="button"
+              onClick={() => invite()}
+              disabled={invitingAll}
+              className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
+            >
+              <Send className="h-3.5 w-3.5" />
+              {invitingAll ? "A enviar..." : `Convidar todos (${pending})`}
+            </button>
+          )}
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setConfirmClear(true)}
+              className="flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-xs hover:border-rose-500 hover:text-rose-500"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Limpar lista
+            </button>
+          )}
+        </div>
       </div>
       <ul className="flex flex-col gap-2">
         {items.length === 0 && (
@@ -135,6 +162,17 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
           loading={loading}
           onConfirm={handleDelete}
           onCancel={() => setConfirmId(null)}
+        />
+      )}
+
+      {confirmClear && (
+        <ConfirmDialog
+          title="Limpar lista de espera"
+          description="Apaga TODAS as inscrições da lista de espera. Esta ação não pode ser desfeita."
+          confirmLabel="Limpar tudo"
+          loading={clearing}
+          onConfirm={handleClear}
+          onCancel={() => setConfirmClear(false)}
         />
       )}
     </section>
