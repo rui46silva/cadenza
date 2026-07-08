@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { isDemoHost } from "@/lib/demoHost";
+import { INVITE_COOKIE } from "@/lib/inviteCookie";
 
 const ALLOWED_PREFIXES = [
   "/coming-soon",
   "/login",
   "/recuperar-password",
   "/redefinir-password",
+  "/convite",
   "/admin",
   "/api/auth",
   "/api/waitlist",
@@ -36,6 +38,12 @@ export function proxy(req: NextRequest) {
   }
 
   if (ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return next(req);
+  }
+
+  // Quem tem convite de acesso antecipado (cookie definido em /convite/[token])
+  // pode entrar na plataforma toda, mesmo com o modo "brevemente" ativo.
+  if (req.cookies.get(INVITE_COOKIE)) {
     return next(req);
   }
 
