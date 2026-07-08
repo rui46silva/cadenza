@@ -5,6 +5,8 @@ import { isDemoHost } from "@/lib/demoHost";
 const ALLOWED_PREFIXES = [
   "/coming-soon",
   "/login",
+  "/recuperar-password",
+  "/redefinir-password",
   "/admin",
   "/api/auth",
   "/api/waitlist",
