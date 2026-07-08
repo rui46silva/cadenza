@@ -20,7 +20,7 @@ export default async function ExplorarPage() {
           Explorar
         </h1>
         <p className="text-black/60 dark:text-white/60">
-          Descobre conteúdo e comunidades dentro do Cadenza.
+          Descobre conteúdo e comunidades dentro da Cadenza.
         </p>
       </section>
 

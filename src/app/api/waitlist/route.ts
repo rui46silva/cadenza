@@ -42,12 +42,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Demasiados pedidos. Tenta mais tarde." }, { status: 429 });
   }
 
+  // Já inscrito? Avisamos com uma mensagem amigável, sem criar duplicados.
+  const existing = await prisma.waitlistSignup.findUnique({ where: { email } });
+  if (existing) {
+    const count = await prisma.waitlistSignup.count();
+    return NextResponse.json({ ok: true, alreadySignedUp: true, count });
+  }
+
   let created = false;
   try {
     await prisma.waitlistSignup.create({ data: { email, name, instrument } });
     created = true;
   } catch {
-    // Email já está na lista — tratamos como sucesso para não revelar quem já se inscreveu.
+    // Corrida rara: alguém inscreveu-se em simultâneo — tratamos como já inscrito.
+    const count = await prisma.waitlistSignup.count();
+    return NextResponse.json({ ok: true, alreadySignedUp: true, count });
   }
 
   if (created) {
