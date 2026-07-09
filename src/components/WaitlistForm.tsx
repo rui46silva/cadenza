@@ -142,29 +142,28 @@ export default function WaitlistForm({
           placeholder="O teu nome"
           className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
         />
-        <div className="flex w-full flex-col gap-2 sm:flex-row">
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            required
-            placeholder="O teu email"
-            className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
-          >
-            {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
-          </button>
-        </div>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          required
+          placeholder="O teu email"
+          className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
+        />
         <InstrumentInput
           name="instrument"
           value={instrument}
           onChange={setInstrument}
+          required
           className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
         />
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="w-full rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-110 disabled:opacity-50"
+        >
+          {status === "loading" ? "A entrar..." : "Entrar na lista de espera"}
+        </button>
       </form>
       {status === "error" && (
         <p className="text-xs text-rose-500">Algo correu mal. Tenta de novo.</p>

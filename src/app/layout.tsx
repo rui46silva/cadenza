@@ -36,6 +36,15 @@ export const metadata: Metadata = {
     template: "%s | Cadenza",
   },
   description,
+  // AVIF como ícone principal; o favicon.ico (em app/) fica como fallback para
+  // browsers que ainda não suportam AVIF em favicons.
+  icons: {
+    icon: [
+      { url: "/favicon.avif", type: "image/avif" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [{ url: "/favicon.avif", type: "image/avif" }],
+  },
   keywords: [
     "música",
     "músicos",
