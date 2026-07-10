@@ -200,6 +200,7 @@ model Post {
   feedbackFocus String?
   challengeId String?
   views       Int        @default(0)
+  score       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
   tags        PostTag[]
@@ -213,6 +214,10 @@ model Post {
   directedToId String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([createdAt])
+  @@index([score])
+  @@index([challengeId])
 }
 
 model PostTag {

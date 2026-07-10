@@ -40,16 +40,25 @@ export async function POST(
     });
   }
 
-  const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
-  if (post && post.authorId !== session.user.id) {
+  // Atualiza o score desnormalizado por incremento (contribuição nova - antiga),
+  // evitando recarregar todos os votos do post.
+  const contribution = (v: "UP" | "DOWN" | null | undefined) =>
+    v === "UP" ? 1 : v === "DOWN" ? -1 : 0;
+  const scoreDelta =
+    contribution(isUnvote ? null : parsed.data.value) - contribution(previousVote?.value);
+
+  const post = await prisma.post.update({
+    where: { id: postId },
+    data: { score: { increment: scoreDelta } },
+    select: { authorId: true, score: true },
+  });
+
+  if (post.authorId !== session.user.id) {
     const delta =
       pointsForVoteValue(isUnvote ? null : parsed.data.value) -
       pointsForVoteValue(previousVote?.value ?? null);
     await awardPoints(post.authorId, delta);
   }
 
-  const votes = await prisma.postVote.findMany({ where: { postId }, select: { value: true } });
-  const score = votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0);
-
-  return NextResponse.json({ score, userVote: isUnvote ? null : parsed.data.value });
+  return NextResponse.json({ score: post.score, userVote: isUnvote ? null : parsed.data.value });
 }
