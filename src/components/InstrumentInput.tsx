@@ -8,11 +8,13 @@ export default function InstrumentInput({
   value,
   onChange,
   className,
+  required,
 }: {
   name: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  required?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -30,6 +32,7 @@ export default function InstrumentInput({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 100)}
+        required={required}
         placeholder="Que instrumento tocas? (ex: piano, saxofone)"
         className={
           className ??
