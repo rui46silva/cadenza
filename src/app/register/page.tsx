@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<"ALUNO" | "PROFESSOR" | "MUSICO_PROFISSIONAL">("ALUNO");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [gender, setGender] = useState("");
   const [instrument, setInstrument] = useState("");
   const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function RegisterPage() {
       email: formData.get("email"),
       password,
       role,
+      gender: gender || undefined,
       instrument: instrument || undefined,
       verificationNote: needsVerification ? verificationNote : undefined,
     };
@@ -188,6 +190,23 @@ export default function RegisterPage() {
         </div>
 
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
+
+        <label className="text-sm flex flex-col gap-1">
+          Género
+          <select
+            name="gender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+          >
+            <option value="">Prefiro não indicar</option>
+            <option value="FEMININO">Feminino</option>
+            <option value="MASCULINO">Masculino</option>
+          </select>
+          <span className="text-xs text-black/40 dark:text-white/40">
+            Ajuda-nos a tratar-te certo (ex: Professora, Música profissional).
+          </span>
+        </label>
 
         {needsVerification && (
           <div>
