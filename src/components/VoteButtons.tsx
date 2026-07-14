@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function VoteButtons({
   postId,
@@ -42,9 +43,9 @@ export default function VoteButtons({
             ? "border-accent bg-accent/10 text-accent"
             : "border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10"
         }`}
-        aria-label="Votar a favor"
+        aria-label="Gosto"
       >
-        ▲
+        <ThumbsUp className="h-4 w-4" fill={userVote === "UP" ? "currentColor" : "none"} />
       </button>
       <span className="text-sm font-medium">{score}</span>
       <button
@@ -56,9 +57,9 @@ export default function VoteButtons({
             ? "border-rose-500 bg-rose-500/10 text-rose-500"
             : "border-black/15 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/10"
         }`}
-        aria-label="Votar contra"
+        aria-label="Não gosto"
       >
-        ▼
+        <ThumbsDown className="h-4 w-4" fill={userVote === "DOWN" ? "currentColor" : "none"} />
       </button>
     </div>
   );

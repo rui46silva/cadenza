@@ -306,18 +306,26 @@ model WaitlistSignup {
 }
 
 model NewsArticle {
-  id          String    @id @default(cuid())
-  title       String
-  summary     String
-  url         String?
-  imageUrl    String?
-  source      String?
-  published   Boolean   @default(true)
-  publishedAt DateTime  @default(now())
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  createdById String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  title           String
+  slug            String?   @unique
+  summary         String
+  // Corpo do artigo em formato blog (markdown/texto). Opcional para manter
+  // compatibilidade com notícias antigas que só apontavam para uma fonte externa.
+  content         String?
+  // Meta-descrição usada nas tags SEO da página (Google/redes sociais).
+  metaDescription String?
+  url             String?
+  imageUrl        String?
+  source          String?
+  published       Boolean   @default(true)
+  publishedAt     DateTime  @default(now())
+  createdBy       User      @relation(fields: [createdById], references: [id])
+  createdById     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([publishedAt])
 }
 
 model JobListing {

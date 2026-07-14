@@ -9,6 +9,7 @@ const STATIC_ROUTES = [
   "/popular",
   "/explorar",
   "/noticias",
+  "/vagas",
   "/regras",
   "/privacidade",
   "/acessibilidade",
@@ -17,10 +18,17 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await prisma.post.findMany({
-    select: { id: true, updatedAt: true },
-    orderBy: { updatedAt: "desc" },
-  });
+  const [posts, articles] = await Promise.all([
+    prisma.post.findMany({
+      select: { id: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.newsArticle.findMany({
+      where: { published: true },
+      select: { id: true, slug: true, updatedAt: true },
+      orderBy: { publishedAt: "desc" },
+    }),
+  ]);
 
   const staticEntries = STATIC_ROUTES.map((route) => ({
     url: `${siteUrl}${route}`,
@@ -32,5 +40,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: post.updatedAt,
   }));
 
-  return [...staticEntries, ...postEntries];
+  const newsEntries = articles.map((a) => ({
+    url: `${siteUrl}/noticias/${a.slug ?? a.id}`,
+    lastModified: a.updatedAt,
+  }));
+
+  return [...staticEntries, ...postEntries, ...newsEntries];
 }

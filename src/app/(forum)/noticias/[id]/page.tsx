@@ -6,24 +6,37 @@ import { prisma } from "@/lib/prisma";
 import { buttonOutline } from "@/lib/ui";
 import { formatRelativeTime } from "@/lib/time";
 
+// O parâmetro pode ser o slug (SEO-friendly) ou, para notícias antigas sem
+// slug, o id. Procuramos primeiro por slug e recorremos ao id.
+async function findArticle(param: string) {
+  const bySlug = await prisma.newsArticle.findUnique({ where: { slug: param } });
+  if (bySlug) return bySlug;
+  return prisma.newsArticle.findUnique({ where: { id: param } });
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const article = await prisma.newsArticle.findUnique({
-    where: { id },
-    select: { title: true, summary: true, published: true },
-  });
+  const article = await findArticle(id);
 
   if (!article || !article.published) return { title: "Notícia não encontrada" };
 
+  const description = article.metaDescription || article.summary;
+  const canonical = `/noticias/${article.slug ?? article.id}`;
+
   return {
     title: article.title,
-    description: article.summary,
-    alternates: { canonical: `/noticias/${id}` },
-    openGraph: { title: article.title, description: article.summary, type: "article" },
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: article.title,
+      description,
+      type: "article",
+      images: article.imageUrl ? [article.imageUrl] : undefined,
+    },
   };
 }
 
@@ -33,7 +46,7 @@ export default async function NewsArticlePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const article = await prisma.newsArticle.findUnique({ where: { id } });
+  const article = await findArticle(id);
 
   if (!article || !article.published) notFound();
 
@@ -63,6 +76,18 @@ export default async function NewsArticlePage({
       </header>
 
       <p className="leading-relaxed text-black/80 dark:text-white/80">{article.summary}</p>
+
+      {article.content && (
+        <div className="flex flex-col gap-4 leading-relaxed text-black/80 dark:text-white/80">
+          {article.content
+            .split(/\n{2,}/)
+            .map((paragraph, i) => (
+              <p key={i} className="whitespace-pre-line">
+                {paragraph}
+              </p>
+            ))}
+        </div>
+      )}
 
       {article.url && (
         <a
