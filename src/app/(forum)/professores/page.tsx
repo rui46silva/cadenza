@@ -22,6 +22,7 @@ export default async function ProfessoresPage() {
     where: {
       role: { in: [...VERIFIABLE_ROLES] },
       verificationStatus: "APPROVED",
+      deletedAt: null,
     },
     select: {
       id: true,

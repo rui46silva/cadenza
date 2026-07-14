@@ -18,7 +18,7 @@ export default async function EmbaixadoresPage() {
   const session = await auth();
 
   const ambassadors = await prisma.user.findMany({
-    where: { isAmbassador: true },
+    where: { isAmbassador: true, deletedAt: null },
     select: {
       id: true,
       name: true,

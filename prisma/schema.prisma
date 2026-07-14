@@ -83,6 +83,10 @@ model User {
   monthlyPoints Int       @default(0)
   monthlyPeriod String?
   lastStreakMilestone Int  @default(0)
+  // Soft-delete: a conta é marcada como eliminada mas os dados ficam guardados
+  // durante um período, permitindo recuperação (rollback) se a pessoa se
+  // arrepender — basta voltar a iniciar sessão para reativar a conta.
+  deletedAt     DateTime?
   instruments   Instrument[] @relation("UserInstruments")
   tagFollows    TagFollow[]
   createdAt     DateTime  @default(now())
@@ -103,6 +107,8 @@ model User {
   newsArticles    NewsArticle[]
   jobListings     JobListing[]
   questionsDirected Post[] @relation("QuestionsDirected")
+
+  @@index([deletedAt])
 }
 
 model EmailVerificationToken {

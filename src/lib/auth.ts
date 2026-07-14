@@ -31,6 +31,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const activeBan = await getActiveBan(user.id);
         if (activeBan) throw new BannedError();
 
+        // Rollback: se a conta tinha sido marcada como eliminada, voltar a
+        // iniciar sessão reativa-a automaticamente (recupera a conta).
+        if (user.deletedAt) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { deletedAt: null },
+          });
+        }
+
         return {
           id: user.id,
           name: user.name,
@@ -49,11 +58,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         const activeBan = await getActiveBan(token.id as string);
         token.banned = !!activeBan;
+        // Sessões de contas eliminadas (soft-delete) deixam de ser válidas.
+        const account = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { deletedAt: true },
+        });
+        token.deleted = !!account?.deletedAt;
       }
       return token;
     },
     session: async ({ session, token }) => {
-      if (token.banned) {
+      if (token.banned || token.deleted) {
         return { ...session, user: undefined } as unknown as typeof session;
       }
       if (session.user) {

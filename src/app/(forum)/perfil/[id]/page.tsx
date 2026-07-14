@@ -62,11 +62,12 @@ export default async function ProfilePage({
       points: true,
       longestStreak: true,
       isAmbassador: true,
+      deletedAt: true,
       _count: { select: { posts: true, comments: true } },
     },
   });
 
-  if (!user) notFound();
+  if (!user || user.deletedAt) notFound();
 
   const session = await auth();
   const viewerId = session?.user?.id;

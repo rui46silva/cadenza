@@ -9,6 +9,7 @@ import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import ProfileForm from "@/components/ProfileForm";
 import ChangePasswordForm from "@/components/ChangePasswordForm";
+import DeleteAccountSection from "@/components/DeleteAccountSection";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 import LevelBadge from "@/components/LevelBadge";
 import LevelProgress from "@/components/LevelProgress";
@@ -209,6 +210,7 @@ export default async function DashboardPage({
             <h2 className="font-semibold mb-4">Alterar palavra-passe</h2>
             <ChangePasswordForm />
           </div>
+          <DeleteAccountSection />
         </div>
       )}
 
