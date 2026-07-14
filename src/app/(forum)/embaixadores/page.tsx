@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Sparkles, FileText, MessageSquare } from "lucide-react";
+import { Sparkles, FileText, MessageSquare, Crown, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
@@ -35,15 +35,33 @@ export default async function EmbaixadoresPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Sparkles className="h-6 w-6 text-accent" />
-          Embaixadores
+      <section className="relative overflow-hidden rounded-2xl border border-transparent bg-gradient-to-br from-amber-400/15 via-fuchsia-500/15 to-accent/15 p-6 ring-1 ring-fuchsia-500/30 sm:p-8">
+        <div className="flex items-center gap-2">
+          <Crown className="h-5 w-5 text-amber-500" />
+          <span className="text-xs font-bold uppercase tracking-wider text-fuchsia-600 dark:text-fuchsia-400">
+            Círculo exclusivo
+          </span>
+        </div>
+        <h1 className="mt-2 flex items-center gap-2 text-2xl font-bold sm:text-3xl">
+          <Sparkles className="h-7 w-7 text-accent" />
+          Embaixadores Cadenza
         </h1>
-        <p className="text-black/60 dark:text-white/60">
-          Músicos que se destacam a ajudar a comunidade Cadenza — as respostas e
-          posts deles ganham destaque no fórum.
+        <p className="mt-2 max-w-2xl text-black/70 dark:text-white/70">
+          Um grupo restrito de músicos escolhidos a dedo por representarem o melhor
+          da comunidade. Ser embaixador é um distintivo de confiança e mérito — as
+          respostas e posts deles ganham destaque em toda a Cadenza.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          {["Selecionados a convite", "Distintivo exclusivo", "Destaque no fórum"].map((perk) => (
+            <span
+              key={perk}
+              className="flex items-center gap-1 rounded-full bg-white/60 px-3 py-1 font-medium text-black/70 backdrop-blur dark:bg-white/10 dark:text-white/80"
+            >
+              <Star className="h-3 w-3 text-amber-500" fill="currentColor" />
+              {perk}
+            </span>
+          ))}
+        </div>
       </section>
 
       {ambassadors.length === 0 ? (
@@ -55,7 +73,7 @@ export default async function EmbaixadoresPage() {
           {ambassadors.map((user) => (
             <div
               key={user.id}
-              className="flex flex-col gap-3 rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 p-4 transition-colors hover:border-fuchsia-500/60"
+              className="flex flex-col gap-3 rounded-xl border border-transparent bg-gradient-to-br from-amber-400/10 via-fuchsia-500/10 to-accent/10 p-4 shadow-sm ring-1 ring-fuchsia-500/30 transition-all hover:ring-fuchsia-500/60 hover:shadow-md"
             >
               <Link href={`/perfil/${user.id}`} className="flex items-start gap-3">
                 <Avatar name={user.name} avatarUrl={user.avatarUrl} size={48} />

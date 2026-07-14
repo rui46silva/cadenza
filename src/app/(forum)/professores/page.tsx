@@ -37,7 +37,8 @@ export default async function ProfessoresPage() {
       points: true,
       _count: { select: { posts: true, comments: true } },
     },
-    orderBy: { points: "desc" },
+    // Hierarquia: embaixadores primeiro, depois por reputação (pontos).
+    orderBy: [{ isAmbassador: "desc" }, { points: "desc" }],
   });
 
   return (
@@ -62,7 +63,11 @@ export default async function ProfessoresPage() {
           {pros.map((user) => (
             <div
               key={user.id}
-              className="flex flex-col gap-3 rounded-xl border border-black/10 dark:border-white/10 p-4 transition-colors hover:border-accent/60"
+              className={
+                user.isAmbassador
+                  ? "flex flex-col gap-3 rounded-xl border border-transparent bg-gradient-to-br from-amber-400/10 via-fuchsia-500/10 to-accent/10 p-4 shadow-sm ring-1 ring-fuchsia-500/30 transition-colors hover:ring-fuchsia-500/60"
+                  : "flex flex-col gap-3 rounded-xl border border-black/10 dark:border-white/10 p-4 transition-colors hover:border-accent/60"
+              }
             >
               <Link href={`/perfil/${user.id}`} className="flex items-start gap-3">
                 <Avatar name={user.name} avatarUrl={user.avatarUrl} size={48} />
