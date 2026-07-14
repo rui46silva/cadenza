@@ -26,7 +26,8 @@ export function roleLabel(user: RoleBadgeUser): string {
     return instrument ? `${base} de ${instrument}` : base;
   }
   if (user.role === "MUSICO_PROFISSIONAL") {
-    const base = gendered(user, "Músico profissional", "Música profissional");
+    // "Músico profissional" é unissexo — não tem forma feminina.
+    const base = "Músico profissional";
     return instrument ? `${base} de ${instrument}` : base;
   }
   if (user.role === "MODERATOR") return gendered(user, "Moderador", "Moderadora");
