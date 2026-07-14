@@ -6,9 +6,9 @@ import NewPostForm from "@/components/NewPostForm";
 export default async function NewPostPage({
   searchParams,
 }: {
-  searchParams: Promise<{ duvida?: string; para?: string; feedback?: string; desafio?: string }>;
+  searchParams: Promise<{ duvida?: string; para?: string; feedback?: string; desafio?: string; video?: string }>;
 }) {
-  const { duvida, para, feedback, desafio } = await searchParams;
+  const { duvida, para, feedback, desafio, video } = await searchParams;
   const challenge = desafio === "1" ? currentChallenge() : null;
 
   // Resolve o destinatário no servidor para validar que é mesmo um especialista
@@ -33,6 +33,7 @@ export default async function NewPostPage({
     <NewPostForm
       initialQuestion={duvida === "1" || Boolean(directedTo)}
       initialFeedback={feedback === "1"}
+      initialVideo={video === "1"}
       directedTo={directedTo}
       challenge={challenge ? { title: challenge.title, prompt: challenge.prompt } : null}
     />
