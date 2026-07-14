@@ -1,4 +1,4 @@
-import { BadgeCheck, Sparkles } from "lucide-react";
+import { BadgeCheck, Sparkles, Crown } from "lucide-react";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
 import { ROLE_PILL_STYLE, ROLE_PILL_STYLE_FALLBACK } from "@/lib/roleColors";
 
@@ -7,6 +7,7 @@ type RoleBadgeUser = {
   instrument?: string | null;
   verificationStatus?: string | null;
   isAmbassador?: boolean | null;
+  isPremium?: boolean | null;
   gender?: string | null;
 };
 
@@ -38,6 +39,18 @@ function isVerifiableRole(role: string): boolean {
   return (VERIFIABLE_ROLES as readonly string[]).includes(role);
 }
 
+export function PremiumBadge() {
+  return (
+    <span
+      title="Membro Premium"
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-transparent bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-xs font-semibold text-white shadow-sm"
+    >
+      <Crown className="h-3.5 w-3.5" />
+      Premium
+    </span>
+  );
+}
+
 export function AmbassadorBadge() {
   return (
     <span
@@ -58,6 +71,7 @@ export default function RoleBadge({ user }: { user: RoleBadgeUser }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       {user.isAmbassador && <AmbassadorBadge />}
+      {user.isPremium && <PremiumBadge />}
       <span
         className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs bg-transparent ${
           ROLE_PILL_STYLE[user.role] ?? ROLE_PILL_STYLE_FALLBACK

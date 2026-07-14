@@ -83,6 +83,11 @@ model User {
   monthlyPoints Int       @default(0)
   monthlyPeriod String?
   lastStreakMilestone Int  @default(0)
+  // Monetização. isPremium/premiumUntil = subscrição Premium ativa.
+  // featuredUntil = perfil/professor em destaque pago nos diretórios.
+  isPremium     Boolean   @default(false)
+  premiumUntil  DateTime?
+  featuredUntil DateTime?
   // Soft-delete: a conta é marcada como eliminada mas os dados ficam guardados
   // durante um período, permitindo recuperação (rollback) se a pessoa se
   // arrepender — basta voltar a iniciar sessão para reativar a conta.
@@ -201,6 +206,11 @@ model Post {
   content     String?
   videoUrl    String?
   pinned      Boolean    @default(false)
+  // Post patrocinado por uma marca (monetização). Aparece com etiqueta própria
+  // no topo do feed.
+  sponsored   Boolean    @default(false)
+  sponsorName String?
+  sponsorUrl  String?
   isQuestion  Boolean    @default(false)
   feedbackRequest Boolean @default(false)
   feedbackFocus String?
@@ -224,6 +234,7 @@ model Post {
   @@index([createdAt])
   @@index([score])
   @@index([challengeId])
+  @@index([sponsored])
 }
 
 model PostTag {

@@ -41,12 +41,13 @@ export async function getForumFeed({
 
   // Ordenação feita na base de dados (usa os índices e a coluna score
   // desnormalizada) — sem carregar todos os posts para memória.
+  // Posts patrocinados (monetização) surgem sempre no topo, seguidos dos fixados.
   const orderBy: Prisma.PostOrderByWithRelationInput[] =
     sort === "votados"
-      ? [{ pinned: "desc" }, { score: "desc" }, { createdAt: "desc" }]
+      ? [{ sponsored: "desc" }, { pinned: "desc" }, { score: "desc" }, { createdAt: "desc" }]
       : sort === "comentados"
-      ? [{ pinned: "desc" }, { comments: { _count: "desc" } }, { createdAt: "desc" }]
-      : [{ pinned: "desc" }, { createdAt: "desc" }];
+      ? [{ sponsored: "desc" }, { pinned: "desc" }, { comments: { _count: "desc" } }, { createdAt: "desc" }]
+      : [{ sponsored: "desc" }, { pinned: "desc" }, { createdAt: "desc" }];
 
   // Pede um a mais do que a página para saber se há mais sem uma 2ª contagem.
   const rows = await prisma.post.findMany({

@@ -7,6 +7,9 @@ import VerifyProfessorButtons from "@/components/VerifyProfessorButtons";
 import BanControls from "@/components/BanControls";
 import ModeratorToggle from "@/components/ModeratorToggle";
 import AmbassadorToggle from "@/components/AmbassadorToggle";
+import PremiumToggle from "@/components/PremiumToggle";
+import FeaturedToggle from "@/components/FeaturedToggle";
+import { isFeaturedActive } from "@/lib/monetization";
 import ReportActions from "@/components/ReportActions";
 import WaitlistList from "@/components/WaitlistList";
 import DeleteUserButton from "@/components/DeleteUserButton";
@@ -40,6 +43,8 @@ export default async function AdminPage() {
           verifiedBy: { select: { name: true } },
           createdAt: true,
           isAmbassador: true,
+          isPremium: true,
+          featuredUntil: true,
         },
       })
     : [];
@@ -204,8 +209,10 @@ export default async function AdminPage() {
                       <RoleBadge user={p} />
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <AmbassadorToggle userId={p.id} isAmbassador={p.isAmbassador} />
+                    <PremiumToggle userId={p.id} isPremium={p.isPremium} />
+                    <FeaturedToggle userId={p.id} featured={isFeaturedActive(p)} />
                     {p.verificationStatus === "PENDING" ? (
                       <VerifyProfessorButtons userId={p.id} />
                     ) : (

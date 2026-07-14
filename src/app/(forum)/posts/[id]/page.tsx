@@ -12,6 +12,7 @@ import { roleLabel } from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
+import SponsorPostButton from "@/components/SponsorPostButton";
 import DeletePostButton from "@/components/DeletePostButton";
 import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";
@@ -285,6 +286,14 @@ export default async function PostPage({
           {isStaff(session?.user?.role) && (
             <>
               <PinToggle postId={post.id} pinned={post.pinned} />
+              {session?.user?.role === "ADMIN" && (
+                <SponsorPostButton
+                  postId={post.id}
+                  sponsored={post.sponsored}
+                  sponsorName={post.sponsorName}
+                  sponsorUrl={post.sponsorUrl}
+                />
+              )}
               <DeletePostButton postId={post.id} />
             </>
           )}
