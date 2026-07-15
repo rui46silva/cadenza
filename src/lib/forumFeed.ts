@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import type { TagCategory } from "@prisma/client";
+import type { Prisma, TagCategory } from "@prisma/client";
 import type { SortOption } from "@/lib/forumSort";
-
-const MAX_CANDIDATES = 200;
 
 export async function getForumFeed({
   tag,
@@ -23,24 +21,37 @@ export async function getForumFeed({
   skip?: number;
   take?: number;
 }) {
-  const posts = await prisma.post.findMany({
-    where: {
-      AND: [
-        tag ? { tags: { some: { tag: { name: tag } } } } : {},
-        category ? { tags: { some: { tag: { category } } } } : {},
-        followingUserId
-          ? { tags: { some: { tag: { followers: { some: { userId: followingUserId } } } } } }
-          : {},
-        q
-          ? {
-              OR: [
-                { title: { contains: q, mode: "insensitive" } },
-                { content: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {},
-      ],
-    },
+  const where: Prisma.PostWhereInput = {
+    AND: [
+      tag ? { tags: { some: { tag: { name: tag } } } } : {},
+      category ? { tags: { some: { tag: { category } } } } : {},
+      followingUserId
+        ? { tags: { some: { tag: { followers: { some: { userId: followingUserId } } } } } }
+        : {},
+      q
+        ? {
+            OR: [
+              { title: { contains: q, mode: "insensitive" } },
+              { content: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {},
+    ],
+  };
+
+  // Ordenação feita na base de dados (usa os índices e a coluna score
+  // desnormalizada) — sem carregar todos os posts para memória.
+  // Posts patrocinados (monetização) surgem sempre no topo, seguidos dos fixados.
+  const orderBy: Prisma.PostOrderByWithRelationInput[] =
+    sort === "votados"
+      ? [{ sponsored: "desc" }, { pinned: "desc" }, { score: "desc" }, { createdAt: "desc" }]
+      : sort === "comentados"
+      ? [{ sponsored: "desc" }, { pinned: "desc" }, { comments: { _count: "desc" } }, { createdAt: "desc" }]
+      : [{ sponsored: "desc" }, { pinned: "desc" }, { createdAt: "desc" }];
+
+  // Pede um a mais do que a página para saber se há mais sem uma 2ª contagem.
+  const rows = await prisma.post.findMany({
+    where,
     include: {
       author: {
         select: {
@@ -53,30 +64,32 @@ export async function getForumFeed({
         },
       },
       tags: { include: { tag: true } },
-      votes: true,
-      _count: { select: { comments: true, votes: true } },
+      _count: { select: { comments: true } },
     },
-    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
-    take: MAX_CANDIDATES,
+    orderBy,
+    skip,
+    take: take + 1,
   });
 
-  const ranked = posts
-    .map(({ votes, ...post }) => ({
-      ...post,
-      score: votes.reduce((acc, v) => acc + (v.value === "UP" ? 1 : -1), 0),
-      viewerVote: viewerId ? votes.find((v) => v.userId === viewerId)?.value ?? null : null,
-    }))
-    .sort((a, b) => {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-      if (sort === "votados") return b.score - a.score;
-      if (sort === "comentados") return b._count.comments - a._count.comments;
-      return b.createdAt.getTime() - a.createdAt.getTime();
+  const hasMore = rows.length > take;
+  const page = rows.slice(0, take);
+
+  // Voto do próprio utilizador apenas para os posts desta página.
+  const viewerVotes = new Map<string, "UP" | "DOWN">();
+  if (viewerId && page.length > 0) {
+    const votes = await prisma.postVote.findMany({
+      where: { userId: viewerId, postId: { in: page.map((p) => p.id) } },
+      select: { postId: true, value: true },
     });
+    for (const v of votes) viewerVotes.set(v.postId, v.value);
+  }
 
-  const page = ranked.slice(skip, skip + take);
-  const hasMore = skip + take < ranked.length;
+  const withVote = page.map((post) => ({
+    ...post,
+    viewerVote: viewerVotes.get(post.id) ?? null,
+  }));
 
-  const withFollowStatus = await attachPrimaryTagFollowStatus(page, viewerId);
+  const withFollowStatus = await attachPrimaryTagFollowStatus(withVote, viewerId);
 
   return { posts: withFollowStatus, hasMore };
 }

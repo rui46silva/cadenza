@@ -16,26 +16,16 @@ const TYPE_ICON: Record<string, typeof FileText> = {
 const FEED_AD_AFTER = 4;
 
 export default async function PopularPage() {
-  const posts = await prisma.post.findMany({
+  // Ordena pela coluna score na base de dados (índice) — sem carregar votos.
+  const ranked = await prisma.post.findMany({
     include: {
       author: { select: { id: true, name: true, role: true, avatarUrl: true } },
       tags: { include: { tag: true } },
-      votes: true,
-      _count: { select: { comments: true, votes: true } },
+      _count: { select: { comments: true } },
     },
-    take: 50,
+    orderBy: { score: "desc" },
+    take: 30,
   });
-
-  const ranked = posts
-    .map((post) => ({
-      ...post,
-      score: post.votes.reduce(
-        (acc, v) => acc + (v.value === "UP" ? 1 : -1),
-        0
-      ),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 30);
 
   return (
     <div className="flex flex-col gap-6">

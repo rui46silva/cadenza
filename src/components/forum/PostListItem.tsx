@@ -22,6 +22,9 @@ export type PostListItemData = {
   content: string | null;
   videoUrl: string | null;
   pinned: boolean;
+  sponsored?: boolean;
+  sponsorName?: string | null;
+  sponsorUrl?: string | null;
   bestAnswerId: string | null;
   createdAt: Date | string;
   score: number;
@@ -70,6 +73,7 @@ export default function PostListItem({
   const ambassadorAuthor = Boolean(post.author.isAmbassador);
 
   const hasBadges =
+    post.sponsored ||
     isMostPopular ||
     trending ||
     post.isQuestion ||
@@ -86,13 +90,20 @@ export default function PostListItem({
           ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/60"
           : "border-black/10 dark:border-white/10 hover:border-accent/60"
       } ${
-        ambassadorAuthor && !trending && !isMostPopular
+        post.sponsored ? "border-amber-500/40 bg-amber-500/[0.04]" : ""
+      } ${
+        ambassadorAuthor && !trending && !isMostPopular && !post.sponsored
           ? "border-l-2 border-l-fuchsia-500/60"
           : ""
       } ${className}`}
     >
       {hasBadges && (
         <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+          {post.sponsored && (
+            <span className="flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+              Patrocinado{post.sponsorName ? ` · ${post.sponsorName}` : ""}
+            </span>
+          )}
           {isMostPopular && (
             <span className="flex items-center gap-1 rounded-full border border-orange-500/40 bg-orange-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
               <Flame className="h-3 w-3" />

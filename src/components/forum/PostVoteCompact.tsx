@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowBigUp, ArrowBigDown } from "lucide-react";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function PostVoteCompact({
   postId,
@@ -41,12 +41,12 @@ export default function PostVoteCompact({
         onClick={(e) => vote(e, "UP")}
         disabled={loading}
         aria-pressed={userVote === "UP"}
-        aria-label="Votar a favor"
+        aria-label="Gosto"
         className={`flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-50 ${
           userVote === "UP" ? "text-accent" : "text-black/40 dark:text-white/40 hover:text-accent"
         }`}
       >
-        <ArrowBigUp className="h-4 w-4" fill={userVote === "UP" ? "currentColor" : "none"} />
+        <ThumbsUp className="h-3.5 w-3.5" fill={userVote === "UP" ? "currentColor" : "none"} />
       </button>
       <span className="min-w-[1.5ch] text-center text-xs font-medium">{score}</span>
       <button
@@ -54,12 +54,12 @@ export default function PostVoteCompact({
         onClick={(e) => vote(e, "DOWN")}
         disabled={loading}
         aria-pressed={userVote === "DOWN"}
-        aria-label="Votar contra"
+        aria-label="Não gosto"
         className={`flex h-6 w-6 items-center justify-center rounded-full disabled:opacity-50 ${
           userVote === "DOWN" ? "text-rose-500" : "text-black/40 dark:text-white/40 hover:text-rose-500"
         }`}
       >
-        <ArrowBigDown className="h-4 w-4" fill={userVote === "DOWN" ? "currentColor" : "none"} />
+        <ThumbsDown className="h-3.5 w-3.5" fill={userVote === "DOWN" ? "currentColor" : "none"} />
       </button>
     </div>
   );

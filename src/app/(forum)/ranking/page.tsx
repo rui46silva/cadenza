@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Trophy, Medal } from "lucide-react";
+import { Trophy, Medal, Gift } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { currentPeriod } from "@/lib/points";
 import { levelInfo } from "@/lib/levels";
@@ -92,6 +92,30 @@ export default async function RankingPage() {
           Ganhas pontos ao publicar, comentar, receber votos e resolver dúvidas.
           O ranking do mês reinicia a cada mês — todos têm uma nova hipótese.
         </p>
+      </section>
+
+      <section className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-400/10 to-transparent p-5">
+        <h2 className="flex items-center gap-2 font-semibold">
+          <Gift className="h-5 w-5 text-amber-500" />
+          Prémios do mês
+        </h2>
+        <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+          Quem terminar o mês no topo leva prémios da Cadenza:
+        </p>
+        <ul className="mt-3 flex flex-col gap-2 text-sm">
+          {[
+            { rank: "1.º lugar", prize: "3 meses de Cadenza Premium + destaque no perfil", color: "text-amber-500" },
+            { rank: "2.º lugar", prize: "1 mês de Cadenza Premium", color: "text-slate-400" },
+            { rank: "3.º lugar", prize: "Distintivo especial no perfil", color: "text-orange-700 dark:text-orange-500" },
+          ].map((p) => (
+            <li key={p.rank} className="flex items-center gap-3">
+              <Medal className={`h-4 w-4 shrink-0 ${p.color}`} />
+              <span>
+                <span className="font-medium">{p.rank}:</span> {p.prize}
+              </span>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="flex flex-col gap-3">

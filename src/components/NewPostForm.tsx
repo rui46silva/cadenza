@@ -15,18 +15,20 @@ const INSTRUMENT_SET = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 export default function NewPostForm({
   initialQuestion = false,
   initialFeedback = false,
+  initialVideo = false,
   directedTo = null,
   challenge = null,
 }: {
   initialQuestion?: boolean;
   initialFeedback?: boolean;
+  initialVideo?: boolean;
   directedTo?: Expert | null;
   challenge?: { title: string; prompt: string } | null;
 }) {
   const router = useRouter();
   const { toast } = useToast();
   const [type, setType] = useState<"TEXT" | "VIDEO">(
-    initialFeedback || challenge ? "VIDEO" : "TEXT"
+    initialFeedback || initialVideo || challenge ? "VIDEO" : "TEXT"
   );
   const [isQuestion, setIsQuestion] = useState(initialQuestion);
   const [feedbackRequest, setFeedbackRequest] = useState(initialFeedback);

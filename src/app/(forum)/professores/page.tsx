@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { GraduationCap, FileText, MessageSquare } from "lucide-react";
+import { GraduationCap, FileText, MessageSquare, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
 import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import AskQuestionButton from "@/components/AskQuestionButton";
+import { isFeaturedActive } from "@/lib/monetization";
 
 export const metadata: Metadata = {
   title: "Professores e profissionais",
@@ -22,6 +23,7 @@ export default async function ProfessoresPage() {
     where: {
       role: { in: [...VERIFIABLE_ROLES] },
       verificationStatus: "APPROVED",
+      deletedAt: null,
     },
     select: {
       id: true,
@@ -32,12 +34,18 @@ export default async function ProfessoresPage() {
       bio: true,
       avatarUrl: true,
       isAmbassador: true,
+      featuredUntil: true,
       verificationStatus: true,
       points: true,
       _count: { select: { posts: true, comments: true } },
     },
-    orderBy: { points: "desc" },
+    // Hierarquia: embaixadores primeiro, depois por reputação (pontos).
+    orderBy: [{ isAmbassador: "desc" }, { points: "desc" }],
   });
+
+  // Perfis em destaque pago sobem ao topo (mantendo a ordem relativa restante).
+  const isFeatured = (u: { featuredUntil: Date | null }) => isFeaturedActive(u);
+  pros.sort((a, b) => Number(isFeatured(b)) - Number(isFeatured(a)));
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,12 +69,24 @@ export default async function ProfessoresPage() {
           {pros.map((user) => (
             <div
               key={user.id}
-              className="flex flex-col gap-3 rounded-xl border border-black/10 dark:border-white/10 p-4 transition-colors hover:border-accent/60"
+              className={
+                user.isAmbassador
+                  ? "flex flex-col gap-3 rounded-xl border border-transparent bg-gradient-to-br from-amber-400/10 via-fuchsia-500/10 to-accent/10 p-4 shadow-sm ring-1 ring-fuchsia-500/30 transition-colors hover:ring-fuchsia-500/60"
+                  : "flex flex-col gap-3 rounded-xl border border-black/10 dark:border-white/10 p-4 transition-colors hover:border-accent/60"
+              }
             >
               <Link href={`/perfil/${user.id}`} className="flex items-start gap-3">
                 <Avatar name={user.name} avatarUrl={user.avatarUrl} size={48} />
                 <div className="flex min-w-0 flex-col gap-1">
-                  <span className="font-semibold">{user.name}</span>
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    {user.name}
+                    {isFeatured(user) && (
+                      <span className="flex items-center gap-0.5 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent">
+                        <Star className="h-2.5 w-2.5" fill="currentColor" />
+                        Destaque
+                      </span>
+                    )}
+                  </span>
                   <RoleBadge user={user} />
                 </div>
               </Link>

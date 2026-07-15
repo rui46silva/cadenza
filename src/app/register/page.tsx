@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Music2, Award } from "lucide-react";
+import { GraduationCap, Music2, Award, ChevronDown } from "lucide-react";
 import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<"ALUNO" | "PROFESSOR" | "MUSICO_PROFISSIONAL">("ALUNO");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [gender, setGender] = useState("");
   const [instrument, setInstrument] = useState("");
   const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function RegisterPage() {
       email: formData.get("email"),
       password,
       role,
+      gender: gender || undefined,
       instrument: instrument || undefined,
       verificationNote: needsVerification ? verificationNote : undefined,
     };
@@ -188,6 +190,26 @@ export default function RegisterPage() {
         </div>
 
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
+
+        <label className="text-sm flex flex-col gap-1">
+          Género
+          <div className="relative">
+            <select
+              name="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full appearance-none cursor-pointer rounded-md border border-black/15 dark:border-white/20 px-3 py-2 pr-9 bg-transparent [&>option]:bg-white dark:[&>option]:bg-neutral-900"
+            >
+              <option value="">Prefiro não indicar</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="MASCULINO">Masculino</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40 dark:text-white/40" />
+          </div>
+          <span className="text-xs text-black/40 dark:text-white/40">
+            Ajuda-nos a tratar-te certo (ex: Professora, Música profissional).
+          </span>
+        </label>
 
         {needsVerification && (
           <div>

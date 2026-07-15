@@ -58,3 +58,33 @@ export async function PATCH(req: Request) {
 
   return NextResponse.json({ user });
 }
+
+const deleteSchema = z.object({
+  // O cliente tem de enviar exatamente "APAGAR" para confirmar.
+  confirm: z.string(),
+});
+
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const body = await req.json().catch(() => null);
+  const parsed = deleteSchema.safeParse(body);
+  if (!parsed.success || parsed.data.confirm.trim().toUpperCase() !== "APAGAR") {
+    return NextResponse.json(
+      { error: 'Escreve APAGAR para confirmar a eliminação.' },
+      { status: 400 }
+    );
+  }
+
+  // Soft-delete: marca a conta como eliminada mas mantém os dados para permitir
+  // recuperação (rollback) — a conta reativa-se ao iniciar sessão novamente.
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { deletedAt: new Date() },
+  });
+
+  return NextResponse.json({ ok: true });
+}

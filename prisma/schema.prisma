@@ -83,6 +83,15 @@ model User {
   monthlyPoints Int       @default(0)
   monthlyPeriod String?
   lastStreakMilestone Int  @default(0)
+  // Monetização. isPremium/premiumUntil = subscrição Premium ativa.
+  // featuredUntil = perfil/professor em destaque pago nos diretórios.
+  isPremium     Boolean   @default(false)
+  premiumUntil  DateTime?
+  featuredUntil DateTime?
+  // Soft-delete: a conta é marcada como eliminada mas os dados ficam guardados
+  // durante um período, permitindo recuperação (rollback) se a pessoa se
+  // arrepender — basta voltar a iniciar sessão para reativar a conta.
+  deletedAt     DateTime?
   instruments   Instrument[] @relation("UserInstruments")
   tagFollows    TagFollow[]
   createdAt     DateTime  @default(now())
@@ -103,6 +112,8 @@ model User {
   newsArticles    NewsArticle[]
   jobListings     JobListing[]
   questionsDirected Post[] @relation("QuestionsDirected")
+
+  @@index([deletedAt])
 }
 
 model EmailVerificationToken {
@@ -195,11 +206,17 @@ model Post {
   content     String?
   videoUrl    String?
   pinned      Boolean    @default(false)
+  // Post patrocinado por uma marca (monetização). Aparece com etiqueta própria
+  // no topo do feed.
+  sponsored   Boolean    @default(false)
+  sponsorName String?
+  sponsorUrl  String?
   isQuestion  Boolean    @default(false)
   feedbackRequest Boolean @default(false)
   feedbackFocus String?
   challengeId String?
   views       Int        @default(0)
+  score       Int        @default(0)
   author      User       @relation(fields: [authorId], references: [id])
   authorId    String
   tags        PostTag[]
@@ -213,6 +230,11 @@ model Post {
   directedToId String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([createdAt])
+  @@index([score])
+  @@index([challengeId])
+  @@index([sponsored])
 }
 
 model PostTag {
@@ -301,18 +323,26 @@ model WaitlistSignup {
 }
 
 model NewsArticle {
-  id          String    @id @default(cuid())
-  title       String
-  summary     String
-  url         String?
-  imageUrl    String?
-  source      String?
-  published   Boolean   @default(true)
-  publishedAt DateTime  @default(now())
-  createdBy   User      @relation(fields: [createdById], references: [id])
-  createdById String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  title           String
+  slug            String?   @unique
+  summary         String
+  // Corpo do artigo em formato blog (markdown/texto). Opcional para manter
+  // compatibilidade com notícias antigas que só apontavam para uma fonte externa.
+  content         String?
+  // Meta-descrição usada nas tags SEO da página (Google/redes sociais).
+  metaDescription String?
+  url             String?
+  imageUrl        String?
+  source          String?
+  published       Boolean   @default(true)
+  publishedAt     DateTime  @default(now())
+  createdBy       User      @relation(fields: [createdById], references: [id])
+  createdById     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([publishedAt])
 }
 
 model JobListing {

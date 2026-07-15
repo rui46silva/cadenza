@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 
 type Profile = {
@@ -75,11 +76,18 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
 
         <label className="text-sm flex flex-col gap-1">
           Género
-          <select name="gender" defaultValue={profile.gender ?? ""} className={inputClass}>
-            <option value="">Prefiro não indicar</option>
-            <option value="FEMININO">Feminino</option>
-            <option value="MASCULINO">Masculino</option>
-          </select>
+          <div className="relative">
+            <select
+              name="gender"
+              defaultValue={profile.gender ?? ""}
+              className={`${inputClass} w-full appearance-none pr-9 cursor-pointer [&>option]:bg-white dark:[&>option]:bg-neutral-900`}
+            >
+              <option value="">Prefiro não indicar</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="MASCULINO">Masculino</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40 dark:text-white/40" />
+          </div>
           <span className="text-xs text-black/40 dark:text-white/40">
             Usado só para ajustar o teu papel (ex: Professora, Aluna).
           </span>

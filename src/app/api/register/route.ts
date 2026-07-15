@@ -11,6 +11,7 @@ const registerSchema = z
     email: z.string().email(),
     password: z.string().min(8).max(100),
     role: z.enum(["PROFESSOR", "MUSICO_PROFISSIONAL", "ALUNO"]).default("ALUNO"),
+    gender: z.enum(["MASCULINO", "FEMININO"]).optional(),
     instrument: z.string().max(60).optional(),
     verificationNote: z.string().max(1000).optional(),
   })
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password, role, instrument, verificationNote } = parsed.data;
+  const { name, email, password, role, gender, instrument, verificationNote } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
       email,
       passwordHash,
       role,
+      gender: gender || undefined,
       instrument: instrument || waitlistSignup?.instrument || undefined,
       verificationStatus: requiresVerification(role) ? "PENDING" : "APPROVED",
       verificationNote: requiresVerification(role) ? verificationNote : undefined,

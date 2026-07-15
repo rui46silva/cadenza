@@ -11,29 +11,13 @@ import { prisma } from "@/lib/prisma";
  */
 export const getMostPopularPostId = unstable_cache(
   async (): Promise<{ id: string; score: number } | null> => {
-    const [ups, downs] = await Promise.all([
-      prisma.postVote.groupBy({
-        by: ["postId"],
-        where: { value: "UP" },
-        _count: { _all: true },
-      }),
-      prisma.postVote.groupBy({
-        by: ["postId"],
-        where: { value: "DOWN" },
-        _count: { _all: true },
-      }),
-    ]);
-
-    const scores = new Map<string, number>();
-    for (const u of ups) scores.set(u.postId, (scores.get(u.postId) ?? 0) + u._count._all);
-    for (const d of downs) scores.set(d.postId, (scores.get(d.postId) ?? 0) - d._count._all);
-
-    let top: { id: string; score: number } | null = null;
-    for (const [id, score] of scores) {
-      if (!top || score > top.score) top = { id, score };
-    }
-    // Só há "mais popular" se houver de facto votos positivos líquidos.
-    return top && top.score > 0 ? top : null;
+    // Usa a coluna `score` desnormalizada + índice — trivial.
+    const top = await prisma.post.findFirst({
+      where: { score: { gt: 0 } },
+      orderBy: { score: "desc" },
+      select: { id: true, score: true },
+    });
+    return top;
   },
   ["most-popular-post"],
   { revalidate: 30 }
