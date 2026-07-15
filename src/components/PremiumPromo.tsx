@@ -29,6 +29,14 @@ function cooldownElapsed(): boolean {
  */
 export default function PremiumPromo() {
   const [open, setOpen] = useState(false);
+  // `visible` controla a animação de entrada/saída (transição suave).
+  const [visible, setVisible] = useState(false);
+
+  const close = useCallback(() => {
+    setVisible(false);
+    // Espera a transição de saída antes de desmontar.
+    setTimeout(() => setOpen(false), 250);
+  }, []);
 
   const trigger = useCallback(() => {
     if (!cooldownElapsed()) return false;
@@ -71,37 +79,50 @@ export default function PremiumPromo() {
     };
   }, [trigger]);
 
+  // Ativa a animação de entrada no frame seguinte a abrir.
+  useEffect(() => {
+    if (!open) return;
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+
   // Fecha com a tecla Escape.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") close();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, close]);
 
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Conhece o Cadenza Premium"
     >
-      {/* Fundo com blur para dar ênfase ao popup. */}
+      {/* Fundo com blur para dar ênfase ao popup — surge suavemente. */}
       <button
         type="button"
         aria-label="Fechar"
-        onClick={() => setOpen(false)}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={close}
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
       />
 
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-amber-500/30 bg-white shadow-2xl dark:bg-neutral-900">
+      <div
+        className={`relative w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl border border-amber-500/30 bg-white shadow-2xl transition-all duration-300 ease-out dark:bg-neutral-900 ${
+          visible ? "translate-y-0 opacity-100 scale-100" : "translate-y-4 opacity-0 scale-95"
+        } motion-reduce:transform-none motion-reduce:transition-opacity`}
+      >
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={close}
           aria-label="Fechar"
           className="absolute right-3 top-3 rounded-full p-1.5 text-black/40 transition-colors hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
         >
@@ -135,7 +156,7 @@ export default function PremiumPromo() {
 
           <Link
             href="/premium"
-            onClick={() => setOpen(false)}
+            onClick={close}
             className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:shadow-md"
           >
             <Crown className="h-4 w-4" />
@@ -143,7 +164,7 @@ export default function PremiumPromo() {
           </Link>
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={close}
             className="text-center text-sm text-black/50 hover:text-black/70 dark:text-white/50 dark:hover:text-white/70"
           >
             Agora não
