@@ -6,13 +6,15 @@ import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
 import { AmbassadorBadge, roleLabel } from "@/components/RoleBadge";
 import AskQuestionButton from "@/components/AskQuestionButton";
+import { pageMetadata } from "@/lib/pageMeta";
 
-export const metadata: Metadata = {
-  title: "Embaixadores",
-  description:
-    "Conhece os embaixadores da Cadenza — músicos que ajudam a comunidade a crescer todos os dias.",
-  alternates: { canonical: "/embaixadores" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/embaixadores", {
+    title: "Embaixadores",
+    description:
+      "Conhece os embaixadores da Cadenza — músicos que ajudam a comunidade a crescer todos os dias.",
+  });
+}
 
 export default async function EmbaixadoresPage() {
   const session = await auth();

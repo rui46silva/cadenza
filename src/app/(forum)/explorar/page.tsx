@@ -3,6 +3,14 @@ import { Compass, MessagesSquare, Flame, Newspaper, LayoutGrid, Sparkles, HelpCi
 import { prisma } from "@/lib/prisma";
 import { groupTagsByCategory } from "@/lib/tagCategories";
 import { card, pill } from "@/lib/ui";
+import { pageMetadata } from "@/lib/pageMeta";
+
+export function generateMetadata() {
+  return pageMetadata("/explorar", {
+    title: "Explorar",
+    description: "Explora tópicos, instrumentos e a comunidade da Cadenza.",
+  });
+}
 
 export default async function ExplorarPage() {
   const tags = await prisma.tag.findMany({

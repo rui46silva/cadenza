@@ -4,13 +4,15 @@ import { Trophy, Medal, Gift } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { currentPeriod } from "@/lib/points";
 import { levelInfo } from "@/lib/levels";
+import { pageMetadata } from "@/lib/pageMeta";
 import Avatar from "@/components/Avatar";
 
-export const metadata: Metadata = {
-  title: "Ranking",
-  description: "O ranking da comunidade Cadenza — do mês e de sempre.",
-  alternates: { canonical: "/ranking" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/ranking", {
+    title: "Ranking",
+    description: "O ranking da comunidade Cadenza — do mês e de sempre.",
+  });
+}
 
 const MONTH_NAMES = [
   "janeiro", "fevereiro", "março", "abril", "maio", "junho",

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import NewsManager from "@/components/admin/NewsManager";
 import JobManager from "@/components/admin/JobManager";
+import ContentTabs from "@/components/admin/ContentTabs";
 
 export default async function AdminContentPage() {
   const session = await auth();
@@ -28,15 +29,10 @@ export default async function AdminContentPage() {
         </p>
       </div>
 
-      <section>
-        <h2 className="font-semibold mb-3">Notícias</h2>
-        <NewsManager articles={articles} />
-      </section>
-
-      <section>
-        <h2 className="font-semibold mb-3">Vagas</h2>
-        <JobManager jobs={jobs} />
-      </section>
+      <ContentTabs
+        news={<NewsManager articles={articles} />}
+        jobs={<JobManager jobs={jobs} />}
+      />
     </div>
   );
 }

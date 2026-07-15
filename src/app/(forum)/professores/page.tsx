@@ -8,13 +8,15 @@ import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import AskQuestionButton from "@/components/AskQuestionButton";
 import { isFeaturedActive } from "@/lib/monetization";
+import { pageMetadata } from "@/lib/pageMeta";
 
-export const metadata: Metadata = {
-  title: "Professores e profissionais",
-  description:
-    "Diretório de professores certificados e músicos profissionais verificados da Cadenza — tira as tuas dúvidas diretamente com eles.",
-  alternates: { canonical: "/professores" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/professores", {
+    title: "Professores e profissionais",
+    description:
+      "Diretório de professores certificados e músicos profissionais verificados da Cadenza — tira as tuas dúvidas diretamente com eles.",
+  });
+}
 
 export default async function ProfessoresPage() {
   const session = await auth();

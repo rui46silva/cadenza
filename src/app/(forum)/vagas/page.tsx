@@ -3,12 +3,15 @@ import { Briefcase, ExternalLink, Mail, Star } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { card } from "@/lib/ui";
 import { JOB_TYPE_LABELS } from "@/lib/jobTypes";
+import { pageMetadata } from "@/lib/pageMeta";
 
-export const metadata = {
-  title: "Vagas e oportunidades",
-  description:
-    "Vagas em orquestras, bandas filarmónicas, coros e projetos musicais. Encontra a tua próxima oportunidade na Cadenza.",
-};
+export function generateMetadata() {
+  return pageMetadata("/vagas", {
+    title: "Vagas e oportunidades",
+    description:
+      "Vagas em orquestras, bandas filarmónicas, coros e projetos musicais. Encontra a tua próxima oportunidade na Cadenza.",
+  });
+}
 
 export default async function VagasPage() {
   const jobs = await prisma.jobListing.findMany({

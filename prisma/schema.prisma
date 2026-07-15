@@ -323,6 +323,16 @@ model WaitlistSignup {
   createdAt   DateTime  @default(now())
 }
 
+// Metadados SEO editáveis por página (mini-CMS para o admin). Cada linha
+// sobrepõe o título/descrição por omissão de uma rota fixa da plataforma.
+model PageMeta {
+  id              String   @id @default(cuid())
+  path            String   @unique
+  title           String?
+  metaDescription String?
+  updatedAt       DateTime @updatedAt
+}
+
 model NewsArticle {
   id              String    @id @default(cuid())
   title           String

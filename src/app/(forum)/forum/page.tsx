@@ -11,15 +11,17 @@ import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { pageMetadata } from "@/lib/pageMeta";
 
 const FORUM_PAGE_SIZE = 10;
 
-export const metadata: Metadata = {
-  title: "Fórum",
-  description:
-    "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer no fórum Cadenza.",
-  alternates: { canonical: "/forum" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/forum", {
+    title: "Fórum",
+    description:
+      "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer no fórum Cadenza.",
+  });
+}
 
 export default async function HomePage({
   searchParams,

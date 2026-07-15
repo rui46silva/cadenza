@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { Crown, Check } from "lucide-react";
 import { PREMIUM_PERKS, PREMIUM_PRICE_EUR } from "@/lib/monetization";
+import { pageMetadata } from "@/lib/pageMeta";
 
-export const metadata: Metadata = {
-  title: "Cadenza Premium",
-  description:
-    "Apoia a Cadenza e desbloqueia vantagens: distintivo Premium, perfil em destaque, sem anúncios e mais.",
-  alternates: { canonical: "/premium" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/premium", {
+    title: "Cadenza Premium",
+    description:
+      "Apoia a Cadenza e desbloqueia vantagens: distintivo Premium, perfil em destaque, sem anúncios e mais.",
+  });
+}
 
 export default function PremiumPage() {
   return (

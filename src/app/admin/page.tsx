@@ -60,6 +60,7 @@ export default async function AdminPage() {
       instrument: true,
       verificationStatus: true,
       isAmbassador: true,
+      isPremium: true,
       bans: {
         where: {
           liftedAt: null,
@@ -132,12 +133,20 @@ export default async function AdminPage() {
           {isAdmin ? "Painel de Admin" : "Painel de Moderação"}
         </h1>
         {isAdmin && (
-          <Link
-            href="/admin/conteudo"
-            className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
-          >
-            Gerir notícias e vagas
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/conteudo"
+              className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
+            >
+              Gerir notícias e vagas
+            </Link>
+            <Link
+              href="/admin/seo"
+              className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
+            >
+              SEO das páginas
+            </Link>
+          </div>
         )}
       </div>
 
@@ -323,10 +332,11 @@ export default async function AdminPage() {
                   <RoleBadge user={u} />
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {isAdmin && (
                   <AmbassadorToggle userId={u.id} isAmbassador={u.isAmbassador} />
                 )}
+                {isAdmin && <PremiumToggle userId={u.id} isPremium={u.isPremium} />}
                 {isAdmin && (
                   <ModeratorToggle userId={u.id} isModerator={u.role === "MODERATOR"} />
                 )}
