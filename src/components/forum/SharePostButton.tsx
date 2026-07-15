@@ -8,9 +8,11 @@ import { useToast } from "@/components/ToastProvider";
 
 export default function SharePostButton({
   postId,
+  slug,
   title,
 }: {
   postId: string;
+  slug?: string | null;
   title: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -22,7 +24,7 @@ export default function SharePostButton({
   useDismiss(ref, () => setOpen(false), open);
 
   function getUrl() {
-    return `${window.location.origin}/posts/${postId}`;
+    return `${window.location.origin}/posts/${slug ?? postId}`;
   }
 
   async function handleCopy(e: React.MouseEvent) {

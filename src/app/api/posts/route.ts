@@ -6,6 +6,7 @@ import { awardPoints, POINTS } from "@/lib/points";
 import { COMMON_INSTRUMENTS } from "@/lib/instruments";
 import { expertWhere } from "@/lib/experts";
 import { currentChallenge } from "@/lib/challenges";
+import { uniquePostSlug } from "@/lib/postSlug";
 
 const INSTRUMENT_NAMES = new Set(COMMON_INSTRUMENTS.map((i) => i.toLowerCase()));
 
@@ -107,6 +108,7 @@ export async function POST(req: Request) {
   const post = await prisma.post.create({
     data: {
       title,
+      slug: await uniquePostSlug(title),
       type,
       content,
       videoUrl,

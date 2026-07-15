@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ChevronRight } from "lucide-react";
+import { useBreadcrumbTitle } from "@/components/BreadcrumbTitle";
 
 // Rótulos legíveis para cada segmento conhecido do URL.
 const LABELS: Record<string, string> = {
@@ -30,6 +31,7 @@ function label(segment: string): string {
 
 export default function Breadcrumbs() {
   const pathname = usePathname();
+  const detailTitle = useBreadcrumbTitle();
   const segments = pathname.split("/").filter(Boolean);
 
   // Na raiz do fórum não mostramos breadcrumbs (evita ruído).
@@ -53,12 +55,15 @@ export default function Breadcrumbs() {
       </Link>
       {crumbs.map((c, i) => {
         const isLast = i === crumbs.length - 1;
+        // No último item de uma página de detalhe, mostra o título real
+        // (post/notícia) em vez do slug/id.
+        const lastLabel = detailTitle ?? (c.isId ? "Detalhe" : c.label);
         return (
           <span key={c.href} className="flex items-center gap-1">
             <ChevronRight className="h-3 w-3 opacity-50" />
             {isLast || c.isId ? (
               <span className="text-black/70 dark:text-white/70 font-medium truncate max-w-[40vw]">
-                {c.isId ? "Detalhe" : c.label}
+                {isLast ? lastLabel : c.isId ? "Detalhe" : c.label}
               </span>
             ) : (
               <Link href={c.href} className="hover:text-accent">

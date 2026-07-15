@@ -20,7 +20,7 @@ const STATIC_ROUTES = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, articles] = await Promise.all([
     prisma.post.findMany({
-      select: { id: true, updatedAt: true },
+      select: { id: true, slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.newsArticle.findMany({
@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const postEntries = posts.map((post) => ({
-    url: `${siteUrl}/posts/${post.id}`,
+    url: `${siteUrl}/posts/${post.slug ?? post.id}`,
     lastModified: post.updatedAt,
   }));
 

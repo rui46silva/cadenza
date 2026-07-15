@@ -71,7 +71,7 @@ export default async function PopularPage() {
               </span>
             )}
             <Link
-              href={`/posts/${post.id}`}
+              href={`/posts/${post.slug ?? post.id}`}
               className={`flex items-center gap-2 font-medium ${isTop ? "text-lg" : ""}`}
             >
               <span

@@ -202,6 +202,7 @@ model TagFollow {
 model Post {
   id          String     @id @default(cuid())
   title       String
+  slug        String?    @unique
   type        PostType   @default(TEXT)
   content     String?
   videoUrl    String?
