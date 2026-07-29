@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { headers } from "next/headers";
 import { Poppins, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
@@ -10,7 +11,9 @@ import { ConsentProvider } from "@/components/ConsentProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import CookieConsent from "@/components/CookieConsent";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import { NO_FLASH_THEME_SCRIPT } from "@/lib/theme";
+import { GA_ID } from "@/lib/gtag";
 import { isDemoHost } from "@/lib/demoHost";
 import "./globals.css";
 
@@ -140,13 +143,13 @@ export default async function RootLayout({
         {/* Google tag (gtag.js) */}
         <script
           async
-          src="https://www.googletagmanager.com/gtag/js?id=G-CT664N9STS"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         />
         <script
           dangerouslySetInnerHTML={{
             __html: `gtag('js', new Date());
 
-  gtag('config', 'G-CT664N9STS');`,
+  gtag('config', '${GA_ID}');`,
           }}
         />
         {/*
@@ -175,6 +178,9 @@ export default async function RootLayout({
             </ConsentProvider>
           </Providers>
         </ThemeProvider>
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <Analytics />
         <SpeedInsights />
       </body>

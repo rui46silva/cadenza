@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Share2, Link2, Check } from "lucide-react";
 import { useDismiss } from "@/lib/useDismiss";
 import { dropdownPanel } from "@/lib/ui";
+import { event } from "@/lib/gtag";
 import { useToast } from "@/components/ToastProvider";
 
 export default function SharePostButton({
@@ -33,8 +34,13 @@ export default function SharePostButton({
     const text = message.trim() || title;
     await navigator.clipboard.writeText(`${text}\n${getUrl()}`).catch(() => null);
     setCopied(true);
+    event("share", { method: "copy", post_id: postId });
     toast("Link copiado");
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  function trackShare(kind: string) {
+    event("share", { method: kind, post_id: postId });
   }
 
   function shareLink(kind: "whatsapp" | "twitter" | "facebook") {
@@ -79,6 +85,7 @@ export default function SharePostButton({
             href={shareLink("whatsapp")}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackShare("whatsapp")}
             className="block rounded-md px-3 py-1.5 hover:bg-accent/10"
           >
             WhatsApp
@@ -87,6 +94,7 @@ export default function SharePostButton({
             href={shareLink("twitter")}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackShare("twitter")}
             className="block rounded-md px-3 py-1.5 hover:bg-accent/10"
           >
             X (Twitter)
@@ -95,6 +103,7 @@ export default function SharePostButton({
             href={shareLink("facebook")}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackShare("facebook")}
             className="block rounded-md px-3 py-1.5 hover:bg-accent/10"
           >
             Facebook

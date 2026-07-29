@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Crown, X, Check } from "lucide-react";
 import { PREMIUM_PERKS } from "@/lib/monetization";
+import { event } from "@/lib/gtag";
 
 // Quanto tempo esperar antes de voltar a mostrar o popup à mesma pessoa.
 const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000; // 3 dias
@@ -41,6 +42,7 @@ export default function PremiumPromo() {
   const trigger = useCallback(() => {
     if (!cooldownElapsed()) return false;
     setOpen(true);
+    event("premium_promo_shown");
     try {
       localStorage.setItem(STORAGE_KEY, String(Date.now()));
     } catch {
@@ -156,7 +158,10 @@ export default function PremiumPromo() {
 
           <Link
             href="/premium"
-            onClick={close}
+            onClick={() => {
+              event("premium_cta", { source: "promo_popup" });
+              close();
+            }}
             className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-6 py-2.5 font-medium text-white shadow-sm transition-all hover:shadow-md"
           >
             <Crown className="h-4 w-4" />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { event } from "@/lib/gtag";
 
 export default function PostVoteCompact({
   postId,
@@ -31,6 +32,7 @@ export default function PostVoteCompact({
       const data = await res.json();
       setScore(data.score);
       setUserVote(data.userVote);
+      event("vote", { value, post_id: postId });
     }
   }
 

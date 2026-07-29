@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { event } from "@/lib/gtag";
 
 export default function VoteButtons({
   postId,
@@ -29,6 +30,7 @@ export default function VoteButtons({
       const data = await res.json();
       setScore(data.score);
       setUserVote(data.userVote);
+      event("vote", { value, post_id: postId });
     }
   }
 
