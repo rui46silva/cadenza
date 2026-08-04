@@ -1,4 +1,5 @@
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { BreadcrumbTitleProvider } from "@/components/BreadcrumbTitle";
 import LeftSidebar from "@/components/forum/LeftSidebar";
 import RightSidebar from "@/components/forum/RightSidebar";
 import OnboardingGate from "@/components/OnboardingGate";
@@ -36,10 +37,12 @@ export default async function ForumLayout({
       <aside className="hidden lg:sticky lg:top-20 lg:block lg:min-w-0 lg:self-start">
         <LeftSidebar />
       </aside>
-      <main className="flex min-w-0 flex-col gap-4">
-        <Breadcrumbs />
-        {children}
-      </main>
+      <BreadcrumbTitleProvider>
+        <main className="flex min-w-0 flex-col gap-4">
+          <Breadcrumbs />
+          {children}
+        </main>
+      </BreadcrumbTitleProvider>
       <aside className="hidden lg:sticky lg:top-20 lg:block lg:min-w-0 lg:self-start">
         <RightSidebar />
       </aside>

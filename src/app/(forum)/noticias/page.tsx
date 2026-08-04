@@ -2,12 +2,15 @@ import Link from "next/link";
 import { Newspaper, Briefcase } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import NewsGrid from "@/components/NewsGrid";
+import { pageMetadata } from "@/lib/pageMeta";
 
-export const metadata = {
-  title: "Notícias",
-  description:
-    "Novidades do mundo da música, artigos e histórias selecionadas para a comunidade Cadenza.",
-};
+export function generateMetadata() {
+  return pageMetadata("/noticias", {
+    title: "Notícias",
+    description:
+      "Novidades do mundo da música, artigos e histórias selecionadas para a comunidade Cadenza.",
+  });
+}
 
 export default async function NoticiasPage() {
   const articles = await prisma.newsArticle.findMany({

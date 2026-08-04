@@ -72,7 +72,7 @@ export default function RoleBadge({ user }: { user: RoleBadgeUser }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       {user.isAmbassador && <AmbassadorBadge />}
-      {user.isPremium && <PremiumBadge />}
+      {PREMIUM_ENABLED && user.isPremium && <PremiumBadge />}
       <span
         className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs bg-transparent ${
           ROLE_PILL_STYLE[user.role] ?? ROLE_PILL_STYLE_FALLBACK
