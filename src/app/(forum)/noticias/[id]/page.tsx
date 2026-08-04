@@ -15,6 +15,14 @@ async function findArticle(param: string) {
   return prisma.newsArticle.findUnique({ where: { id: param } });
 }
 
+// O parâmetro pode ser o slug (SEO-friendly) ou, para notícias antigas sem
+// slug, o id. Procuramos primeiro por slug e recorremos ao id.
+async function findArticle(param: string) {
+  const bySlug = await prisma.newsArticle.findUnique({ where: { slug: param } });
+  if (bySlug) return bySlug;
+  return prisma.newsArticle.findUnique({ where: { id: param } });
+}
+
 export async function generateMetadata({
   params,
 }: {

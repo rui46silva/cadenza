@@ -22,12 +22,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("");
-  // Instrumento(s) pré-preenchidos a partir do convite (podem ser vários).
-  const [instrument, setInstrument] = useState(() =>
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("instrumento") ?? ""
-      : ""
-  );
+  const [instrument, setInstrument] = useState("");
   const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notOnWaitlist, setNotOnWaitlist] = useState(false);
@@ -201,6 +196,26 @@ export default function RegisterPage() {
         </div>
 
         <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} multiple />
+
+        <label className="text-sm flex flex-col gap-1">
+          Género
+          <div className="relative">
+            <select
+              name="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full appearance-none cursor-pointer rounded-md border border-black/15 dark:border-white/20 px-3 py-2 pr-9 bg-transparent [&>option]:bg-white dark:[&>option]:bg-neutral-900"
+            >
+              <option value="">Prefiro não indicar</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="MASCULINO">Masculino</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40 dark:text-white/40" />
+          </div>
+          <span className="text-xs text-black/40 dark:text-white/40">
+            Ajuda-nos a tratar-te certo (ex: Professora, Música profissional).
+          </span>
+        </label>
 
         <label className="text-sm flex flex-col gap-1">
           Género

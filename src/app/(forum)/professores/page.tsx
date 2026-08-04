@@ -8,7 +8,6 @@ import Avatar from "@/components/Avatar";
 import RoleBadge from "@/components/RoleBadge";
 import AskQuestionButton from "@/components/AskQuestionButton";
 import { isFeaturedActive } from "@/lib/monetization";
-import { pageMetadata } from "@/lib/pageMeta";
 
 export function generateMetadata(): Promise<Metadata> {
   return pageMetadata("/professores", {

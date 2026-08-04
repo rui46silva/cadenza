@@ -13,7 +13,6 @@ import AdSlot from "@/components/AdSlot";
 import Avatar from "@/components/Avatar";
 import PinToggle from "@/components/PinToggle";
 import SponsorPostButton from "@/components/SponsorPostButton";
-import BreadcrumbTitle from "@/components/BreadcrumbTitle";
 import DeletePostButton from "@/components/DeletePostButton";
 import ReportPostButton from "@/components/ReportPostButton";
 import { isStaff } from "@/lib/moderation";

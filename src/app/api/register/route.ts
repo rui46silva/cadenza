@@ -13,7 +13,7 @@ const registerSchema = z
     password: z.string().min(8).max(100),
     role: z.enum(["PROFESSOR", "MUSICO_PROFISSIONAL", "ALUNO"]).default("ALUNO"),
     gender: z.enum(["MASCULINO", "FEMININO"]).optional(),
-    instrument: z.string().max(200).optional(),
+    instrument: z.string().max(60).optional(),
     verificationNote: z.string().max(1000).optional(),
   })
   .refine(
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       passwordHash,
       role,
       gender: gender || undefined,
-      instrument: primaryInstrument || undefined,
+      instrument: instrument || waitlistSignup?.instrument || undefined,
       verificationStatus: requiresVerification(role) ? "PENDING" : "APPROVED",
       verificationNote: requiresVerification(role) ? verificationNote : undefined,
     },

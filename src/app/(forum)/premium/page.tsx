@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
 import { Crown, Check } from "lucide-react";
-import { notFound } from "next/navigation";
 import { PREMIUM_PERKS, PREMIUM_PRICE_EUR } from "@/lib/monetization";
-import { pageMetadata } from "@/lib/pageMeta";
-import { PREMIUM_ENABLED } from "@/lib/features";
 
-export function generateMetadata(): Promise<Metadata> {
-  return pageMetadata("/premium", {
-    title: "Cadenza Premium",
-    description:
-      "Apoia a Cadenza e desbloqueia vantagens: distintivo Premium, perfil em destaque, sem anúncios e mais.",
-  });
-}
+export const metadata: Metadata = {
+  title: "Cadenza Premium",
+  description:
+    "Apoia a Cadenza e desbloqueia vantagens: distintivo Premium, perfil em destaque, sem anúncios e mais.",
+  alternates: { canonical: "/premium" },
+};
 
 export default function PremiumPage() {
-  // Premium em stand-by: enquanto a flag estiver desligada, a página não existe.
-  if (!PREMIUM_ENABLED) notFound();
-
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
       <section className="relative overflow-hidden rounded-2xl border border-transparent bg-gradient-to-br from-amber-400/15 via-yellow-500/10 to-accent/15 p-6 ring-1 ring-amber-500/30 sm:p-8">
