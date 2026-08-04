@@ -12,6 +12,7 @@ import { isTagCategory } from "@/lib/tagCategories";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { pageMetadata } from "@/lib/pageMeta";
+import { PREMIUM_ENABLED } from "@/lib/features";
 
 const FORUM_PAGE_SIZE = 10;
 
@@ -111,7 +112,7 @@ export default async function HomePage({
       <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
 
       {/* Promo do Premium — só para quem ainda não é Premium e nunca em pesquisas. */}
-      {!q && !viewer?.isPremium && <PremiumPromo />}
+      {PREMIUM_ENABLED && !q && !viewer?.isPremium && <PremiumPromo />}
     </div>
   );
 }

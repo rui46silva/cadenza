@@ -320,6 +320,8 @@ model WaitlistSignup {
   instrument  String?
   invitedAt   DateTime?
   inviteToken String?   @unique
+  // Quando foi enviado o email de confirmação (para reenviar só a quem falhou).
+  confirmationSentAt DateTime?
   createdAt   DateTime  @default(now())
 }
 
