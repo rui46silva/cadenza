@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { requiresVerification } from "@/lib/moderation";
 import { createAndSendVerificationEmail } from "@/lib/emailVerification";
 import { parseInstruments } from "@/lib/instruments";
+import { isRateLimited, getClientIp } from "@/lib/rateLimit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const registerSchema = z
   .object({
@@ -15,6 +17,7 @@ const registerSchema = z
     gender: z.enum(["MASCULINO", "FEMININO"]).optional(),
     instrument: z.string().max(200).optional(),
     verificationNote: z.string().max(1000).optional(),
+    turnstileToken: z.string().optional(),
   })
   .refine(
     (data) =>
@@ -38,7 +41,22 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password, role, gender, instrument, verificationNote } = parsed.data;
+  const { name, email, password, role, gender, instrument, verificationNote, turnstileToken } =
+    parsed.data;
+
+  // Trava rajadas de criação de contas por IP (anti-bot).
+  const ip = getClientIp(req);
+  if (isRateLimited(`register:${ip}`, 10, 10 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: "Demasiados registos. Tenta novamente mais tarde." },
+      { status: 429 }
+    );
+  }
+
+  // CAPTCHA (inerte enquanto não houver chaves Turnstile configuradas).
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return NextResponse.json({ error: "Verificação anti-bot falhou." }, { status: 400 });
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -62,7 +80,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
 
   // Uma pessoa pode tocar vários instrumentos (separados por vírgula, vindos do
   // formulário ou da inscrição na lista de espera). Guardamos o primeiro como

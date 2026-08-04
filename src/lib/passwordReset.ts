@@ -48,7 +48,7 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
   const record = await prisma.passwordResetToken.findUnique({ where: { token } });
   if (!record || record.expiresAt < new Date()) return false;
 
-  const passwordHash = await bcrypt.hash(newPassword, 10);
+  const passwordHash = await bcrypt.hash(newPassword, 12);
   await prisma.$transaction([
     prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
     prisma.passwordResetToken.deleteMany({ where: { userId: record.userId } }),

@@ -40,7 +40,7 @@ export async function PATCH(req: Request) {
     );
   }
 
-  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
+  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
   await prisma.user.update({
     where: { id: session.user.id },
     data: { passwordHash },
