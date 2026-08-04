@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import InstrumentInput from "@/components/InstrumentInput";
+import { parseInstruments } from "@/lib/instruments";
 
 export default function WaitlistForm({
   initialCount,
@@ -19,6 +20,7 @@ export default function WaitlistForm({
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [alreadySignedUp, setAlreadySignedUp] = useState(false);
   const [count, setCount] = useState(initialCount);
+  const firstInstrument = parseInstruments(instrument)[0];
   const renderedAt = useRef<number | null>(null);
   useEffect(() => {
     renderedAt.current = Date.now();
@@ -109,7 +111,7 @@ export default function WaitlistForm({
               <p className="font-medium text-accent">Estás na lista! 🎉</p>
               <p className="text-sm text-black/60 dark:text-white/60">
                 Avisamos-te por email assim que o acesso antecipado abrir
-                {instrument ? ` e quando houver uma masterclass de ${instrument.toLowerCase()}` : ""}.
+                {firstInstrument ? ` e quando houver uma masterclass de ${firstInstrument.toLowerCase()}` : ""}.
               </p>
             </>
           )}
