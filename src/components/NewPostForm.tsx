@@ -91,7 +91,7 @@ export default function NewPostForm({
         ? "Pedido de feedback publicado"
         : "Post publicado"
     );
-    router.push(`/posts/${post.id}`);
+    router.push(`/posts/${post.slug ?? post.id}`);
   }
 
   const title = challenge

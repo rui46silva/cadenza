@@ -29,6 +29,7 @@ export default function VoteButtons({
       const data = await res.json();
       setScore(data.score);
       setUserVote(data.userVote);
+      event("vote", { value, post_id: postId });
     }
   }
 

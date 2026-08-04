@@ -47,3 +47,22 @@ export const COMMON_INSTRUMENTS = [
   "Gaita de beiços",
   "Concertina",
 ];
+
+/**
+ * Converte um texto de instrumentos separados por vírgula numa lista limpa:
+ * remove espaços, entradas vazias e duplicados (sem distinguir maiúsculas).
+ */
+export function parseInstruments(input?: string | null): string[] {
+  if (!input) return [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of input.split(",")) {
+    const name = raw.trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(name);
+  }
+  return result;
+}

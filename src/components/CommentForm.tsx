@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { event } from "@/lib/gtag";
 import { useToast } from "@/components/ToastProvider";
 
 export default function CommentForm({
@@ -45,6 +46,7 @@ export default function CommentForm({
       return;
     }
 
+    event(parentId ? "comment_reply" : "comment", { post_id: postId });
     toast(parentId ? "Resposta publicada" : "Comentário publicado");
     router.refresh();
   }

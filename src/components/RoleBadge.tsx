@@ -1,5 +1,6 @@
 import { BadgeCheck, Sparkles, Crown } from "lucide-react";
 import { VERIFIABLE_ROLES } from "@/lib/moderation";
+import { PREMIUM_ENABLED } from "@/lib/features";
 import { ROLE_PILL_STYLE, ROLE_PILL_STYLE_FALLBACK } from "@/lib/roleColors";
 
 type RoleBadgeUser = {

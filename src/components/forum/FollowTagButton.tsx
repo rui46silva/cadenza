@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Users, UserCheck } from "lucide-react";
+import { event } from "@/lib/gtag";
 
 export default function FollowTagButton({
   tagId,
@@ -24,6 +25,7 @@ export default function FollowTagButton({
       () => null
     );
     setLoading(false);
+    event(following ? "unfollow_tag" : "follow_tag", { tag: tagName });
     setFollowing((v) => !v);
   }
 

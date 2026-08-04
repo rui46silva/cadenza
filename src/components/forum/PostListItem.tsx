@@ -17,6 +17,7 @@ const TYPE_ICON: Record<string, typeof FileText> = {
 
 export type PostListItemData = {
   id: string;
+  slug?: string | null;
   title: string;
   type: string;
   content: string | null;
@@ -71,6 +72,8 @@ export default function PostListItem({
     });
   const primaryTag = post.tags[0]?.tag;
   const ambassadorAuthor = Boolean(post.author.isAmbassador);
+  // URL amigável baseada no slug (título); recorre ao id se não houver slug.
+  const postHref = `/posts/${post.slug ?? post.id}`;
 
   const hasBadges =
     post.sponsored ||
@@ -153,7 +156,7 @@ export default function PostListItem({
         </div>
       )}
       <Link
-        href={`/posts/${post.id}`}
+        href={postHref}
         className={`flex items-center gap-2 font-medium ${
           isMostPopular ? "text-[15px] font-semibold" : ""
         }`}
@@ -204,7 +207,7 @@ export default function PostListItem({
       )}
 
       {post.type === "TEXT" && post.content && (
-        <Link href={`/posts/${post.id}`} className="mt-1 block">
+        <Link href={postHref} className="mt-1 block">
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-black/80 dark:text-white/80">
             {post.content}
           </p>
@@ -231,14 +234,14 @@ export default function PostListItem({
         )}
 
         <Link
-          href={`/posts/${post.id}#comentarios`}
+          href={`${postHref}#comentarios`}
           className="flex items-center gap-1 rounded-full border border-black/15 dark:border-white/20 px-2.5 py-1 text-xs text-black/50 dark:text-white/50 hover:border-accent hover:text-accent"
         >
           <MessageSquare className="h-3.5 w-3.5" />
           {post._count.comments}
         </Link>
 
-        <SharePostButton postId={post.id} title={post.title} />
+        <SharePostButton postId={post.id} slug={post.slug} title={post.title} />
 
         {currentUserId && primaryTag && (
           <FollowTagButton

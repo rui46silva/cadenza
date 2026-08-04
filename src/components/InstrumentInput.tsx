@@ -9,20 +9,39 @@ export default function InstrumentInput({
   onChange,
   className,
   required,
+  multiple = false,
 }: {
   name: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
   required?: boolean;
+  // Quando true, permite vários instrumentos separados por vírgula e as
+  // sugestões acrescentam ao último em vez de substituir tudo.
+  multiple?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
+  // Em modo múltiplo, sugerimos com base no que vem depois da última vírgula.
+  const currentTerm = multiple ? value.split(",").pop()?.trim() ?? "" : value.trim();
+
   const suggestions = useMemo(() => {
-    const q = value.trim().toLowerCase();
+    const q = currentTerm.toLowerCase();
     if (!q) return COMMON_INSTRUMENTS.slice(0, 6);
     return COMMON_INSTRUMENTS.filter((i) => i.toLowerCase().includes(q)).slice(0, 6);
-  }, [value]);
+  }, [currentTerm]);
+
+  function applySuggestion(s: string) {
+    if (multiple) {
+      const parts = value.split(",");
+      parts[parts.length - 1] = ` ${s}`;
+      // Deixa uma vírgula pronta para o próximo instrumento.
+      onChange(parts.join(",").replace(/^\s+/, "") + ", ");
+    } else {
+      onChange(s);
+    }
+    setOpen(false);
+  }
 
   return (
     <div className="relative">
@@ -33,7 +52,11 @@ export default function InstrumentInput({
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 100)}
         required={required}
-        placeholder="Que instrumento tocas? (ex: piano, saxofone)"
+        placeholder={
+          multiple
+            ? "Que instrumentos tocas? (separa por vírgulas)"
+            : "Que instrumento tocas? (ex: piano, saxofone)"
+        }
         className={
           className ??
           "w-full rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
@@ -46,10 +69,7 @@ export default function InstrumentInput({
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  onChange(s);
-                  setOpen(false);
-                }}
+                onClick={() => applySuggestion(s)}
                 className="flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent/10"
               >
                 {s}

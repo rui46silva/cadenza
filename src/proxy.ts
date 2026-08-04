@@ -11,6 +11,7 @@ const ALLOWED_PREFIXES = [
   "/convite",
   "/admin",
   "/api/auth",
+  "/api/admin",
   "/api/waitlist",
 ];
 

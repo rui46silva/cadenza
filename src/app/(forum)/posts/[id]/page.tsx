@@ -72,9 +72,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const post = await prisma.post.findUnique({
-    where: { id },
-    select: { title: true, content: true, author: { select: { name: true } } },
+  const post = await prisma.post.findFirst({
+    where: { OR: [{ slug: id }, { id }] },
+    select: { slug: true, title: true, content: true, author: { select: { name: true } } },
   });
 
   if (!post) return { title: "Post não encontrado" };
@@ -82,16 +82,17 @@ export async function generateMetadata({
   const description = post.content
     ? post.content.slice(0, 160)
     : `Publicação de ${post.author.name} no fórum Cadenza.`;
+  const canonical = `/posts/${post.slug ?? id}`;
 
   return {
     title: post.title,
     description,
-    alternates: { canonical: `/posts/${id}` },
+    alternates: { canonical },
     openGraph: {
       title: post.title,
       description,
       type: "article",
-      url: `/posts/${id}`,
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -109,8 +110,8 @@ export default async function PostPage({
   const { id } = await params;
   const session = await auth();
 
-  const post = await prisma.post.findUnique({
-    where: { id },
+  const post = await prisma.post.findFirst({
+    where: { OR: [{ slug: id }, { id }] },
     include: {
       author: {
         select: {
@@ -147,7 +148,7 @@ export default async function PostPage({
 
   if (!post) notFound();
 
-  await prisma.post.update({ where: { id }, data: { views: { increment: 1 } } });
+  await prisma.post.update({ where: { id: post.id }, data: { views: { increment: 1 } } });
 
   const score = post.votes.reduce(
     (acc, v) => acc + (v.value === "UP" ? 1 : -1),
@@ -169,7 +170,7 @@ export default async function PostPage({
     "@type": "DiscussionForumPosting",
     headline: post.title,
     text: post.content ?? undefined,
-    url: `${siteUrl}/posts/${post.id}`,
+    url: `${siteUrl}/posts/${post.slug ?? post.id}`,
     datePublished: post.createdAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     author: { "@type": "Person", name: post.author.name },
@@ -190,6 +191,7 @@ export default async function PostPage({
           : ""
       }`}
     >
+      <BreadcrumbTitle title={post.title} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

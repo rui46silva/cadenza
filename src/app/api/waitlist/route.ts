@@ -2,15 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isRateLimited, getClientIp } from "@/lib/rateLimit";
-import { sendEmail } from "@/lib/email";
-import { renderEmail } from "@/lib/emailLayout";
+import { sendWaitlistConfirmation } from "@/lib/waitlistEmail";
 
 const MIN_SUBMIT_MS = 1500;
 
 const waitlistSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(2).max(80).optional(),
-  instrument: z.string().trim().min(1).max(50).optional(),
+  instrument: z.string().trim().min(1).max(200).optional(),
   website: z.string().optional(),
   renderedAt: z.number().optional(),
 });
@@ -60,20 +59,15 @@ export async function POST(req: Request) {
   }
 
   if (created) {
-    const firstName = name?.split(" ")[0];
-    await sendEmail({
-      to: email,
-      subject: "Estás na lista de espera da Cadenza 🎶",
-      html: renderEmail({
-        heading: firstName ? `Obrigado, ${firstName}!` : "Estás na lista! 🎉",
-        intro:
-          "Guardámos o teu lugar na lista de espera da Cadenza. Vais ser das primeiras pessoas a entrar no fórum quando o acesso antecipado abrir.",
-        bodyHtml: instrument
-          ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">Também te avisamos quando houver uma masterclass de <strong>${instrument}</strong>.</p>`
-          : undefined,
-        footnote: "Enquanto esperas, segue-nos nas redes sociais para não perderes novidades.",
-      }),
-    }).catch((err) => console.error("waitlist email failed", err));
+    try {
+      await sendWaitlistConfirmation({ email, name, instrument });
+      await prisma.waitlistSignup.update({
+        where: { email },
+        data: { confirmationSentAt: new Date() },
+      });
+    } catch (err) {
+      console.error("waitlist email failed", err);
+    }
   }
 
   const count = await prisma.waitlistSignup.count();

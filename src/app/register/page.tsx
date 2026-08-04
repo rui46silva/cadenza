@@ -27,10 +27,15 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [notOnWaitlist, setNotOnWaitlist] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Pré-preenche o email quando vindo de um convite (/convite/[token]).
+  // Pré-preenche o email e o nome quando vindo de um convite (/convite/[token]).
   const [initialEmail] = useState(() =>
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("email") ?? ""
+      : ""
+  );
+  const [initialName] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("nome") ?? ""
       : ""
   );
 
@@ -101,6 +106,7 @@ export default function RegisterPage() {
           name="name"
           placeholder="Nome"
           required
+          defaultValue={initialName}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         />
         <input
@@ -189,7 +195,27 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
+        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} multiple />
+
+        <label className="text-sm flex flex-col gap-1">
+          Género
+          <div className="relative">
+            <select
+              name="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="w-full appearance-none cursor-pointer rounded-md border border-black/15 dark:border-white/20 px-3 py-2 pr-9 bg-transparent [&>option]:bg-white dark:[&>option]:bg-neutral-900"
+            >
+              <option value="">Prefiro não indicar</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="MASCULINO">Masculino</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/40 dark:text-white/40" />
+          </div>
+          <span className="text-xs text-black/40 dark:text-white/40">
+            Ajuda-nos a tratar-te certo (ex: Professora, Música profissional).
+          </span>
+        </label>
 
         <label className="text-sm flex flex-col gap-1">
           Género

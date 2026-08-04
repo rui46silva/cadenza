@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Flame, MessageSquare, FileText, Star, CalendarDays, CheckCircle2 } from "lucide-react";
+import { Flame, MessageSquare, FileText, Star, CalendarDays, CheckCircle2, Crown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Avatar from "@/components/Avatar";
@@ -152,10 +152,26 @@ export default async function ProfilePage({
 
   const canAsk = Boolean(viewerId) && viewerId !== user.id && expert;
 
+  const isAmbassador = Boolean(user.isAmbassador);
+
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 rounded-xl border border-black/10 dark:border-white/10 p-5 sm:flex-row sm:items-start">
-        <Avatar name={user.name} avatarUrl={user.avatarUrl} size={72} />
+      <section
+        className={
+          isAmbassador
+            ? "relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-transparent bg-gradient-to-br from-amber-400/15 via-fuchsia-500/10 to-accent/15 p-5 ring-1 ring-fuchsia-500/30 sm:flex-row sm:items-start"
+            : "flex flex-col gap-4 rounded-xl border border-black/10 dark:border-white/10 p-5 sm:flex-row sm:items-start"
+        }
+      >
+        {isAmbassador && (
+          <span className="absolute right-0 top-0 flex items-center gap-1 rounded-bl-xl bg-gradient-to-r from-amber-400 via-fuchsia-500 to-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+            <Crown className="h-3.5 w-3.5" />
+            Embaixador Cadenza
+          </span>
+        )}
+        <div className={isAmbassador ? "rounded-full ring-2 ring-fuchsia-500/40 ring-offset-2 ring-offset-transparent" : ""}>
+          <Avatar name={user.name} avatarUrl={user.avatarUrl} size={72} />
+        </div>
         <div className="flex flex-1 flex-col gap-2 min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h1 className="text-xl font-bold">{user.name}</h1>

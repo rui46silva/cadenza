@@ -4,21 +4,25 @@ import ChallengeBanner from "@/components/forum/ChallengeBanner";
 import PostComposer from "@/components/forum/PostComposer";
 import ForumFilters from "@/components/forum/ForumFilters";
 import ForumFeedList from "@/components/forum/ForumFeedList";
+import PremiumPromo from "@/components/PremiumPromo";
 import { getForumFeed } from "@/lib/forumFeed";
 import { getMostPopularPostId } from "@/lib/popular";
 import { SORT_OPTIONS, type SortOption } from "@/lib/forumSort";
 import { isTagCategory } from "@/lib/tagCategories";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { pageMetadata } from "@/lib/pageMeta";
+import { PREMIUM_ENABLED } from "@/lib/features";
 
 const FORUM_PAGE_SIZE = 10;
 
-export const metadata: Metadata = {
-  title: "Fórum",
-  description:
-    "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer no fórum Cadenza.",
-  alternates: { canonical: "/forum" },
-};
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("/forum", {
+    title: "Fórum",
+    description:
+      "Partilha o teu trabalho, pede opiniões e ajuda outros músicos a crescer no fórum Cadenza.",
+  });
+}
 
 export default async function HomePage({
   searchParams,
@@ -41,7 +45,7 @@ export default async function HomePage({
   const viewer = session?.user
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { name: true, avatarUrl: true },
+        select: { name: true, avatarUrl: true, isPremium: true },
       })
     : null;
   const hasFollows = session?.user
@@ -106,6 +110,9 @@ export default async function HomePage({
       />
 
       <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_FOOTER} />
+
+      {/* Promo do Premium — só para quem ainda não é Premium e nunca em pesquisas. */}
+      {PREMIUM_ENABLED && !q && !viewer?.isPremium && <PremiumPromo />}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export async function GET(
 
   const signup = await prisma.waitlistSignup.findUnique({
     where: { inviteToken: token },
-    select: { email: true },
+    select: { email: true, name: true, instrument: true },
   });
 
   if (!signup) {
@@ -26,6 +26,8 @@ export async function GET(
   const url = new URL("/register", siteUrl);
   url.searchParams.set("email", signup.email);
   url.searchParams.set("convite", "1");
+  if (signup.name) url.searchParams.set("nome", signup.name);
+  if (signup.instrument) url.searchParams.set("instrumento", signup.instrument);
 
   const res = NextResponse.redirect(url);
   res.cookies.set(INVITE_COOKIE, token, {

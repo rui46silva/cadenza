@@ -202,6 +202,7 @@ model TagFollow {
 model Post {
   id          String     @id @default(cuid())
   title       String
+  slug        String?    @unique
   type        PostType   @default(TEXT)
   content     String?
   videoUrl    String?
@@ -319,7 +320,19 @@ model WaitlistSignup {
   instrument  String?
   invitedAt   DateTime?
   inviteToken String?   @unique
+  // Quando foi enviado o email de confirmação (para reenviar só a quem falhou).
+  confirmationSentAt DateTime?
   createdAt   DateTime  @default(now())
+}
+
+// Metadados SEO editáveis por página (mini-CMS para o admin). Cada linha
+// sobrepõe o título/descrição por omissão de uma rota fixa da plataforma.
+model PageMeta {
+  id              String   @id @default(cuid())
+  path            String   @unique
+  title           String?
+  metaDescription String?
+  updatedAt       DateTime @updatedAt
 }
 
 model NewsArticle {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Send, Trash2 } from "lucide-react";
+import { Check, Send, Trash2, Mail } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useToast } from "@/components/ToastProvider";
 
@@ -23,6 +23,8 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
   const [invitingId, setInvitingId] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [confirmResend, setConfirmResend] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const pending = items.filter((e) => !e.invited).length;
 
@@ -37,6 +39,26 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
     }
     setItems([]);
     toast("Lista de espera limpa");
+  }
+
+  async function handleResend() {
+    setResending(true);
+    const res = await fetch("/api/admin/waitlist/resend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // Reenvio forçado a todos os inscritos (o Resend falhou anteriormente).
+      body: JSON.stringify({ force: true }),
+    });
+    setResending(false);
+    setConfirmResend(false);
+    if (!res.ok) {
+      toast("Não foi possível reenviar os emails.", "error");
+      return;
+    }
+    const data = await res.json().catch(() => null);
+    toast(
+      `Emails reenviados: ${data?.sent ?? 0}${data?.failed ? ` · ${data.failed} falharam` : ""}`
+    );
   }
 
   async function handleDelete() {
@@ -93,6 +115,17 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
             >
               <Send className="h-3.5 w-3.5" />
               {invitingAll ? "A enviar..." : `Convidar todos (${pending})`}
+            </button>
+          )}
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setConfirmResend(true)}
+              disabled={resending}
+              className="flex items-center gap-1.5 rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-xs hover:border-accent hover:text-accent disabled:opacity-50"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              {resending ? "A reenviar..." : "Reenviar emails"}
             </button>
           )}
           {items.length > 0 && (
@@ -162,6 +195,17 @@ export default function WaitlistList({ entries }: { entries: Entry[] }) {
           loading={loading}
           onConfirm={handleDelete}
           onCancel={() => setConfirmId(null)}
+        />
+      )}
+
+      {confirmResend && (
+        <ConfirmDialog
+          title="Reenviar emails de confirmação"
+          description={`Vai reenviar o email de confirmação da lista de espera a TODOS os ${items.length} inscritos. Usa isto para recuperar envios que falharam.`}
+          confirmLabel="Reenviar a todos"
+          loading={resending}
+          onConfirm={handleResend}
+          onCancel={() => setConfirmResend(false)}
         />
       )}
 

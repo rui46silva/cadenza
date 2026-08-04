@@ -1,7 +1,7 @@
 // Utilitários para o Google Analytics 4 (gtag.js).
 // O gtag é carregado globalmente no layout; estes helpers registam eventos.
 
-export const GA_ID = "G-CT664N9STS";
+export const GA_ID = "G-WGLH7JC07F";
 
 type GtagParams = Record<string, unknown>;
 

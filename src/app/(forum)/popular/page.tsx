@@ -6,6 +6,14 @@ import Avatar from "@/components/Avatar";
 import AdSlot from "@/components/AdSlot";
 import { formatRelativeTime } from "@/lib/time";
 import { isTrending } from "@/lib/trending";
+import { pageMetadata } from "@/lib/pageMeta";
+
+export function generateMetadata() {
+  return pageMetadata("/popular", {
+    title: "Popular",
+    description: "Os posts com mais votos no fórum da Cadenza.",
+  });
+}
 
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
@@ -71,7 +79,7 @@ export default async function PopularPage() {
               </span>
             )}
             <Link
-              href={`/posts/${post.id}`}
+              href={`/posts/${post.slug ?? post.id}`}
               className={`flex items-center gap-2 font-medium ${isTop ? "text-lg" : ""}`}
             >
               <span

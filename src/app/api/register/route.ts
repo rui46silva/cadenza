@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requiresVerification } from "@/lib/moderation";
 import { createAndSendVerificationEmail } from "@/lib/emailVerification";
+import { parseInstruments } from "@/lib/instruments";
 
 const registerSchema = z
   .object({
@@ -63,6 +64,12 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
+  // Uma pessoa pode tocar vários instrumentos (separados por vírgula, vindos do
+  // formulário ou da inscrição na lista de espera). Guardamos o primeiro como
+  // instrumento principal e seguimos a tag de cada instrumento.
+  const instrumentList = parseInstruments(instrument || waitlistSignup?.instrument);
+  const primaryInstrument = instrumentList[0];
+
   const user = await prisma.user.create({
     data: {
       name,
@@ -76,6 +83,21 @@ export async function POST(req: Request) {
     },
     select: { id: true, name: true, email: true, role: true },
   });
+
+  // Atribui ao utilizador a tag de cada instrumento que indicou (segue-as, para
+  // já aparecerem no feed "Para ti" e para o ligar à comunidade do instrumento).
+  for (const inst of instrumentList) {
+    const tag = await prisma.tag.upsert({
+      where: { name: inst },
+      update: {},
+      create: { name: inst, category: "INSTRUMENT" },
+    });
+    await prisma.tagFollow.upsert({
+      where: { userId_tagId: { userId: user.id, tagId: tag.id } },
+      update: {},
+      create: { userId: user.id, tagId: tag.id },
+    });
+  }
 
   await createAndSendVerificationEmail(user);
 

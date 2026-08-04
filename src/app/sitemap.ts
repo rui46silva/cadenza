@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const postEntries = posts.map((post) => ({
-    url: `${siteUrl}/posts/${post.id}`,
+    url: `${siteUrl}/posts/${post.slug ?? post.id}`,
     lastModified: post.updatedAt,
   }));
 

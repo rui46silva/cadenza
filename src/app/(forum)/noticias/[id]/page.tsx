@@ -5,6 +5,15 @@ import { Newspaper, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buttonOutline } from "@/lib/ui";
 import { formatRelativeTime } from "@/lib/time";
+import BreadcrumbTitle from "@/components/BreadcrumbTitle";
+
+// O parâmetro pode ser o slug (SEO-friendly) ou, para notícias antigas sem
+// slug, o id. Procuramos primeiro por slug e recorremos ao id.
+async function findArticle(param: string) {
+  const bySlug = await prisma.newsArticle.findUnique({ where: { slug: param } });
+  if (bySlug) return bySlug;
+  return prisma.newsArticle.findUnique({ where: { id: param } });
+}
 
 // O parâmetro pode ser o slug (SEO-friendly) ou, para notícias antigas sem
 // slug, o id. Procuramos primeiro por slug e recorremos ao id.
@@ -52,6 +61,7 @@ export default async function NewsArticlePage({
 
   return (
     <article className="flex flex-col gap-5">
+      <BreadcrumbTitle title={article.title} />
       <Link href="/noticias" className="text-sm text-black/50 dark:text-white/50 hover:text-accent">
         ← Notícias
       </Link>
