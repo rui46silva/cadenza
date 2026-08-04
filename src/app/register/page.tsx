@@ -22,15 +22,25 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [gender, setGender] = useState("");
-  const [instrument, setInstrument] = useState("");
+  // Instrumento(s) pré-preenchidos a partir do convite (podem ser vários).
+  const [instrument, setInstrument] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("instrumento") ?? ""
+      : ""
+  );
   const [verificationNote, setVerificationNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notOnWaitlist, setNotOnWaitlist] = useState(false);
   const [loading, setLoading] = useState(false);
-  // Pré-preenche o email quando vindo de um convite (/convite/[token]).
+  // Pré-preenche o email e o nome quando vindo de um convite (/convite/[token]).
   const [initialEmail] = useState(() =>
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("email") ?? ""
+      : ""
+  );
+  const [initialName] = useState(() =>
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("nome") ?? ""
       : ""
   );
 
@@ -101,6 +111,7 @@ export default function RegisterPage() {
           name="name"
           placeholder="Nome"
           required
+          defaultValue={initialName}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         />
         <input
@@ -189,7 +200,7 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} />
+        <InstrumentInput name="instrument" value={instrument} onChange={setInstrument} multiple />
 
         <label className="text-sm flex flex-col gap-1">
           Género

@@ -155,6 +155,7 @@ export default function WaitlistForm({
           value={instrument}
           onChange={setInstrument}
           required
+          multiple
           className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
         />
         <button

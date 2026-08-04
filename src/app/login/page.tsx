@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { event } from "@/lib/gtag";
@@ -23,6 +23,13 @@ export default function LoginPage() {
         setError("Email ou password incorretos.");
       }
       return false;
+    }
+    // Se for admin, passa pelo endpoint que define o cookie de acesso, para
+    // conseguir entrar na plataforma mesmo com o modo "brevemente" ativo.
+    const session = await getSession();
+    if (session?.user?.role === "ADMIN") {
+      window.location.href = "/api/admin/access";
+      return true;
     }
     router.push("/forum");
     router.refresh();

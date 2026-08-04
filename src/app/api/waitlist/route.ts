@@ -9,7 +9,7 @@ const MIN_SUBMIT_MS = 1500;
 const waitlistSchema = z.object({
   email: z.string().email(),
   name: z.string().trim().min(2).max(80).optional(),
-  instrument: z.string().trim().min(1).max(50).optional(),
+  instrument: z.string().trim().min(1).max(200).optional(),
   website: z.string().optional(),
   renderedAt: z.number().optional(),
 });
