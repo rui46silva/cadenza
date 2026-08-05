@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isRateLimited, getClientIp } from "@/lib/rateLimit";
 import { sendWaitlistConfirmation } from "@/lib/waitlistEmail";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const MIN_SUBMIT_MS = 1500;
 
@@ -12,6 +13,7 @@ const waitlistSchema = z.object({
   instrument: z.string().trim().min(1).max(200).optional(),
   website: z.string().optional(),
   renderedAt: z.number().optional(),
+  turnstileToken: z.string().optional(),
 });
 
 export async function GET() {
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email inválido" }, { status: 400 });
   }
 
-  const { email, name, instrument, website, renderedAt } = parsed.data;
+  const { email, name, instrument, website, renderedAt, turnstileToken } = parsed.data;
 
   const isBot =
     Boolean(website) || (renderedAt !== undefined && Date.now() - renderedAt < MIN_SUBMIT_MS);
@@ -39,6 +41,10 @@ export async function POST(req: Request) {
   const ip = getClientIp(req);
   if (isRateLimited(`waitlist:${ip}`, 5, 10 * 60 * 1000)) {
     return NextResponse.json({ error: "Demasiados pedidos. Tenta mais tarde." }, { status: 429 });
+  }
+
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return NextResponse.json({ error: "Verificação anti-bot falhou." }, { status: 400 });
   }
 
   // Já inscrito? Avisamos com uma mensagem amigável, sem criar duplicados.

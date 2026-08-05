@@ -19,6 +19,10 @@ export default function LoginPage() {
         setError(
           "A tua conta foi suspensa por violação das regras do fórum. Consulta a página de regras para mais detalhes."
         );
+      } else if (res.code === "rate_limited") {
+        setError(
+          "Demasiadas tentativas falhadas. Aguarda uns minutos antes de tentar novamente."
+        );
       } else {
         setError("Email ou password incorretos.");
       }

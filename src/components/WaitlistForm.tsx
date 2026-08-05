@@ -17,6 +17,7 @@ export default function WaitlistForm({
   const [email, setEmail] = useState("");
   const [instrument, setInstrument] = useState("");
   const [website, setWebsite] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [alreadySignedUp, setAlreadySignedUp] = useState(false);
   const [count, setCount] = useState(initialCount);
@@ -82,6 +83,7 @@ export default function WaitlistForm({
           instrument: instrument || undefined,
           website: website || undefined,
           renderedAt: renderedAt.current ?? undefined,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -160,6 +162,7 @@ export default function WaitlistForm({
           multiple
           className="w-full rounded-full border border-black/15 dark:border-white/20 bg-transparent px-4 py-2.5 text-sm"
         />
+        <TurnstileWidget onToken={setTurnstileToken} />
         <button
           type="submit"
           disabled={status === "loading"}

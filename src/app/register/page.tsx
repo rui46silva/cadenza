@@ -9,6 +9,7 @@ import { event } from "@/lib/gtag";
 import { buttonPrimary } from "@/lib/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
 import InstrumentInput from "@/components/InstrumentInput";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 const STRENGTH_STYLES = {
   fraca: { width: "w-1/3", color: "bg-red-500", text: "text-red-500" },
@@ -29,6 +30,7 @@ export default function RegisterPage() {
       : ""
   );
   const [verificationNote, setVerificationNote] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notOnWaitlist, setNotOnWaitlist] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -69,6 +71,7 @@ export default function RegisterPage() {
       gender: gender || undefined,
       instrument: instrument || undefined,
       verificationNote: needsVerification ? verificationNote : undefined,
+      turnstileToken: turnstileToken || undefined,
     };
 
     const res = await fetch("/api/register", {
@@ -259,6 +262,7 @@ export default function RegisterPage() {
             )}
           </p>
         )}
+        <TurnstileWidget onToken={setTurnstileToken} />
         <button
           type="submit"
           disabled={
