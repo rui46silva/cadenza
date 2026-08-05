@@ -4,79 +4,122 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = "admin@cadenza.app";
-const ADMIN_PASSWORD = "password123";
+/**
+ * RESET DE LANÇAMENTO (produção)
+ * ------------------------------
+ * Limpa o conteúdo de exemplo para a plataforma arrancar "vazia", passando a ser
+ * os utilizadores reais a criar os posts.
+ *
+ * PRESERVA:
+ *   - Lista de espera (WaitlistSignup)
+ *   - Contas de administrador (role = ADMIN)
+ *   - Notícias/vagas criadas por admins (conteúdo real)
+ *   - Metadados de SEO das páginas (PageMeta) e as tags
+ *
+ * APAGA:
+ *   - Todos os posts, comentários, votos, notificações, reports, bans
+ *   - Todos os utilizadores que NÃO são admin (incl. as contas de exemplo)
+ *   - Notícias/vagas criadas por não-admins (as de exemplo)
+ *
+ * IMPORTANTE: a demo deve ter a SUA PRÓPRIA base de dados (ver guia). Corre este
+ * script apenas contra a BD de PRODUÇÃO. Como é destrutivo e irreversível, exige
+ * a variável de ambiente CONFIRM_LAUNCH_RESET=yes.
+ */
 
-const CONTENT = `Bem-vindos à Cadenza! 🎵
+const WELCOME_TITLE = "Bem-vindos à Cadenza — começa por aqui";
+const WELCOME_CONTENT = `Bem-vindos à Cadenza! 🎵
 
-Este é o ponto de partida da nossa comunidade de músicos — o sítio para partilhar o que tocas, pedir feedback, tirar dúvidas técnicas e conhecer outros alunos e professores. Antes de publicares o teu primeiro post, aqui fica tudo o que precisas de saber.
+Este é o ponto de partida da nossa comunidade de músicos — o sítio para partilhar o que tocas, pedir feedback, tirar dúvidas técnicas e conhecer outros alunos e professores.
 
 O QUE PODES FAZER AQUI
 - Publicar vídeos das tuas interpretações ou textos (dicas, dúvidas, pedidos de feedback).
 - Comentar e votar nas publicações de outros membros.
-- Filtrar o fórum por categorias e etiquetas (instrumento, género, nível).
-- Criar uma conta de Professor para receberes o selo de verificado depois de uma validação manual.
+- Seguir etiquetas (instrumento, género, nível) para teres um feed "Para ti".
 
-COMO PUBLICAR
-Vai a "Novo post", escolhe entre vídeo ou texto, escreve um título claro e adiciona etiquetas relevantes (ex: piano, jazz, iniciante) para que outros membros encontrem facilmente o teu conteúdo.
-
-REGRAS DA COMUNIDADE
-1. Respeito acima de tudo — sem assédio, discurso de ódio ou ataques pessoais.
-2. Conteúdo relevante — publica apenas sobre música.
-3. Sem spam ou autopromoção excessiva.
-4. Respeita direitos de autor — só partilha o que tens o direito de partilhar.
-5. Contas de professor passam por verificação manual.
-
-Consulta a página de Regras para o detalhe completo, incluindo o sistema de moderação e banimentos.
-
-MODERAÇÃO
-Temos uma equipa de administradores e moderadores que vela pelo cumprimento destas regras. Conteúdo que viole as regras pode ser removido e contas reincidentes podem ser banidas, com duração consoante a gravidade da infração.
-
-Agora é a tua vez — apresenta-te nos comentários: que instrumento tocas e o que esperas encontrar aqui. Bem-vindo(a) à Cadenza!`;
+Apresenta-te nos comentários: que instrumento tocas e o que esperas encontrar aqui. Bem-vindo(a)!`;
 
 async function main() {
-  console.log("A apagar todos os dados existentes (posts, comentários, contas)...");
+  if (process.env.CONFIRM_LAUNCH_RESET !== "yes") {
+    console.error(
+      "\n⚠️  Reset abortado. Isto APAGA o conteúdo de exemplo da base de dados apontada por DATABASE_URL.\n" +
+        "Confirma que estás na BD de PRODUÇÃO e corre novamente com CONFIRM_LAUNCH_RESET=yes.\n"
+    );
+    process.exit(1);
+  }
 
+  const admins = await prisma.user.findMany({ where: { role: "ADMIN" }, select: { id: true } });
+  const adminIds = admins.map((a) => a.id);
+  console.log(`Admins preservados: ${adminIds.length}`);
+
+  console.log("A apagar conteúdo de exemplo (posts, comentários, votos, notificações)...");
   await prisma.notification.deleteMany();
-  await prisma.ban.deleteMany();
+  await prisma.report.deleteMany();
   await prisma.postVote.deleteMany();
   await prisma.commentVote.deleteMany();
-  await prisma.comment.deleteMany();
+  await prisma.ban.deleteMany();
   await prisma.postTag.deleteMany();
+  await prisma.comment.deleteMany(); // Post.bestAnswerId fica a null automaticamente
   await prisma.post.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.tagFollow.deleteMany();
 
-  console.log("A criar conta admin...");
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-  const admin = await prisma.user.create({
-    data: {
-      name: "Admin Cadenza",
-      email: ADMIN_EMAIL,
-      passwordHash,
-      role: "ADMIN",
-    },
+  console.log("A apagar notícias/vagas de exemplo (mantendo as criadas por admins)...");
+  await prisma.newsArticle.deleteMany({ where: { createdById: { notIn: adminIds } } });
+  await prisma.jobListing.deleteMany({ where: { createdById: { notIn: adminIds } } });
+
+  console.log("A apagar contas de exemplo (todas as que não são admin)...");
+  const { count: deletedUsers } = await prisma.user.deleteMany({
+    where: { role: { not: "ADMIN" } },
   });
+  console.log(`Contas apagadas: ${deletedUsers}`);
 
-  console.log("A criar post de arranque...");
-  const tag = await prisma.tag.upsert({
-    where: { name: "comunidade" },
-    update: {},
-    create: { name: "comunidade", category: "OTHER" },
-  });
+  // Garante que existe pelo menos um admin (cria um a partir de env se necessário).
+  let firstAdminId = adminIds[0];
+  if (!firstAdminId) {
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+    if (!email || !password) {
+      console.warn(
+        "Nenhum admin encontrado e ADMIN_EMAIL/ADMIN_PASSWORD não definidos — a saltar criação de admin."
+      );
+    } else {
+      const admin = await prisma.user.create({
+        data: {
+          name: "Admin Cadenza",
+          email,
+          passwordHash: await bcrypt.hash(password, 12),
+          role: "ADMIN",
+          emailVerified: new Date(),
+          onboardedAt: new Date(),
+        },
+      });
+      firstAdminId = admin.id;
+      console.log("Admin criado:", email);
+    }
+  }
 
-  const post = await prisma.post.create({
-    data: {
-      id: "launch-post",
-      title: "Bem-vindos à Cadenza — começa por aqui",
-      type: "TEXT",
-      content: CONTENT,
-      pinned: true,
-      authorId: admin.id,
-      tags: { create: [{ tagId: tag.id }] },
-    },
-  });
+  // Post de boas-vindas fixado (opcional; só se houver admin).
+  if (firstAdminId) {
+    const tag = await prisma.tag.upsert({
+      where: { name: "comunidade" },
+      update: {},
+      create: { name: "comunidade", category: "OTHER" },
+    });
+    await prisma.post.create({
+      data: {
+        slug: "bem-vindos-a-cadenza-comeca-por-aqui",
+        title: WELCOME_TITLE,
+        type: "TEXT",
+        content: WELCOME_CONTENT,
+        pinned: true,
+        authorId: firstAdminId,
+        tags: { create: [{ tagId: tag.id }] },
+      },
+    });
+    console.log("Post de boas-vindas criado.");
+  }
 
-  console.log("Concluído:", { admin: admin.email, post: post.id });
+  const waitlist = await prisma.waitlistSignup.count();
+  console.log(`\n✅ Reset concluído. Lista de espera preservada: ${waitlist} inscritos.`);
 }
 
 main()
