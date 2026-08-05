@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import InstrumentInput from "@/components/InstrumentInput";
-import TurnstileWidget from "@/components/TurnstileWidget";
 import { parseInstruments } from "@/lib/instruments";
 
 export default function WaitlistForm({
