@@ -9,6 +9,7 @@ import ModeratorToggle from "@/components/ModeratorToggle";
 import AmbassadorToggle from "@/components/AmbassadorToggle";
 import PremiumToggle from "@/components/PremiumToggle";
 import FeaturedToggle from "@/components/FeaturedToggle";
+import LaunchButton from "@/components/admin/LaunchButton";
 import { isFeaturedActive } from "@/lib/monetization";
 import { PREMIUM_ENABLED } from "@/lib/features";
 import ReportActions from "@/components/ReportActions";
@@ -150,6 +151,8 @@ export default async function AdminPage() {
           </div>
         )}
       </div>
+
+      {isAdmin && process.env.NEXT_PUBLIC_SHOW_LAUNCH_BUTTON === "true" && <LaunchButton />}
 
       <section>
         <h2 className="font-semibold mb-3">Visão geral</h2>
