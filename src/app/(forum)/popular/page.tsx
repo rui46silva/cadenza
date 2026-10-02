@@ -117,7 +117,7 @@ export default async function PopularPage() {
                 {post.tags.map(({ tag }) => (
                   <Link
                     key={tag.id}
-                    href={`/forum?tag=${encodeURIComponent(tag.name)}`}
+                    href={`/t/${encodeURIComponent(tag.name)}`}
                     className="rounded-full bg-black/5 dark:bg-white/10 px-2 py-0.5 text-xs hover:bg-accent/15 hover:text-accent"
                   >
                     #{tag.name}

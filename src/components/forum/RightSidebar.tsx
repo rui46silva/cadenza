@@ -99,7 +99,7 @@ export default async function RightSidebar() {
           {topTags.map((tag) => (
             <li key={tag.id}>
               <Link
-                href={`/forum?tag=${encodeURIComponent(tag.name)}`}
+                href={`/t/${encodeURIComponent(tag.name)}`}
                 className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
               >
                 <span>#{tag.name}</span>

@@ -69,7 +69,7 @@ export default async function CategoriaPage({
         {tags.map((tag) => (
           <Link
             key={tag.id}
-            href={`/forum?tag=${encodeURIComponent(tag.name)}`}
+            href={`/t/${encodeURIComponent(tag.name)}`}
             className={pill}
           >
             #{tag.name} ({tag._count.posts})

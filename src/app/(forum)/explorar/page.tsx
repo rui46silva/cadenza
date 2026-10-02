@@ -100,7 +100,7 @@ export default async function ExplorarPage() {
               {group.tags.map((t) => (
                 <Link
                   key={t.id}
-                  href={`/forum?tag=${encodeURIComponent(t.name)}`}
+                  href={`/t/${encodeURIComponent(t.name)}`}
                   className={pill}
                 >
                   #{t.name} ({t._count.posts})

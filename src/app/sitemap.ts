@@ -18,7 +18,7 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, articles] = await Promise.all([
+  const [posts, articles, tags] = await Promise.all([
     prisma.post.findMany({
       select: { id: true, slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
@@ -27,6 +27,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { published: true },
       select: { id: true, slug: true, updatedAt: true },
       orderBy: { publishedAt: "desc" },
+    }),
+    // Só tags com pelo menos um post (evita páginas vazias no índice).
+    prisma.tag.findMany({
+      where: { posts: { some: {} } },
+      select: { name: true },
     }),
   ]);
 
@@ -45,5 +50,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: a.updatedAt,
   }));
 
-  return [...staticEntries, ...postEntries, ...newsEntries];
+  const tagEntries = tags.map((t) => ({
+    url: `${siteUrl}/t/${encodeURIComponent(t.name)}`,
+    lastModified: new Date(),
+  }));
+
+  return [...staticEntries, ...postEntries, ...newsEntries, ...tagEntries];
 }
