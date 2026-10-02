@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import CommentForm from "@/components/CommentForm";
 import CommentItem, { CommentNode } from "@/components/CommentItem";
 import VoteButtons from "@/components/VoteButtons";
+import BookmarkButton from "@/components/forum/BookmarkButton";
 import UserBadges from "@/components/UserBadges";
 import { roleLabel } from "@/components/RoleBadge";
 import AdSlot from "@/components/AdSlot";
@@ -158,6 +159,15 @@ export default async function PostPage({
   const currentUserVote = session?.user
     ? post.votes.find((v) => v.userId === session.user.id)?.value ?? null
     : null;
+
+  const viewerBookmarked = session?.user
+    ? Boolean(
+        await prisma.bookmark.findUnique({
+          where: { userId_postId: { userId: session.user.id, postId: post.id } },
+          select: { id: true },
+        })
+      )
+    : false;
 
   // É este o post mais popular do fórum? Comparado com todos os posts.
   const mostPopular = await getMostPopularPostId();
@@ -329,7 +339,10 @@ export default async function PostPage({
       )}
 
       {session?.user && (
-        <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
+        <div className="flex flex-wrap items-center gap-2">
+          <VoteButtons postId={post.id} initialScore={score} initialUserVote={currentUserVote} />
+          <BookmarkButton postId={post.id} initialBookmarked={viewerBookmarked} />
+        </div>
       )}
 
       <section id="comentarios" className="flex flex-col gap-4 mt-2 scroll-mt-20">

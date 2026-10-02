@@ -76,17 +76,27 @@ export async function getForumFeed({
 
   // Voto do próprio utilizador apenas para os posts desta página.
   const viewerVotes = new Map<string, "UP" | "DOWN">();
+  const bookmarked = new Set<string>();
   if (viewerId && page.length > 0) {
-    const votes = await prisma.postVote.findMany({
-      where: { userId: viewerId, postId: { in: page.map((p) => p.id) } },
-      select: { postId: true, value: true },
-    });
+    const pageIds = page.map((p) => p.id);
+    const [votes, marks] = await Promise.all([
+      prisma.postVote.findMany({
+        where: { userId: viewerId, postId: { in: pageIds } },
+        select: { postId: true, value: true },
+      }),
+      prisma.bookmark.findMany({
+        where: { userId: viewerId, postId: { in: pageIds } },
+        select: { postId: true },
+      }),
+    ]);
     for (const v of votes) viewerVotes.set(v.postId, v.value);
+    for (const m of marks) bookmarked.add(m.postId);
   }
 
   const withVote = page.map((post) => ({
     ...post,
     viewerVote: viewerVotes.get(post.id) ?? null,
+    viewerBookmarked: bookmarked.has(post.id),
   }));
 
   const withFollowStatus = await attachPrimaryTagFollowStatus(withVote, viewerId);

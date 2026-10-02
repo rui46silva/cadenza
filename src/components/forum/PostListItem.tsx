@@ -8,6 +8,7 @@ import { getVideoEmbedUrl } from "@/lib/video";
 import PostVoteCompact from "@/components/forum/PostVoteCompact";
 import FollowTagButton from "@/components/forum/FollowTagButton";
 import SharePostButton from "@/components/forum/SharePostButton";
+import BookmarkButton from "@/components/forum/BookmarkButton";
 import ReportPostButton from "@/components/ReportPostButton";
 
 const TYPE_ICON: Record<string, typeof FileText> = {
@@ -30,6 +31,7 @@ export type PostListItemData = {
   createdAt: Date | string;
   score: number;
   viewerVote?: "UP" | "DOWN" | null;
+  viewerBookmarked?: boolean;
   primaryTagFollowed?: boolean;
   isQuestion?: boolean;
   questionStatus?: "unanswered" | "answered" | "resolved";
@@ -242,6 +244,10 @@ export default function PostListItem({
         </Link>
 
         <SharePostButton postId={post.id} slug={post.slug} title={post.title} />
+
+        {currentUserId && (
+          <BookmarkButton postId={post.id} initialBookmarked={post.viewerBookmarked ?? false} />
+        )}
 
         {currentUserId && primaryTag && (
           <FollowTagButton

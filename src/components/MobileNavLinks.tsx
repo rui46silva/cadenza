@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessagesSquare, Flame, Newspaper, Compass, LayoutGrid, Sparkles, HelpCircle, GraduationCap, Trophy, Music, Briefcase } from "lucide-react";
+import { MessagesSquare, Flame, Newspaper, Compass, LayoutGrid, Sparkles, HelpCircle, GraduationCap, Trophy, Music, Briefcase, Bookmark } from "lucide-react";
 import ResourcesDropdown from "@/components/forum/ResourcesDropdown";
 
 // Mesma hierarquia de assuntos do LeftSidebar.
@@ -11,6 +11,7 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: typeo
       { href: "/popular", label: "Popular", icon: Flame },
       { href: "/explorar", label: "Explorar", icon: Compass },
       { href: "/categorias", label: "Categorias", icon: LayoutGrid },
+      { href: "/guardados", label: "Guardados", icon: Bookmark },
     ],
   },
   {

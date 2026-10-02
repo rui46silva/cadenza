@@ -100,6 +100,7 @@ model User {
   comments      Comment[]
   postVotes     PostVote[]
   commentVotes  CommentVote[]
+  bookmarks     Bookmark[]
   notificationsReceived Notification[] @relation("NotificationsReceived")
   notificationsSent     Notification[] @relation("NotificationsSent")
   bans          Ban[]     @relation("BansReceived")
@@ -223,6 +224,7 @@ model Post {
   tags        PostTag[]
   comments    Comment[]
   votes       PostVote[]
+  bookmarks   Bookmark[]
   notifications Notification[]
   reports     Report[]
   bestAnswerId String?    @unique
@@ -323,6 +325,19 @@ model WaitlistSignup {
   // Quando foi enviado o email de confirmação (para reenviar só a quem falhou).
   confirmationSentAt DateTime?
   createdAt   DateTime  @default(now())
+}
+
+// Posts guardados por um utilizador ("Guardados").
+model Bookmark {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
 }
 
 // Metadados SEO editáveis por página (mini-CMS para o admin). Cada linha
