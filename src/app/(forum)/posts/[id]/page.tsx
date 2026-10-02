@@ -233,6 +233,8 @@ export default async function PostPage({
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           {post.type === "VIDEO" ? (
             <Video className="h-5 w-5 text-accent shrink-0" />
+          ) : post.type === "AUDIO" ? (
+            <Music className="h-5 w-5 text-accent shrink-0" />
           ) : (
             <FileText className="h-5 w-5 text-accent shrink-0" />
           )}
@@ -333,6 +335,11 @@ export default async function PostPage({
             allowFullScreen
           />
         </div>
+      )}
+      {post.type === "AUDIO" && post.audioUrl && (
+        <audio controls preload="none" src={post.audioUrl} className="w-full">
+          O teu navegador não suporta áudio.
+        </audio>
       )}
       {post.content && (
         <p className="whitespace-pre-wrap leading-relaxed">{post.content}</p>

@@ -46,6 +46,7 @@ enum ReportStatus {
 enum PostType {
   TEXT
   VIDEO
+  AUDIO
 }
 
 enum JobType {
@@ -207,6 +208,7 @@ model Post {
   type        PostType   @default(TEXT)
   content     String?
   videoUrl    String?
+  audioUrl    String?
   pinned      Boolean    @default(false)
   // Post patrocinado por uma marca (monetização). Aparece com etiqueta própria
   // no topo do feed.

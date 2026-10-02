@@ -29,9 +29,10 @@ export async function GET(req: Request) {
 
 const postSchema = z.object({
   title: z.string().min(3).max(150),
-  type: z.enum(["TEXT", "VIDEO"]),
+  type: z.enum(["TEXT", "VIDEO", "AUDIO"]),
   content: z.string().max(10000).optional(),
   videoUrl: z.string().url().optional(),
+  audioUrl: z.string().url().optional(),
   tagNames: z.array(z.string()).max(8).default([]),
   isQuestion: z.boolean().default(false),
   directedToId: z.string().optional(),
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
     type,
     content,
     videoUrl,
+    audioUrl,
     tagNames,
     isQuestion,
     directedToId,
@@ -68,9 +70,10 @@ export async function POST(req: Request) {
     joinChallenge,
   } = parsed.data;
 
-  // Feedback só faz sentido em vídeo. Se aderir ao desafio da semana, marca o
-  // post com o id da semana atual e garante a tag do desafio.
-  const wantsFeedback = feedbackRequest && type === "VIDEO";
+  // Feedback faz sentido em vídeo ou áudio. Se aderir ao desafio da semana,
+  // marca o post com o id da semana atual e garante a tag do desafio.
+  const isMedia = type === "VIDEO" || type === "AUDIO";
+  const wantsFeedback = feedbackRequest && isMedia;
   const challenge = joinChallenge ? currentChallenge() : null;
   const finalTagNames = challenge
     ? Array.from(new Set([...tagNames, challenge.tag]))
@@ -98,6 +101,12 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+  if (type === "AUDIO" && !audioUrl) {
+    return NextResponse.json(
+      { error: "audioUrl é obrigatório para posts de áudio" },
+      { status: 400 }
+    );
+  }
   if (type === "TEXT" && !content) {
     return NextResponse.json(
       { error: "content é obrigatório para posts de texto" },
@@ -112,6 +121,7 @@ export async function POST(req: Request) {
       type,
       content,
       videoUrl,
+      audioUrl,
       isQuestion,
       directedToId: directedTo?.id,
       feedbackRequest: wantsFeedback,

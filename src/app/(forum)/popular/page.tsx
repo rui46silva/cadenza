@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { Flame, FileText, Video, Pin } from "lucide-react";
+import { Flame, FileText, Video, Pin, Music } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Avatar from "@/components/Avatar";
 import AdSlot from "@/components/AdSlot";
@@ -18,6 +18,7 @@ export function generateMetadata() {
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
   VIDEO: Video,
+  AUDIO: Music,
 };
 
 // Após quantos posts aparece o anúncio intercalado no ranking.

@@ -14,6 +14,7 @@ import ReportPostButton from "@/components/ReportPostButton";
 const TYPE_ICON: Record<string, typeof FileText> = {
   TEXT: FileText,
   VIDEO: Video,
+  AUDIO: Music,
 };
 
 export type PostListItemData = {
@@ -23,6 +24,7 @@ export type PostListItemData = {
   type: string;
   content: string | null;
   videoUrl: string | null;
+  audioUrl?: string | null;
   pinned: boolean;
   sponsored?: boolean;
   sponsorName?: string | null;
@@ -220,6 +222,12 @@ export default function PostListItem({
         <div className="mt-1 aspect-video w-full overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
           <iframe src={getVideoEmbedUrl(post.videoUrl)} className="h-full w-full" allowFullScreen />
         </div>
+      )}
+
+      {post.type === "AUDIO" && post.audioUrl && (
+        <audio controls preload="none" src={post.audioUrl} className="mt-1 w-full">
+          O teu navegador não suporta áudio.
+        </audio>
       )}
 
       <div className="mt-2 flex flex-wrap items-center gap-2">

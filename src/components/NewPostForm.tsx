@@ -27,7 +27,7 @@ export default function NewPostForm({
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [type, setType] = useState<"TEXT" | "VIDEO">(
+  const [type, setType] = useState<"TEXT" | "VIDEO" | "AUDIO">(
     initialFeedback || initialVideo || challenge ? "VIDEO" : "TEXT"
   );
   const [isQuestion, setIsQuestion] = useState(initialQuestion);
@@ -39,7 +39,8 @@ export default function NewPostForm({
 
   // Instrumento inferido das tags escolhidas, para sugerir os especialistas certos.
   const instrumentTag = tags.find((t) => INSTRUMENT_SET.has(t.toLowerCase()));
-  const wantsFeedback = feedbackRequest && type === "VIDEO";
+  const isMedia = type === "VIDEO" || type === "AUDIO";
+  const wantsFeedback = feedbackRequest && isMedia;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,12 +51,14 @@ export default function NewPostForm({
 
     const content = formData.get("content");
     const videoUrl = formData.get("videoUrl");
+    const audioUrl = formData.get("audioUrl");
 
     const payload = {
       title: formData.get("title"),
       type,
       content: content || undefined,
       videoUrl: type === "VIDEO" ? videoUrl || undefined : undefined,
+      audioUrl: type === "AUDIO" ? audioUrl || undefined : undefined,
       tagNames: tags,
       isQuestion,
       directedToId: isQuestion && directed ? directed.id : undefined,
@@ -149,6 +152,18 @@ export default function NewPostForm({
             <Video className="h-4 w-4" />
             Vídeo
           </button>
+          <button
+            type="button"
+            onClick={() => setType("AUDIO")}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm border transition-colors ${
+              type === "AUDIO"
+                ? "bg-accent text-accent-foreground border-accent"
+                : "border-black/15 dark:border-white/20 hover:border-accent"
+            }`}
+          >
+            <Music className="h-4 w-4" />
+            Áudio
+          </button>
           {!challenge && (
             <button
               type="button"
@@ -164,7 +179,7 @@ export default function NewPostForm({
               É uma dúvida
             </button>
           )}
-          {type === "VIDEO" && !isQuestion && !challenge && (
+          {isMedia && !isQuestion && !challenge && (
             <button
               type="button"
               onClick={() => setFeedbackRequest((v) => !v)}
@@ -173,7 +188,7 @@ export default function NewPostForm({
                   ? "bg-fuchsia-500 text-white border-fuchsia-500"
                   : "border-black/15 dark:border-white/20 hover:border-fuchsia-500 hover:text-fuchsia-500"
               }`}
-              title="Pede feedback ao vivo sobre o teu vídeo"
+              title="Pede feedback sobre a tua gravação"
             >
               <Music className="h-4 w-4" />
               Pedir feedback
@@ -205,6 +220,16 @@ export default function NewPostForm({
           />
         )}
 
+        {type === "AUDIO" && (
+          <input
+            name="audioUrl"
+            type="url"
+            placeholder="URL do áudio (ficheiro .mp3/.wav, SoundCloud, etc.)"
+            required
+            className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
+          />
+        )}
+
         {wantsFeedback && (
           <div className="flex flex-col gap-2 rounded-md bg-fuchsia-500/10 p-3">
             <label className="text-sm font-medium text-fuchsia-700 dark:text-fuchsia-300">
@@ -227,11 +252,11 @@ export default function NewPostForm({
           placeholder={
             isQuestion
               ? "Descreve a tua dúvida com o máximo de detalhe..."
-              : type === "VIDEO"
+              : isMedia
               ? "Acrescenta uma descrição ou contexto (opcional)..."
               : "Escreve o teu post..."
           }
-          rows={type === "VIDEO" ? 4 : 10}
+          rows={isMedia ? 4 : 10}
           required={type === "TEXT"}
           className="rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent"
         />
