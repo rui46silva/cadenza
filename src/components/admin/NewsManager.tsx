@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { buttonPrimarySm } from "@/lib/ui";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import SeoEditor from "@/components/admin/SeoEditor";
 
 export type NewsArticleData = {
   id: string;
@@ -12,6 +13,7 @@ export type NewsArticleData = {
   summary: string;
   content: string | null;
   metaDescription: string | null;
+  focusKeyword: string | null;
   url: string | null;
   imageUrl: string | null;
   source: string | null;
@@ -22,12 +24,16 @@ export type NewsArticleData = {
 const inputClass =
   "rounded-md border border-black/15 dark:border-white/20 px-3 py-2 bg-transparent text-sm";
 
+// Domínio mostrado na pré-visualização do Google.
+const SITE_HOST = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://cadenza.pt").replace(/^https?:\/\//, "");
+
 export default function NewsManager({ articles }: { articles: NewsArticleData[] }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [summary, setSummary] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
+  const [focusKeyword, setFocusKeyword] = useState("");
   const [content, setContent] = useState("");
   const [url, setUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -45,7 +51,7 @@ export default function NewsManager({ articles }: { articles: NewsArticleData[] 
     const res = await fetch("/api/admin/news", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug, summary, metaDescription, content, url, imageUrl, source }),
+      body: JSON.stringify({ title, slug, summary, metaDescription, focusKeyword, content, url, imageUrl, source }),
     });
     setLoading(false);
     if (!res.ok) {
@@ -57,6 +63,7 @@ export default function NewsManager({ articles }: { articles: NewsArticleData[] 
     setSlug("");
     setSummary("");
     setMetaDescription("");
+    setFocusKeyword("");
     setContent("");
     setUrl("");
     setImageUrl("");
@@ -108,19 +115,24 @@ export default function NewsManager({ articles }: { articles: NewsArticleData[] 
           className={inputClass}
         />
         <textarea
-          value={metaDescription}
-          onChange={(e) => setMetaDescription(e.target.value)}
-          placeholder="Meta-descrição SEO (Google/redes sociais, ~150 caracteres)"
-          rows={2}
-          maxLength={300}
-          className={inputClass}
-        />
-        <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Corpo do artigo (opcional — separa parágrafos com linha em branco)"
           rows={6}
           className={inputClass}
+        />
+        <SeoEditor
+          title={title}
+          onTitleChange={setTitle}
+          metaDescription={metaDescription}
+          onMetaChange={setMetaDescription}
+          focusKeyword={focusKeyword}
+          onFocusKeywordChange={setFocusKeyword}
+          slug={slug}
+          content={content}
+          displayUrl={`${SITE_HOST}/noticias/${slug || "titulo-da-noticia"}`}
+          editTitle={false}
+          descPlaceholder="Meta-descrição SEO (~150 caracteres)"
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <input
@@ -236,6 +248,7 @@ function EditArticle({
   const [slug, setSlug] = useState(article.slug ?? "");
   const [summary, setSummary] = useState(article.summary);
   const [metaDescription, setMetaDescription] = useState(article.metaDescription ?? "");
+  const [focusKeyword, setFocusKeyword] = useState(article.focusKeyword ?? "");
   const [content, setContent] = useState(article.content ?? "");
   const [url, setUrl] = useState(article.url ?? "");
   const [imageUrl, setImageUrl] = useState(article.imageUrl ?? "");
@@ -249,7 +262,7 @@ function EditArticle({
     const res = await fetch(`/api/admin/news/${article.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug, summary, metaDescription, content, url, imageUrl, source }),
+      body: JSON.stringify({ title, slug, summary, metaDescription, focusKeyword, content, url, imageUrl, source }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -268,16 +281,21 @@ function EditArticle({
       <input value={slug} onChange={(e) => setSlug(e.target.value)} className={inputClass} />
       <label className="text-xs text-black/50 dark:text-white/50">Resumo</label>
       <textarea value={summary} onChange={(e) => setSummary(e.target.value)} rows={2} className={inputClass} />
-      <label className="text-xs text-black/50 dark:text-white/50">Meta-descrição SEO</label>
-      <textarea
-        value={metaDescription}
-        onChange={(e) => setMetaDescription(e.target.value)}
-        rows={2}
-        maxLength={300}
-        className={inputClass}
-      />
       <label className="text-xs text-black/50 dark:text-white/50">Corpo do artigo</label>
       <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={6} className={inputClass} />
+      <SeoEditor
+        title={title}
+        onTitleChange={setTitle}
+        metaDescription={metaDescription}
+        onMetaChange={setMetaDescription}
+        focusKeyword={focusKeyword}
+        onFocusKeywordChange={setFocusKeyword}
+        slug={slug}
+        content={content}
+        displayUrl={`${SITE_HOST}/noticias/${slug || article.id}`}
+        editTitle={false}
+        descPlaceholder="Meta-descrição SEO (~150 caracteres)"
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL fonte" type="url" className={inputClass} />
         <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="URL imagem" type="url" className={inputClass} />

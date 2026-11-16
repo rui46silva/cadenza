@@ -7,6 +7,7 @@ const schema = z.object({
   path: z.string().min(1).max(200),
   title: z.string().max(200).optional().or(z.literal("")),
   metaDescription: z.string().max(300).optional().or(z.literal("")),
+  focusKeyword: z.string().max(80).optional().or(z.literal("")),
 });
 
 export async function POST(req: Request) {
@@ -21,12 +22,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
-  const { path, title, metaDescription } = parsed.data;
+  const { path, title, metaDescription, focusKeyword } = parsed.data;
 
   const meta = await prisma.pageMeta.upsert({
     where: { path },
-    create: { path, title: title || null, metaDescription: metaDescription || null },
-    update: { title: title || null, metaDescription: metaDescription || null },
+    create: {
+      path,
+      title: title || null,
+      metaDescription: metaDescription || null,
+      focusKeyword: focusKeyword || null,
+    },
+    update: {
+      title: title || null,
+      metaDescription: metaDescription || null,
+      focusKeyword: focusKeyword || null,
+    },
   });
 
   return NextResponse.json({ meta });

@@ -11,6 +11,7 @@ const schema = z.object({
   summary: z.string().min(2).max(500).optional(),
   content: z.string().max(20000).optional().or(z.literal("")),
   metaDescription: z.string().max(300).optional().or(z.literal("")),
+  focusKeyword: z.string().max(80).optional().or(z.literal("")),
   url: z.string().url().optional().or(z.literal("")),
   imageUrl: z.string().url().optional().or(z.literal("")),
   source: z.string().max(80).optional().or(z.literal("")),
@@ -53,6 +54,7 @@ export async function PATCH(
   if (d.summary !== undefined) data.summary = d.summary;
   if (d.content !== undefined) data.content = d.content || null;
   if (d.metaDescription !== undefined) data.metaDescription = d.metaDescription || null;
+  if (d.focusKeyword !== undefined) data.focusKeyword = d.focusKeyword || null;
   if (d.url !== undefined) data.url = d.url || null;
   if (d.imageUrl !== undefined) data.imageUrl = d.imageUrl || null;
   if (d.source !== undefined) data.source = d.source || null;

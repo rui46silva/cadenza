@@ -10,6 +10,7 @@ const schema = z.object({
   summary: z.string().min(2).max(500),
   content: z.string().max(20000).optional().or(z.literal("")),
   metaDescription: z.string().max(300).optional().or(z.literal("")),
+  focusKeyword: z.string().max(80).optional().or(z.literal("")),
   url: z.string().url().optional().or(z.literal("")),
   imageUrl: z.string().url().optional().or(z.literal("")),
   source: z.string().max(80).optional().or(z.literal("")),
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { title, slug, summary, content, metaDescription, url, imageUrl, source } = parsed.data;
+  const { title, slug, summary, content, metaDescription, focusKeyword, url, imageUrl, source } = parsed.data;
 
   const article = await prisma.newsArticle.create({
     data: {
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       summary,
       content: content || null,
       metaDescription: metaDescription || null,
+      focusKeyword: focusKeyword || null,
       url: url || null,
       imageUrl: imageUrl || null,
       source: source || null,

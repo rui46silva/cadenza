@@ -349,6 +349,7 @@ model PageMeta {
   path            String   @unique
   title           String?
   metaDescription String?
+  focusKeyword    String?
   updatedAt       DateTime @updatedAt
 }
 
@@ -362,6 +363,8 @@ model NewsArticle {
   content         String?
   // Meta-descrição usada nas tags SEO da página (Google/redes sociais).
   metaDescription String?
+  // Palavra-chave de foco para a análise SEO (estilo Yoast).
+  focusKeyword    String?
   url             String?
   imageUrl        String?
   source          String?

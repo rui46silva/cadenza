@@ -18,6 +18,7 @@ export default async function AdminSeoPage() {
     ...p,
     title: byPath.get(p.path)?.title ?? "",
     metaDescription: byPath.get(p.path)?.metaDescription ?? "",
+    focusKeyword: byPath.get(p.path)?.focusKeyword ?? "",
   }));
 
   return (
