@@ -381,11 +381,15 @@ model NewsArticle {
 model JobListing {
   id          String    @id @default(cuid())
   title       String
+  slug        String?   @unique
   organization String
   location    String?
   type        JobType   @default(OUTRO)
   instrument  String?
   description String
+  // SEO (estilo Yoast) por vaga.
+  metaDescription String?
+  focusKeyword    String?
   applyUrl    String?
   contactEmail String?
   featured    Boolean   @default(false)

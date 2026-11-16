@@ -18,7 +18,7 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, articles, tags] = await Promise.all([
+  const [posts, articles, tags, jobs] = await Promise.all([
     prisma.post.findMany({
       select: { id: true, slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
@@ -32,6 +32,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.tag.findMany({
       where: { posts: { some: {} } },
       select: { name: true },
+    }),
+    prisma.jobListing.findMany({
+      where: { OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      select: { id: true, slug: true, updatedAt: true },
     }),
   ]);
 
@@ -55,5 +59,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(),
   }));
 
-  return [...staticEntries, ...postEntries, ...newsEntries, ...tagEntries];
+  const jobEntries = jobs.map((j) => ({
+    url: `${siteUrl}/vagas/${j.slug ?? j.id}`,
+    lastModified: j.updatedAt,
+  }));
+
+  return [...staticEntries, ...postEntries, ...newsEntries, ...tagEntries, ...jobEntries];
 }

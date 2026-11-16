@@ -7,23 +7,29 @@ import { buttonPrimary } from "@/lib/ui";
 import { JOB_TYPE_LABELS } from "@/lib/jobTypes";
 import { formatRelativeTime } from "@/lib/time";
 
+// O parâmetro pode ser o slug (SEO) ou o id (links antigos).
+async function findJob(param: string) {
+  return prisma.jobListing.findFirst({ where: { OR: [{ slug: param }, { id: param }] } });
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const job = await prisma.jobListing.findUnique({
-    where: { id },
-    select: { title: true, organization: true, description: true },
-  });
+  const job = await findJob(id);
 
   if (!job) return { title: "Vaga não encontrada" };
 
+  const description = (job.metaDescription?.trim() || job.description).slice(0, 160);
+  const canonical = `/vagas/${job.slug ?? job.id}`;
+
   return {
     title: `${job.title} · ${job.organization}`,
-    description: job.description.slice(0, 160),
-    alternates: { canonical: `/vagas/${id}` },
+    description,
+    alternates: { canonical },
+    openGraph: { title: `${job.title} · ${job.organization}`, description, type: "website", url: canonical },
   };
 }
 
@@ -33,7 +39,7 @@ export default async function JobListingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const job = await prisma.jobListing.findUnique({ where: { id } });
+  const job = await findJob(id);
 
   if (!job) notFound();
 

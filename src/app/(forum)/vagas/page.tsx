@@ -54,7 +54,7 @@ export default async function VagasPage() {
                     Destaque
                   </span>
                 )}
-                <Link href={`/vagas/${j.id}`} className="font-semibold hover:text-accent hover:underline">
+                <Link href={`/vagas/${j.slug ?? j.id}`} className="font-semibold hover:text-accent hover:underline">
                   {j.title}
                 </Link>
                 <p className="text-sm text-black/60 dark:text-white/60">
