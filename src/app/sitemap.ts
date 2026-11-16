@@ -1,3 +1,4 @@
+import { publicNewsWhere } from "@/lib/newsSchema";
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
@@ -18,13 +19,13 @@ const STATIC_ROUTES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, articles, tags, jobs] = await Promise.all([
+  const [posts, articles, tags, jobs, cmsPages] = await Promise.all([
     prisma.post.findMany({
       select: { id: true, slug: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.newsArticle.findMany({
-      where: { published: true },
+      where: publicNewsWhere(),
       select: { id: true, slug: true, updatedAt: true },
       orderBy: { publishedAt: "desc" },
     }),
@@ -37,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       select: { id: true, slug: true, updatedAt: true },
     }),
+    prisma.cmsPage.findMany({ where: { published: true }, select: { slug: true, updatedAt: true } }),
   ]);
 
   const staticEntries = STATIC_ROUTES.map((route) => ({
@@ -64,5 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: j.updatedAt,
   }));
 
-  return [...staticEntries, ...postEntries, ...newsEntries, ...tagEntries, ...jobEntries];
+  const pageEntries = cmsPages.map((p) => ({ url: `${siteUrl}/p/${p.slug}`, lastModified: p.updatedAt }));
+
+  return [...staticEntries, ...postEntries, ...newsEntries, ...tagEntries, ...jobEntries, ...pageEntries];
 }

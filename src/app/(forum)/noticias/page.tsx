@@ -1,3 +1,4 @@
+import { publicNewsWhere } from "@/lib/newsSchema";
 import Link from "next/link";
 import { Newspaper, Briefcase } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +15,7 @@ export function generateMetadata() {
 
 export default async function NoticiasPage() {
   const articles = await prisma.newsArticle.findMany({
-    where: { published: true },
+    where: publicNewsWhere(),
     orderBy: { publishedAt: "desc" },
     take: 30,
   });

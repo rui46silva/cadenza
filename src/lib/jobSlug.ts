@@ -12,3 +12,9 @@ export async function uniqueJobSlug(title: string, excludeId?: string): Promise<
     candidate = `${root}-${n++}`;
   }
 }
+
+/** Instantâneo dos campos de uma vaga para guardar como revisão. */
+export function jobSnapshot(j: Record<string, unknown>) {
+  const keys = ["title", "slug", "organization", "location", "type", "instrument", "description", "metaDescription", "focusKeyword", "applyUrl", "contactEmail", "expiresAt", "featured"];
+  return Object.fromEntries(keys.map((k) => [k, j[k] ?? null]));
+}

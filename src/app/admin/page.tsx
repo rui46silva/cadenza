@@ -1,356 +1,193 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import RoleBadge from "@/components/RoleBadge";
-import VerifyProfessorButtons from "@/components/VerifyProfessorButtons";
-import BanControls from "@/components/BanControls";
-import ModeratorToggle from "@/components/ModeratorToggle";
-import AmbassadorToggle from "@/components/AmbassadorToggle";
-import PremiumToggle from "@/components/PremiumToggle";
-import FeaturedToggle from "@/components/FeaturedToggle";
-import LaunchButton from "@/components/admin/LaunchButton";
-import { isFeaturedActive } from "@/lib/monetization";
-import { PREMIUM_ENABLED } from "@/lib/features";
-import ReportActions from "@/components/ReportActions";
-import WaitlistList from "@/components/WaitlistList";
-import DeleteUserButton from "@/components/DeleteUserButton";
-import TagCategoryManager from "@/components/admin/TagCategoryManager";
-import { isStaff, INFRACTION_LABELS } from "@/lib/moderation";
+import {
+  Users,
+  FileText,
+  MessageSquare,
+  Eye,
+  Flag,
+  BadgeCheck,
+  ListChecks,
+  Newspaper,
+  Briefcase,
+  ArrowRight,
+} from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { requireAdminArea } from "@/lib/adminAuth";
+import { isStaff, canEditContent } from "@/lib/moderation";
 import { getDashboardStats } from "@/lib/adminStats";
+import { formatRelativeTime } from "@/lib/time";
+import AdminHeader from "@/components/admin/AdminHeader";
+import LaunchButton from "@/components/admin/LaunchButton";
 
-export default async function AdminPage() {
-  const session = await auth();
-  if (!session?.user || !isStaff(session.user.role)) {
-    redirect("/");
-  }
-  const isAdmin = session.user.role === "ADMIN";
+export default async function AdminDashboardPage() {
+  const { role, isAdmin } = await requireAdminArea();
+  const staff = isStaff(role);
+  const editor = canEditContent(role);
 
-  const stats = await getDashboardStats();
+  const [stats, reports, waitlistPending, recentPosts, recentUsers, drafts] = await Promise.all([
+    getDashboardStats(),
+    staff ? prisma.report.count({ where: { status: "PENDING" } }) : 0,
+    isAdmin ? prisma.waitlistSignup.count({ where: { invitedAt: null } }) : 0,
+    prisma.post.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, slug: true, title: true, createdAt: true, author: { select: { name: true } } },
+    }),
+    prisma.user.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, name: true, role: true, createdAt: true },
+    }),
+    editor ? prisma.newsArticle.count({ where: { published: false } }) : 0,
+  ]);
 
-  const professionals = isAdmin
-    ? await prisma.user.findMany({
-        where: { role: { in: ["PROFESSOR", "MUSICO_PROFISSIONAL"] } },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          instrument: true,
-          verificationStatus: true,
-          verificationNote: true,
-          rejectionReason: true,
-          verifiedAt: true,
-          verifiedBy: { select: { name: true } },
-          createdAt: true,
-          isAmbassador: true,
-          isPremium: true,
-          featuredUntil: true,
-        },
-      })
-    : [];
-
-  const moderatableUsers = await prisma.user.findMany({
-    where: { role: { in: ["ALUNO", "MODERATOR"] } },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      instrument: true,
-      verificationStatus: true,
-      isAmbassador: true,
-      isPremium: true,
-      bans: {
-        where: {
-          liftedAt: null,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { infraction: true, expiresAt: true },
-      },
-    },
-  });
-
-  const usersWithBanStatus = moderatableUsers.map((u) => ({
-    ...u,
-    activeBan: u.bans[0] ?? null,
-  }));
-
-  const waitlistSignups = isAdmin
-    ? await prisma.waitlistSignup.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          instrument: true,
-          invitedAt: true,
-          createdAt: true,
-        },
-      })
-    : [];
-
-  const tagsWithCounts = await prisma.tag.findMany({
-    include: { _count: { select: { posts: true } } },
-    orderBy: { name: "asc" },
-  });
-  const tagsForManager = tagsWithCounts.map((t) => ({
-    id: t.id,
-    name: t.name,
-    category: t.category,
-    postCount: t._count.posts,
-  }));
-
-  const reports = await prisma.report.findMany({
-    where: { status: "PENDING" },
-    include: {
-      post: { select: { id: true, title: true, author: { select: { name: true } } } },
-      reporter: { select: { name: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-
-  const statCards: { label: string; value: string | number }[] = [
-    { label: "Utilizadores", value: stats.totalUsers },
-    { label: "Posts", value: stats.totalPosts },
-    { label: "Comentários", value: stats.totalComments },
-    { label: "Votos", value: stats.totalVotes },
-    { label: "Visualizações", value: stats.totalViews },
-    { label: "Novos posts (7d)", value: stats.newPosts7d },
-    { label: "Novos utilizadores (7d)", value: stats.newUsers7d },
-    { label: "Novos utilizadores (30d)", value: stats.newUsers30d },
-    { label: "Verificações pendentes", value: stats.pendingVerifications },
-    { label: "Banimentos ativos", value: stats.activeBans },
-    { label: "Denúncias pendentes", value: reports.length },
+  const kpis = [
+    { label: "Utilizadores", value: stats.totalUsers, sub: `+${stats.newUsers7d} em 7 dias`, icon: Users },
+    { label: "Posts", value: stats.totalPosts, sub: `+${stats.newPosts7d} em 7 dias`, icon: FileText },
+    { label: "Comentários", value: stats.totalComments, sub: `${stats.totalVotes} votos`, icon: MessageSquare },
+    { label: "Visualizações", value: stats.totalViews, sub: "total de leituras", icon: Eye },
   ];
 
+  const todo = [
+    { href: "/admin/denuncias", label: "Denúncias por rever", value: reports, icon: Flag, show: staff },
+    { href: "/admin/verificacoes", label: "Verificações pendentes", value: stats.pendingVerifications, icon: BadgeCheck, show: isAdmin },
+    { href: "/admin/lista-espera", label: "Por convidar (lista de espera)", value: waitlistPending, icon: ListChecks, show: isAdmin },
+    { href: "/admin/conteudo/noticias?estado=rascunho", label: "Notícias em rascunho", value: drafts, icon: Newspaper, show: editor },
+  ].filter((t) => t.show);
+
+  const maxDaily = Math.max(1, ...stats.daily.map((d) => Math.max(d.users, d.posts)));
+
   return (
-    <div className="mx-auto w-full max-w-5xl flex flex-col gap-6 px-4 py-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h1 className="text-2xl font-bold">
-          {isAdmin ? "Painel de Admin" : "Painel de Moderação"}
-        </h1>
-        {isAdmin && (
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/conteudo"
-              className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
-            >
-              Gerir notícias e vagas
-            </Link>
-            <Link
-              href="/admin/seo"
-              className="rounded-full border border-black/15 dark:border-white/20 px-3 py-1.5 text-sm hover:border-accent hover:text-accent"
-            >
-              SEO das páginas
-            </Link>
-          </div>
-        )}
-      </div>
+    <>
+      <AdminHeader
+        title="Dashboard"
+        description="Visão geral da Cadenza e o que precisa da tua atenção."
+        actions={
+          editor && (
+            <>
+              <Link href="/admin/conteudo/noticias/nova" className="rounded-full bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground hover:brightness-110">
+                + Nova notícia
+              </Link>
+              <Link href="/admin/conteudo/vagas/nova" className="rounded-full border border-black/15 px-3 py-1.5 text-sm hover:border-accent hover:text-accent dark:border-white/20">
+                + Nova vaga
+              </Link>
+            </>
+          )
+        }
+      />
 
       {isAdmin && process.env.NEXT_PUBLIC_SHOW_LAUNCH_BUTTON === "true" && <LaunchButton />}
 
-      <section>
-        <h2 className="font-semibold mb-3">Visão geral</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {statCards.map((card) => (
-            <div
-              key={card.label}
-              className="rounded-lg border border-black/10 dark:border-white/10 p-3"
-            >
-              <p className="text-2xl font-bold">{card.value}</p>
-              <p className="text-xs text-black/50 dark:text-white/50">{card.label}</p>
+      {/* KPIs */}
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {kpis.map((k) => (
+          <div key={k.label} className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+            <div className="flex items-center justify-between text-black/50 dark:text-white/50">
+              <span className="text-xs">{k.label}</span>
+              <k.icon className="h-4 w-4" />
             </div>
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm text-black/60 dark:text-white/60">
-          <span>Por papel:</span>
-          {Object.entries(stats.usersByRole).map(([role, count]) => (
-            <span
-              key={role}
-              className="rounded-full border border-black/10 dark:border-white/10 px-2 py-0.5"
-            >
-              {role}: {count}
-            </span>
-          ))}
-        </div>
-        {stats.topTags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2 text-sm text-black/60 dark:text-white/60">
-            <span>Etiquetas mais usadas:</span>
-            {stats.topTags.map((t) => (
-              <span
-                key={t.name}
-                className="rounded-full bg-black/5 dark:bg-white/10 px-2 py-0.5 text-xs"
-              >
-                #{t.name} ({t.count})
-              </span>
-            ))}
+            <p className="mt-1 text-2xl font-bold tabular-nums">{k.value.toLocaleString("pt-PT")}</p>
+            <p className="text-xs text-black/40 dark:text-white/40">{k.sub}</p>
           </div>
-        )}
+        ))}
       </section>
 
-      {isAdmin && (
-        <section>
-          <h2 className="font-semibold mb-3">Verificação de profissionais</h2>
-          <p className="text-sm text-black/50 dark:text-white/50 -mt-2 mb-1">
-            Professores e músicos profissionais registados, com a credencial submetida no registo.
-          </p>
-          <ul className="flex flex-col gap-3">
-            {professionals.length === 0 && (
-              <p className="text-black/50 dark:text-white/50">
-                Ainda não há professores ou músicos profissionais registados.
-              </p>
-            )}
-            {professionals.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-lg border border-black/10 dark:border-white/10 p-4 flex flex-col gap-3"
-              >
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <p className="font-medium">
-                      {p.name}{" "}
-                      <span className="text-black/40 dark:text-white/40 text-sm">
-                        ({p.email})
-                      </span>
-                    </p>
-                    <div className="mt-1">
-                      <RoleBadge user={p} />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <AmbassadorToggle userId={p.id} isAmbassador={p.isAmbassador} />
-                    {PREMIUM_ENABLED && <PremiumToggle userId={p.id} isPremium={p.isPremium} />}
-                    <FeaturedToggle userId={p.id} featured={isFeaturedActive(p)} />
-                    {p.verificationStatus === "PENDING" ? (
-                      <VerifyProfessorButtons userId={p.id} />
-                    ) : (
-                      <span className="text-sm text-black/50 dark:text-white/50">
-                        {p.verificationStatus === "APPROVED" ? "Aprovado" : "Rejeitado"}
-                        {p.verifiedBy && ` por ${p.verifiedBy.name}`}
-                      </span>
-                    )}
-                  </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Crescimento */}
+        <section className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Últimos 14 dias</h2>
+            <div className="flex items-center gap-3 text-xs text-black/50 dark:text-white/50">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-accent" /> Utilizadores</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm bg-fuchsia-500" /> Posts</span>
+            </div>
+          </div>
+          <div className="flex h-40 items-end gap-1.5">
+            {stats.daily.map((d) => (
+              <div key={d.date} className="flex flex-1 flex-col items-center gap-1" title={`${d.date}: ${d.users} utilizadores, ${d.posts} posts`}>
+                <div className="flex w-full flex-1 items-end justify-center gap-0.5">
+                  <div className="w-1/2 rounded-t bg-accent" style={{ height: `${(d.users / maxDaily) * 100}%`, minHeight: d.users ? 3 : 0 }} />
+                  <div className="w-1/2 rounded-t bg-fuchsia-500" style={{ height: `${(d.posts / maxDaily) * 100}%`, minHeight: d.posts ? 3 : 0 }} />
                 </div>
-                {p.verificationNote && (
-                  <p className="text-sm text-black/60 dark:text-white/60 rounded-md bg-black/5 dark:bg-white/5 p-2">
-                    &ldquo;{p.verificationNote}&rdquo;
-                  </p>
-                )}
-                {p.verificationStatus === "REJECTED" && p.rejectionReason && (
-                  <p className="text-sm text-rose-600 dark:text-rose-400">
-                    Motivo da rejeição: {p.rejectionReason}
-                  </p>
-                )}
+                <span className="text-[9px] text-black/40 dark:text-white/40">{d.date.slice(8)}</span>
+              </div>
+            ))}
+          </div>
+          {stats.topTags.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs text-black/60 dark:text-white/60">
+              <span>Tópicos em alta:</span>
+              {stats.topTags.map((t) => (
+                <span key={t.name} className="rounded-full bg-black/5 px-2 py-0.5 dark:bg-white/10">#{t.name} · {t.count}</span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* A tratar */}
+        <section className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+          <h2 className="mb-3 font-semibold">A tratar</h2>
+          <ul className="flex flex-col gap-1">
+            {todo.map((t) => (
+              <li key={t.href}>
+                <Link href={t.href} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-black/5 dark:hover:bg-white/10">
+                  <t.icon className="h-4 w-4 text-accent" />
+                  <span className="flex-1 text-sm">{t.label}</span>
+                  <span className={`rounded-full px-2 text-xs font-semibold ${t.value > 0 ? "bg-accent text-accent-foreground" : "bg-black/5 text-black/40 dark:bg-white/10 dark:text-white/40"}`}>
+                    {t.value}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
         </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Posts recentes</h2>
+            <Link href="/forum" className="flex items-center gap-1 text-xs text-accent hover:underline">Ver fórum <ArrowRight className="h-3 w-3" /></Link>
+          </div>
+          <ul className="flex flex-col divide-y divide-black/5 dark:divide-white/10">
+            {recentPosts.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <Link href={`/posts/${p.slug ?? p.id}`} className="truncate hover:text-accent">{p.title}</Link>
+                <span className="shrink-0 text-xs text-black/40 dark:text-white/40">{p.author.name} · {formatRelativeTime(p.createdAt)}</span>
+              </li>
+            ))}
+            {recentPosts.length === 0 && <li className="py-2 text-sm text-black/50 dark:text-white/50">Ainda não há posts.</li>}
+          </ul>
+        </section>
+
+        <section className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Novos membros</h2>
+            {staff && <Link href="/admin/utilizadores" className="flex items-center gap-1 text-xs text-accent hover:underline">Gerir <ArrowRight className="h-3 w-3" /></Link>}
+          </div>
+          <ul className="flex flex-col divide-y divide-black/5 dark:divide-white/10">
+            {recentUsers.map((u) => (
+              <li key={u.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                <Link href={`/perfil/${u.id}`} className="truncate hover:text-accent">{u.name}</Link>
+                <span className="shrink-0 text-xs text-black/40 dark:text-white/40">{u.role} · {formatRelativeTime(u.createdAt)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      {editor && (
+        <section className="grid gap-3 sm:grid-cols-2">
+          <Link href="/admin/conteudo/vagas" className="flex items-center gap-3 rounded-xl border border-black/10 p-4 hover:border-accent/60 dark:border-white/10">
+            <Briefcase className="h-5 w-5 text-accent" />
+            <span className="text-sm">Gerir vagas e oportunidades</span>
+          </Link>
+          <Link href="/admin/seo" className="flex items-center gap-3 rounded-xl border border-black/10 p-4 hover:border-accent/60 dark:border-white/10">
+            <Newspaper className="h-5 w-5 text-accent" />
+            <span className="text-sm">SEO das páginas</span>
+          </Link>
+        </section>
       )}
-
-      {isAdmin && (
-        <WaitlistList
-          entries={waitlistSignups.map((w) => ({
-            id: w.id,
-            email: w.email,
-            name: w.name,
-            instrument: w.instrument,
-            invited: Boolean(w.invitedAt),
-            date: w.createdAt.toLocaleDateString("pt-PT"),
-          }))}
-        />
-      )}
-
-      <section>
-        <h2 className="font-semibold mb-3">Categorias dos tópicos</h2>
-        <p className="text-sm text-black/50 dark:text-white/50 -mt-2 mb-1">
-          Tópicos criados livremente pelos utilizadores começam como &ldquo;Outras&rdquo;;
-          reatribui-os à categoria correta para aparecerem em /categorias.
-        </p>
-        <TagCategoryManager tags={tagsForManager} />
-      </section>
-
-      <section>
-        <h2 className="font-semibold mb-3">Denúncias</h2>
-        <ul className="flex flex-col gap-3">
-          {reports.length === 0 && (
-            <p className="text-black/50 dark:text-white/50">
-              Sem denúncias pendentes.
-            </p>
-          )}
-          {reports.map((r) => (
-            <li
-              key={r.id}
-              className="rounded-lg border border-black/10 dark:border-white/10 p-4 flex flex-col gap-2"
-            >
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <Link
-                    href={`/posts/${r.post.id}`}
-                    className="font-medium hover:text-accent hover:underline"
-                  >
-                    {r.post.title}
-                  </Link>
-                  <p className="text-xs text-black/50 dark:text-white/50">
-                    de {r.post.author.name} · denunciado por {r.reporter.name} ·{" "}
-                    {INFRACTION_LABELS[r.reason]}
-                  </p>
-                  {r.details && (
-                    <p className="text-sm text-black/60 dark:text-white/60 mt-1">
-                      &ldquo;{r.details}&rdquo;
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ReportActions reportId={r.id} />
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <h2 className="font-semibold mb-3">Moderação de utilizadores</h2>
-        <ul className="flex flex-col gap-3">
-          {usersWithBanStatus.length === 0 && (
-            <p className="text-black/50 dark:text-white/50">
-              Ainda não há utilizadores para moderar.
-            </p>
-          )}
-          {usersWithBanStatus.map((u) => (
-            <li
-              key={u.id}
-              className="rounded-lg border border-black/10 dark:border-white/10 p-4 flex items-center justify-between gap-4 flex-wrap"
-            >
-              <div>
-                <p className="font-medium">
-                  {u.name}{" "}
-                  <span className="text-black/40 dark:text-white/40 text-sm">
-                    ({u.email})
-                  </span>
-                </p>
-                <div className="mt-1">
-                  <RoleBadge user={u} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {isAdmin && (
-                  <AmbassadorToggle userId={u.id} isAmbassador={u.isAmbassador} />
-                )}
-                {isAdmin && PREMIUM_ENABLED && <PremiumToggle userId={u.id} isPremium={u.isPremium} />}
-                {isAdmin && (
-                  <ModeratorToggle userId={u.id} isModerator={u.role === "MODERATOR"} />
-                )}
-                <BanControls userId={u.id} activeBan={u.activeBan} />
-                {isAdmin && <DeleteUserButton userId={u.id} />}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+    </>
   );
 }

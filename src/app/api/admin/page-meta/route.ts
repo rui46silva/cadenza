@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { apiSessionFor } from "@/lib/adminAuth";
+import { canEditContent } from "@/lib/moderation";
+import { logActivity } from "@/lib/activity";
 
 const schema = z.object({
   path: z.string().min(1).max(200),
@@ -11,8 +13,8 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  const session = await apiSessionFor(canEditContent);
+  if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
@@ -39,5 +41,6 @@ export async function POST(req: Request) {
     },
   });
 
+  await logActivity(session, "update", "seo", path, `Atualizou o SEO da página ${path}`);
   return NextResponse.json({ meta });
 }

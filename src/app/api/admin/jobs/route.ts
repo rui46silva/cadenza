@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { JobType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { apiSessionFor } from "@/lib/adminAuth";
+import { canEditContent } from "@/lib/moderation";
+import { saveRevision } from "@/lib/revisions";
+import { logActivity } from "@/lib/activity";
 import { JOB_TYPE_ORDER } from "@/lib/jobTypes";
-import { uniqueJobSlug } from "@/lib/jobSlug";
+import { uniqueJobSlug, jobSnapshot } from "@/lib/jobSlug";
 
 const schema = z.object({
   title: z.string().min(2).max(200),
@@ -23,8 +26,8 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  const session = await apiSessionFor(canEditContent);
+  if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
@@ -71,6 +74,9 @@ export async function POST(req: Request) {
       createdById: session.user.id,
     },
   });
+
+  await saveRevision("job", job.id, jobSnapshot(job), session);
+  await logActivity(session, "create", "job", job.id, `Criou a vaga "${job.title}"`);
 
   return NextResponse.json({ job }, { status: 201 });
 }

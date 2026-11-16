@@ -33,6 +33,7 @@ export function roleLabel(user: RoleBadgeUser): string {
     return instrument ? `${base} de ${instrument}` : base;
   }
   if (user.role === "MODERATOR") return gendered(user, "Moderador", "Moderadora");
+  if (user.role === "EDITOR") return gendered(user, "Editor", "Editora");
   return "Admin";
 }
 

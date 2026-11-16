@@ -33,6 +33,16 @@ export function isStaff(role?: string | null): boolean {
   return role === "ADMIN" || role === "MODERATOR";
 }
 
+/** Pode criar/editar conteúdo do CMS (notícias, vagas, páginas, SEO, média). */
+export function canEditContent(role?: string | null): boolean {
+  return role === "ADMIN" || role === "EDITOR";
+}
+
+/** Tem acesso à área de administração (qualquer papel de staff ou editor). */
+export function canAccessAdmin(role?: string | null): boolean {
+  return isStaff(role) || role === "EDITOR";
+}
+
 // Papéis cuja conta exige verificação manual por um admin antes de ficar aprovada.
 export const VERIFIABLE_ROLES = ["PROFESSOR", "MUSICO_PROFISSIONAL"] as const;
 

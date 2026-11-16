@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { buttonOutline } from "@/lib/ui";
 import { formatRelativeTime } from "@/lib/time";
 import BreadcrumbTitle from "@/components/BreadcrumbTitle";
+import { newsStatus } from "@/lib/newsSchema";
+import { renderMarkdown } from "@/lib/markdown";
 
 // O parâmetro pode ser o slug (SEO-friendly) ou, para notícias antigas sem
 // slug, o id. Procuramos primeiro por slug e recorremos ao id.
@@ -23,7 +25,7 @@ export async function generateMetadata({
   const { id } = await params;
   const article = await findArticle(id);
 
-  if (!article || !article.published) return { title: "Notícia não encontrada" };
+  if (!article || newsStatus(article) !== "published") return { title: "Notícia não encontrada" };
 
   const description = article.metaDescription || article.summary;
   const canonical = `/noticias/${article.slug ?? article.id}`;
@@ -49,7 +51,7 @@ export default async function NewsArticlePage({
   const { id } = await params;
   const article = await findArticle(id);
 
-  if (!article || !article.published) notFound();
+  if (!article || newsStatus(article) !== "published") notFound();
 
   return (
     <article className="flex flex-col gap-5">
@@ -73,22 +75,14 @@ export default async function NewsArticlePage({
           {article.title}
         </h1>
         <p className="text-sm text-black/40 dark:text-white/40">
-          {article.source ?? "Cadenza"} · {formatRelativeTime(article.publishedAt)}
+          {article.category ? `${article.category} · ` : ""}{article.source ?? "Cadenza"} · {formatRelativeTime(article.publishedAt)}
         </p>
       </header>
 
       <p className="leading-relaxed text-black/80 dark:text-white/80">{article.summary}</p>
 
       {article.content && (
-        <div className="flex flex-col gap-4 leading-relaxed text-black/80 dark:text-white/80">
-          {article.content
-            .split(/\n{2,}/)
-            .map((paragraph, i) => (
-              <p key={i} className="whitespace-pre-line">
-                {paragraph}
-              </p>
-            ))}
-        </div>
+        <div className="cms-prose text-black/80 dark:text-white/80" dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }} />
       )}
 
       {article.url && (

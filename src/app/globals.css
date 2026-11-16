@@ -85,3 +85,16 @@ body {
   background-color: color-mix(in srgb, var(--accent) 80%, transparent);
   background-clip: content-box;
 }
+
+/* Conteúdo gerado pelo CMS (Markdown → HTML) */
+.cms-prose { line-height: 1.75; }
+.cms-prose > * + * { margin-top: 1em; }
+.cms-prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 1.6em; }
+.cms-prose h3 { font-size: 1.2rem; font-weight: 600; margin-top: 1.4em; }
+.cms-prose ul { list-style: disc; padding-left: 1.4em; }
+.cms-prose ol { list-style: decimal; padding-left: 1.4em; }
+.cms-prose a { color: var(--color-accent, #6d28d9); text-decoration: underline; }
+.cms-prose blockquote { border-left: 3px solid currentColor; opacity: .8; padding-left: 1em; font-style: italic; }
+.cms-prose code { font-family: ui-monospace, monospace; font-size: .9em; background: rgb(127 127 127 / .15); padding: .1em .3em; border-radius: .25em; }
+.cms-prose img { border-radius: .5rem; max-width: 100%; }
+.cms-prose hr { border-color: rgb(127 127 127 / .3); }

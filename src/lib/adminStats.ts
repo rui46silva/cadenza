@@ -41,6 +41,29 @@ export async function getDashboardStats() {
     }),
   ]);
 
+  // Série diária dos últimos 14 dias (novos utilizadores e posts).
+  const fourteenDaysAgo = new Date(Date.now() - 13 * 24 * 60 * 60 * 1000);
+  fourteenDaysAgo.setHours(0, 0, 0, 0);
+  const [recentUsers, recentPosts] = await Promise.all([
+    prisma.user.findMany({ where: { createdAt: { gte: fourteenDaysAgo } }, select: { createdAt: true } }),
+    prisma.post.findMany({ where: { createdAt: { gte: fourteenDaysAgo } }, select: { createdAt: true } }),
+  ]);
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+  const daily: { date: string; users: number; posts: number }[] = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(fourteenDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+    daily.push({ date: dayKey(d), users: 0, posts: 0 });
+  }
+  const byDay = new Map(daily.map((d) => [d.date, d]));
+  for (const u of recentUsers) {
+    const row = byDay.get(dayKey(u.createdAt));
+    if (row) row.users++;
+  }
+  for (const p of recentPosts) {
+    const row = byDay.get(dayKey(p.createdAt));
+    if (row) row.posts++;
+  }
+
   const tagNames = await prisma.tag.findMany({
     where: { id: { in: topTags.map((t) => t.tagId) } },
     select: { id: true, name: true },
@@ -59,6 +82,7 @@ export async function getDashboardStats() {
     newPosts7d,
     pendingVerifications,
     activeBans,
+    daily,
     topTags: topTags.map((t) => ({
       name: tagNameById.get(t.tagId) ?? "?",
       count: t._count._all,

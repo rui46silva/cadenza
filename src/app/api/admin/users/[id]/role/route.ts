@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
-const roleSchema = z.object({ role: z.enum(["MODERATOR", "ALUNO"]) });
+const roleSchema = z.object({ role: z.enum(["MODERATOR", "EDITOR", "ALUNO"]) });
 
 export async function PATCH(
   req: Request,
@@ -37,5 +38,6 @@ export async function PATCH(
     select: { id: true, name: true, role: true },
   });
 
+  await logActivity(session, "role", "user", user.id, `alterou o papel de ${user.name} para ${user.role}`);
   return NextResponse.json({ user });
 }

@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { JobType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { apiSessionFor } from "@/lib/adminAuth";
+import { canEditContent } from "@/lib/moderation";
+import { saveRevision } from "@/lib/revisions";
+import { logActivity } from "@/lib/activity";
 import { JOB_TYPE_ORDER } from "@/lib/jobTypes";
-import { uniqueJobSlug } from "@/lib/jobSlug";
+import { uniqueJobSlug, jobSnapshot } from "@/lib/jobSlug";
 
 const schema = z.object({
   featured: z.boolean().optional(),
@@ -26,8 +29,8 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  const session = await apiSessionFor(canEditContent);
+  if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
@@ -56,6 +59,18 @@ export async function PATCH(
 
   const job = await prisma.jobListing.update({ where: { id }, data });
 
+  const onlyFeatured = Object.keys(data).every((k) => k === "featured");
+  if (!onlyFeatured) await saveRevision("job", id, jobSnapshot(job), session);
+  await logActivity(
+    session,
+    onlyFeatured ? (job.featured ? "feature" : "unfeature") : "update",
+    "job",
+    id,
+    onlyFeatured
+      ? `${job.featured ? "Destacou a vaga" : "Removeu o destaque da vaga"} "${job.title}"`
+      : `Editou a vaga "${job.title}"`
+  );
+
   return NextResponse.json({ job });
 }
 
@@ -63,13 +78,14 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  const session = await apiSessionFor(canEditContent);
+  if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
   const { id } = await params;
-  await prisma.jobListing.delete({ where: { id } }).catch(() => null);
+  const job = await prisma.jobListing.delete({ where: { id } }).catch(() => null);
+  if (job) await logActivity(session, "delete", "job", id, `Eliminou a vaga "${job.title}"`);
 
   return NextResponse.json({ ok: true });
 }

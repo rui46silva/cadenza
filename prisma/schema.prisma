@@ -15,6 +15,7 @@ enum Gender {
 
 enum Role {
   ADMIN
+  EDITOR
   MODERATOR
   PROFESSOR
   MUSICO_PROFISSIONAL
@@ -365,6 +366,8 @@ model NewsArticle {
   metaDescription String?
   // Palavra-chave de foco para a análise SEO (estilo Yoast).
   focusKeyword    String?
+  // Categoria editorial da notícia (ex: Concursos, Entrevistas).
+  category        String?
   url             String?
   imageUrl        String?
   source          String?
@@ -403,4 +406,55 @@ model JobListing {
 model AppMeta {
   key   String @id
   value String
+}
+
+// Página livre gerida no CMS (ex: Sobre, FAQ), servida em /p/[slug].
+model CmsPage {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  content         String   @default("")
+  metaDescription String?
+  focusKeyword    String?
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Histórico de versões de conteúdo do CMS (notícias, vagas, páginas).
+model ContentRevision {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  data       Json
+  authorId   String?
+  authorName String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+}
+
+// Biblioteca de média (por agora, imagens referenciadas por URL).
+model MediaItem {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  title     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// Registo de atividade da administração (quem fez o quê).
+model ActivityLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorName  String?
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
